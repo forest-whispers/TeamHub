@@ -1,6 +1,7 @@
 dist
 dist-ssr
 *.local
+engineering-guide.md
 ## Dependency directories (These are massive; never push them)
 node_modules/
 /frontend/node_modules/
