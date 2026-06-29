@@ -1,4 +1,4 @@
-import "../config/env";
+import "../config/env.ts";
 
 import app from "./app.js";
 
