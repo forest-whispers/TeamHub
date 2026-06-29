@@ -4,6 +4,17 @@
     "scripts": {
         "install-backend": "npm install --prefix backend",
         "install-frontend": "npm install --prefix frontend",
-        "install-all": "npm run install-backend && npm run install-frontend"
+        "install-all": "npm run install-backend && npm run install-frontend",
+        "dev": "npx tsx watch server/src/app/server.ts",
+        "start": "node server/dist/app/server.js"
+    },
+    "devDependencies": {
+        "@types/node": "^26.0.1",
+        "typescript": "^6.0.3"
+    },
+    "dependencies": {
+        "@prisma/client": "^6.19.3",
+        "dotenv": "^17.4.2",
+        "prisma": "^6.19.3"
     }
 }
