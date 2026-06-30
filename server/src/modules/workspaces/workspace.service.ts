@@ -130,12 +130,20 @@ export const getWorkspace = async (userId: string, workspaceId: string) => {
 export const updateWorkspace = async ( userId: string, workspaceId: string, data: UpdateWorkspaceDto ) => {
     await ensureWorkspaceOwner(userId, workspaceId);
 
-    await prisma.workspace.update({
+    const workspace = await prisma.workspace.update({
         where: { id: workspaceId },
         data,
     });
 
-    return data;
+    return {
+        id: workspace.id,
+        name: workspace.name,
+        description: workspace.description,
+        color: workspace.color,
+        inviteCode: workspace.inviteCode,
+        createdAt: workspace.createdAt,
+        ownerId: workspace.ownerId,
+      };
 };
 
 export const deleteWorkspace = async ( userId: string, workspaceId: string ) => {
