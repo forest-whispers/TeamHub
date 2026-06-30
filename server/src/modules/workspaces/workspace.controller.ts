@@ -21,11 +21,7 @@ export const getWorkspace = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateWorkspace = asyncHandler(async (req: Request, res: Response) => {
-    const workspace = await workspaceService.updateWorkspace(
-        req.user!.id,
-        req.params.workspaceId,
-        req.body
-    );
+    const workspace = await workspaceService.updateWorkspace(req.user!.id, req.params.workspaceId, req.body);
 
     res.json(workspace);
 });
@@ -43,10 +39,7 @@ export const joinWorkspace = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const regenerateInviteCode = asyncHandler(async (req: Request, res: Response) => {
-    const workspace = await workspaceService.regenerateInviteCode(
-        req.user!.id,
-        req.params.workspaceId
-    );
+    const workspace = await workspaceService.regenerateInviteCode(req.user!.id, req.params.workspaceId);
 
     res.json(workspace);
 });

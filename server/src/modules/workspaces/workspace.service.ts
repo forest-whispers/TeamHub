@@ -1,34 +1,14 @@
 import crypto from "crypto";
 import { Prisma, type Workspace } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
-import { AppError, BadRequestError, ForbiddenError, NotFoundError } from "../../shared/errors/index.js";
+import { ensureWorkspaceMember, ensureWorkspaceOwner } from "../../shared/authorization/workspace.js";
+import { AppError, BadRequestError, NotFoundError } from "../../shared/errors/index.js";
 import type { CreateWorkspaceDto, JoinWorkspaceDto, UpdateWorkspaceDto, WorkspaceResponse } from "./workspace.types.js";
 
 const generateWorkspaceInviteCode = (): string => crypto.randomUUID();
 
-const ensureWorkspaceMember = async (userId: string, workspaceId: string) => {
-    await prisma.workspaceMember.findUniqueOrThrow({
-        where: {
-            workspaceId_userId: {
-                workspaceId,
-                userId,
-            },
-        },
-    });
-};
-
-const ensureWorkspaceOwner = async (userId: string, workspaceId: string) => {
-    await prisma.workspaceMember.findFirstOrThrow({
-        where: {
-            userId,
-            workspaceId,
-            role: "OWNER"
-        }
-    })
-};
-
 export const createWorkspace = async ( userId: string, data: CreateWorkspaceDto ): Promise<WorkspaceResponse> => {
-    return prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx) => {
         let workspace: Workspace;
         let inviteCode = "";
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -93,7 +73,7 @@ export const getWorkspaces = async (userId: string) => {
             },
         },
     });
-    const workspaces = workspacesRaw.map((w: Workspace) => ({
+    return workspacesRaw.map((w: Workspace) => ({
         id: w.id,
         name: w.name,
         description: w.description,
@@ -107,7 +87,7 @@ export const getWorkspaces = async (userId: string) => {
 export const getWorkspace = async (userId: string, workspaceId: string) => {
     await ensureWorkspaceMember(userId, workspaceId);
 
-    return prisma.workspace.findUniqueOrThrow({
+    const rawWorkspace = prisma.workspace.findUniqueOrThrow({
         where: { id: workspaceId },
         select: {
             id: true,
@@ -133,15 +113,29 @@ export const getWorkspace = async (userId: string, workspaceId: string) => {
             },
         },
     });
+
+    return {
+        ...rawWorkspace,
+        members: rawWorkspace.members.map((member) => ({
+            id: member.user.id,
+            name: member.user.name,
+            email: member.user.email,
+            avatar: member.user.avatar,
+            role: member.role,
+            joinedAt: member.joinedAt,
+        })),
+      };
 };
 
 export const updateWorkspace = async ( userId: string, workspaceId: string, data: UpdateWorkspaceDto ) => {
     await ensureWorkspaceOwner(userId, workspaceId);
 
-    return prisma.workspace.update({
+    await prisma.workspace.update({
         where: { id: workspaceId },
         data,
     });
+
+    return data;
 };
 
 export const deleteWorkspace = async ( userId: string, workspaceId: string ) => {
