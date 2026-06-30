@@ -1,5 +1,4 @@
 import { prisma } from "../../lib/prisma.js";
-import type { User } from "@prisma/client";
 
 interface UpdateMeDto {
     name?: string;
