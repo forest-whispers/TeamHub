@@ -1,37 +1,24 @@
+import api from "@/shared/lib/api"
 import type { DashboardService, RecentDocument, Workspace, ActivityItem } from "../types"
-import { getMockContinueWorking, getMockWorkspaces, getMockRecentActivity } from "../mock/mockDashboard"
-
-// Toggle this to run mock vs live API endpoints.
-const USE_MOCK = true
+import { getMockContinueWorking, getMockRecentActivity } from "../mock/mockDashboard"
 
 export const dashboardService: DashboardService = {
   getContinueWorking: async (): Promise<RecentDocument | null> => {
-    if (USE_MOCK) {
-      return getMockContinueWorking()
-    }
-    // Future backend integration:
-    // const response = await api.get<RecentDocument | null>("/dashboard/continue-working");
-    // return response.data;
-    throw new Error("Backend dashboard continue-working integration not implemented yet.")
+    return getMockContinueWorking()
   },
 
   getWorkspaces: async (): Promise<Workspace[]> => {
-    if (USE_MOCK) {
-      return getMockWorkspaces()
-    }
-    // Future backend integration:
-    // const response = await api.get<Workspace[]>("/dashboard/workspaces");
-    // return response.data;
-    throw new Error("Backend dashboard workspaces integration not implemented yet.")
+    const response = await api.get<any[]>("/workspaces")
+    return response.data.map((w) => ({
+      id: w.id,
+      name: w.name,
+      description: w.description || "",
+      memberCount: w.memberCount,
+      // documentCount and lastActivity are left undefined since the backend does not return them
+    }))
   },
 
   getRecentActivity: async (): Promise<ActivityItem[]> => {
-    if (USE_MOCK) {
-      return getMockRecentActivity()
-    }
-    // Future backend integration:
-    // const response = await api.get<ActivityItem[]>("/dashboard/recent-activity");
-    // return response.data;
-    throw new Error("Backend dashboard recent-activity integration not implemented yet.")
+    return getMockRecentActivity()
   },
 }

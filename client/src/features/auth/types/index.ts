@@ -2,6 +2,8 @@ export interface AuthUser {
   id: string
   name: string
   email: string
+  avatar: string | null
+  isEmailVerified: boolean
 }
 
 export interface AuthStatus {
@@ -24,4 +26,5 @@ export interface AuthService {
   getAuthStatus(): Promise<AuthStatus>
   login(credentials: LoginCredentials): Promise<AuthStatus>
   register(userData: RegisterData): Promise<AuthStatus>
+  logout(): Promise<void>
 }

@@ -12,6 +12,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 interface CreateWorkspaceDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: (data: { id: string; inviteCode: string }) => void
 }
 
 const colors = [
@@ -22,7 +23,7 @@ const colors = [
   { name: "Orange", value: "orange", class: "bg-orange-600 dark:bg-orange-500" },
 ]
 
-export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDialogProps) {
+export function CreateWorkspaceDialog({ open, onOpenChange, onSuccess }: CreateWorkspaceDialogProps) {
   const { mutate: createWorkspace, isPending, error } = useCreateWorkspace()
 
   const {
@@ -45,10 +46,13 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
 
   const onSubmit = (data: WorkspaceFormData) => {
     createWorkspace(data, {
-      onSuccess: () => {
+      onSuccess: (res) => {
         toast.success(`Workspace "${data.name}" created successfully!`)
         reset()
         onOpenChange(false)
+        if (onSuccess && res) {
+          onSuccess(res)
+        }
       },
       onError: (err) => {
         toast.error(err instanceof Error ? err.message : "Failed to create workspace")

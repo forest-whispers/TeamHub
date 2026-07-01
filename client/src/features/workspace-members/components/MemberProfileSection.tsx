@@ -4,8 +4,8 @@ interface MemberProfileSectionProps {
   name: string
   email: string
   role: string
-  status: "online" | "away" | "offline"
-  lastActive: string
+  status?: "online" | "away" | "offline"
+  lastActive?: string
 }
 
 export function MemberProfileSection({
@@ -86,9 +86,11 @@ export function MemberProfileSection({
 
       <div className="flex flex-wrap gap-2 items-center justify-center pt-1.5">
         {/* Status text */}
-        <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 border border-border/30 rounded-full px-2.5 py-0.5 leading-none">
-          {getStatusText()}
-        </span>
+        {status && (
+          <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 border border-border/30 rounded-full px-2.5 py-0.5 leading-none">
+            {getStatusText()}
+          </span>
+        )}
 
         {/* Role badge */}
         <div className="flex items-center gap-1">

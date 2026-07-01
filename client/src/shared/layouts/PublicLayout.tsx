@@ -1,12 +1,14 @@
 import { Outlet, Link, useLocation } from "react-router-dom"
 import { useTheme } from "../providers/ThemeProvider"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 import { Sun, Moon, Laptop } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 
 export default function PublicLayout() {
   const { theme, setTheme } = useTheme()
   const { data: authStatus, isLoading } = useAuthStatus()
+  const logoutMutation = useLogout()
   const location = useLocation()
 
   const toggleThemeCycle = () => {
@@ -69,15 +71,13 @@ export default function PublicLayout() {
                     <Link to="/dashboard">Go to Dashboard</Link>
                   </Button>
                   <Button
-                    onClick={() => {
-                      localStorage.removeItem("teamhub-mock-authenticated")
-                      window.location.reload()
-                    }}
+                    onClick={() => logoutMutation.mutate}
+                    disabled={logoutMutation.isPending}
                     size="sm"
                     variant="ghost"
                     className="text-muted-foreground hover:text-destructive cursor-pointer"
                   >
-                    Log Out
+                    {logoutMutation.isPending ? "Logging out..." : "Log Out"}
                   </Button>
                 </>
               ) : (

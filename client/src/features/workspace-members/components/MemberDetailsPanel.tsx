@@ -104,18 +104,20 @@ export function MemberDetailsPanel({
                 </h4>
                 <MemberInfoRow label="Email Address" value={memberDetails.email} />
                 <MemberInfoRow label="Workspace Role" value={memberDetails.role} />
-                <MemberInfoRow label="Joined Date" value={memberDetails.joinedDate} />
-                <MemberInfoRow label="Last Active" value={memberDetails.lastActive} />
+                {memberDetails.joinedDate && <MemberInfoRow label="Joined Date" value={memberDetails.joinedDate} />}
+                {memberDetails.lastActive && <MemberInfoRow label="Last Active" value={memberDetails.lastActive} />}
               </div>
 
-              <div className="pb-6">
-                <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 select-none">
-                  Biography
-                </h4>
-                <p className="text-xs font-normal text-muted-foreground bg-muted/40 border border-border/30 p-3.5 rounded-lg leading-relaxed select-text">
-                  {memberDetails.bio}
-                </p>
-              </div>
+              {memberDetails.bio && (
+                <div className="pb-6">
+                  <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 select-none">
+                    Biography
+                  </h4>
+                  <p className="text-xs font-normal text-muted-foreground bg-muted/40 border border-border/30 p-3.5 rounded-lg leading-relaxed select-text">
+                    {memberDetails.bio}
+                  </p>
+                </div>
+              )}
 
               {/* Action placeholders */}
               <div className="mt-auto pt-6 border-t border-border flex flex-col gap-2 shrink-0 select-none">

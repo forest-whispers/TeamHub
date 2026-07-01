@@ -8,11 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 import { FileText, Plus, Users, Activity, AlertCircle, FileCode } from "lucide-react"
 import { CreateWorkspaceDialog } from "../../workspace/components/CreateWorkspaceDialog"
 import { JoinWorkspaceDialog } from "../../workspace/components/JoinWorkspaceDialog"
+import { useLogout } from "../../auth/hooks/useLogout"
+import { InviteMembersDialog } from "../../workspace-home/components/InviteMembersDialog"
 
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { data: authStatus } = useAuthStatus()
+  const logoutMutation = useLogout()
 
   // Queries
   const {
@@ -37,6 +40,8 @@ export default function DashboardPage() {
   // Modal Dialog States
   const [createOpen, setCreateOpen] = useState(false)
   const [joinOpen, setJoinOpen] = useState(false)
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [inviteDetails, setInviteDetails] = useState<{ id: string; inviteCode: string } | null>(null)
 
   const userName = authStatus?.user?.name || "Member"
 
@@ -65,16 +70,13 @@ export default function DashboardPage() {
             Join Workspace
           </Button>
           <Button
-            onClick={() => {
-              localStorage.removeItem("teamhub-mock-authenticated")
-              navigate("/")
-              window.location.reload()
-            }}
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
             size="sm"
             variant="ghost"
             className="text-muted-foreground hover:text-destructive cursor-pointer ml-1.5"
           >
-            Log Out
+            {logoutMutation.isPending ? "Logging out..." : "Log Out"}
           </Button>
         </div>
       </section>
@@ -196,13 +198,17 @@ export default function DashboardPage() {
                         <span className="flex items-center gap-1">
                           <Users className="size-3" /> {workspace.memberCount}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <FileCode className="size-3" /> {workspace.documentCount}
-                        </span>
+                        {workspace.documentCount !== undefined && (
+                          <span className="flex items-center gap-1">
+                            <FileCode className="size-3" /> {workspace.documentCount}
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[10px] uppercase font-semibold tracking-wider">
-                        Active {workspace.lastActivity}
-                      </span>
+                      {workspace.lastActivity && (
+                        <span className="text-[10px] uppercase font-semibold tracking-wider">
+                          Active {workspace.lastActivity}
+                        </span>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -270,10 +276,25 @@ export default function DashboardPage() {
       </div>
 
       {/* Create Workspace Dialog Form */}
-      <CreateWorkspaceDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateWorkspaceDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSuccess={(data) => {
+          setInviteDetails(data)
+          setInviteOpen(true)
+        }}
+      />
 
       {/* Join Workspace Dialog Form */}
       <JoinWorkspaceDialog open={joinOpen} onOpenChange={setJoinOpen} />
+
+      {/* Invite Members Dialog Form */}
+      <InviteMembersDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        inviteCode={inviteDetails?.inviteCode}
+        workspaceId={inviteDetails?.id}
+      />
     </div>
   )
 }

@@ -95,10 +95,12 @@ export default function WorkspaceHome() {
               <Users className="size-4 text-primary" />
               <span>{summary.memberCount} Members</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{summary.onlineCount} Online Now</span>
-            </div>
+            {summary.onlineCount !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{summary.onlineCount} Online Now</span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -318,15 +320,17 @@ export default function WorkspaceHome() {
                           .substring(0, 2)
                           .toUpperCase()}
                       </div>
-                      <span
-                        className={`absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-card ${
-                          member.status === "online"
-                            ? "bg-emerald-500"
-                            : member.status === "away"
-                            ? "bg-amber-500"
-                            : "bg-muted-foreground/45"
-                        }`}
-                      />
+                      {member.status && (
+                        <span
+                          className={`absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-card ${
+                            member.status === "online"
+                              ? "bg-emerald-500"
+                              : member.status === "away"
+                              ? "bg-amber-500"
+                              : "bg-muted-foreground/45"
+                          }`}
+                        />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 font-medium text-foreground">

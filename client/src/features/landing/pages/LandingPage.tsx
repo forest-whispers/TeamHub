@@ -127,7 +127,7 @@ export default function LandingPage() {
             <span className="font-semibold text-sm tracking-tight">TeamHub</span>
           </div>
 
-          <p className="text-xs text-muted-foreground order-last sm:order-none">
+          <p className="text-xs text-muted-foreground order-last sm:order-0">
             &copy; {new Date().getFullYear()} TeamHub Inc. All rights reserved.
           </p>
 

@@ -7,4 +7,5 @@ export interface WorkspaceSettings {
   defaultHomePage: string
   compactMode: boolean
   enableNotifications: boolean
+  inviteCode?: string
 }

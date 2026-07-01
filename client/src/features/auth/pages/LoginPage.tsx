@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { useLogin } from "../hooks/useLogin"
 import { loginSchema, type LoginFormData } from "../schemas/loginSchema"
+import { getErrorMessage } from "@/shared/lib/getErrorMessage"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
@@ -33,7 +34,7 @@ export default function LoginPage() {
         navigate("/dashboard")
       },
       onError: (err) => {
-        toast.error(err instanceof Error ? err.message : "Invalid email or password")
+        toast.error(getErrorMessage(err));
       },
     })
   }

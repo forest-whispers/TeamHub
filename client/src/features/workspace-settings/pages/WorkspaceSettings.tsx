@@ -1,7 +1,12 @@
 import { useState, useEffect, useMemo } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { useWorkspaceSettings, useUpdateWorkspaceSettings } from "../hooks/useWorkspaceSettings"
+import {
+  useWorkspaceSettings,
+  useUpdateWorkspaceSettings,
+  useDeleteWorkspace,
+  useRegenerateInviteCode,
+} from "../hooks/useWorkspaceSettings"
 import { GeneralSettingsSection } from "../components/GeneralSettingsSection"
 import { MembersSettingsSection } from "../components/MembersSettingsSection"
 import { PreferencesSettingsSection } from "../components/PreferencesSettingsSection"
@@ -29,8 +34,17 @@ export default function WorkspaceSettings() {
     refetch,
   } = useWorkspaceSettings(workspaceId || "")
 
+  // Navigate
+  const navigate = useNavigate()
+
   // Save Settings Mutation
   const updateSettingsMutation = useUpdateWorkspaceSettings(workspaceId || "")
+
+  // Delete Workspace Mutation
+  const deleteWorkspaceMutation = useDeleteWorkspace(workspaceId || "")
+
+  // Regenerate Invite Code Mutation
+  const regenerateInviteMutation = useRegenerateInviteCode(workspaceId || "")
 
   // Sync fetched settings to local formState on initial load
   useEffect(() => {
@@ -87,6 +101,37 @@ export default function WorkspaceSettings() {
     if (formState) {
       setFormState({ ...formState, ...fields })
     }
+  }
+
+  const handleDeleteWorkspace = () => {
+    deleteWorkspaceMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Workspace deleted successfully!")
+        setDeleteOpen(false)
+        navigate("/dashboard")
+      },
+      onError: (err) => {
+        toast.error(err instanceof Error ? err.message : "Failed to delete workspace")
+      },
+    })
+  }
+
+  const handleRegenerateInviteCode = () => {
+    regenerateInviteMutation.mutate(undefined, {
+      onSuccess: (res) => {
+        toast.success("Invite code regenerated successfully!")
+        setFormState((prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            inviteCode: res.inviteCode,
+          }
+        })
+      },
+      onError: (err) => {
+        toast.error(err instanceof Error ? err.message : "Failed to regenerate invite code")
+      },
+    })
   }
 
   // Render skeletons during initial fetch loading
@@ -160,6 +205,9 @@ export default function WorkspaceSettings() {
           <MembersSettingsSection
             totalMembers={formState.totalMembers}
             owner={formState.owner}
+            inviteCode={formState.inviteCode}
+            isRegenerating={regenerateInviteMutation.isPending}
+            onRegenerateInviteCode={handleRegenerateInviteCode}
             onManageMembers={() => toast.info("Manage members option triggered (placeholder)")}
           />
 
@@ -226,10 +274,10 @@ export default function WorkspaceSettings() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="Delete Workspace"
-        description="Are you sure you want to permanently delete this workspace? This will destroy all documents, chat rooms, activity histories, and analytics reports. This action is irreversible. This is a structural placeholder and no action will be executed."
-        confirmText="Delete Workspace"
+        description="Are you sure you want to permanently delete this workspace? This will destroy all documents, chat rooms, activity histories, and analytics reports. This action is irreversible."
+        confirmText={deleteWorkspaceMutation.isPending ? "Deleting..." : "Delete Workspace"}
         variant="destructive"
-        onConfirm={() => toast.success("Delete workspace action confirmed (placeholder)")}
+        onConfirm={handleDeleteWorkspace}
       />
     </div>
   )

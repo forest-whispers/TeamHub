@@ -1,12 +1,20 @@
 import { useQuery } from "@tanstack/react-query"
 import { workspaceHomeService } from "../services/workspaceHomeService"
+import { workspaceService } from "@/features/workspace/services/workspaceService"
+import type { WorkspaceMember } from "../types"
 
 export function useWorkspaceSummary(workspaceId: string) {
   return useQuery({
-    queryKey: ["workspace-home-summary", workspaceId],
-    queryFn: () => workspaceHomeService.getWorkspaceSummary(workspaceId),
+    queryKey: ["workspace", workspaceId],
+    queryFn: () => workspaceService.getWorkspace(workspaceId),
     enabled: !!workspaceId,
-    staleTime: 1000 * 60 * 2, // 2 minutes cache
+    select: (data) => ({
+      id: data.id,
+      name: data.name,
+      description: data.description || "",
+      memberCount: data.members?.length || 0,
+      onlineCount: undefined as number | undefined,
+    }),
   })
 }
 
@@ -30,9 +38,16 @@ export function useWorkspaceActivity(workspaceId: string) {
 
 export function useWorkspaceMembers(workspaceId: string) {
   return useQuery({
-    queryKey: ["workspace-home-members", workspaceId],
-    queryFn: () => workspaceHomeService.getWorkspaceMembers(workspaceId),
+    queryKey: ["workspace", workspaceId],
+    queryFn: () => workspaceService.getWorkspace(workspaceId),
     enabled: !!workspaceId,
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    select: (data): WorkspaceMember[] => {
+      return data.members?.map((m: any) => ({
+        id: m.id,
+        name: m.name,
+        role: m.role,
+        avatarUrl: m.avatar || undefined,
+      })) || []
+    },
   })
 }

@@ -1,29 +1,25 @@
+import api from "@/shared/lib/api"
 import type { WorkspaceService, CreateWorkspaceData } from "../types"
-import { mockCreateWorkspace, mockJoinWorkspace } from "../mock/mockWorkspace"
-
-// Toggle this to run mock vs live API endpoints.
-const USE_MOCK = true
 
 export const workspaceService: WorkspaceService = {
   createWorkspace: async (workspaceData: CreateWorkspaceData): Promise<any> => {
-    if (USE_MOCK) {
-      return mockCreateWorkspace(workspaceData)
-    }
-
-    // Future backend integration:
-    // const response = await api.post("/workspaces", workspaceData);
-    // return response.data;
-    throw new Error("Backend workspace creation integration not implemented yet.")
+    const response = await api.post("/workspaces", {
+      name: workspaceData.name,
+      description: workspaceData.description,
+      color: workspaceData.accentColor,
+    })
+    return response.data
   },
 
   joinWorkspace: async (joinCode: string): Promise<any> => {
-    if (USE_MOCK) {
-      return mockJoinWorkspace(joinCode)
-    }
+    const response = await api.post("/workspaces/join", {
+      inviteCode: joinCode,
+    })
+    return response.data
+  },
 
-    // Future backend integration:
-    // const response = await api.post(`/workspaces/join`, { joinCode });
-    // return response.data;
-    throw new Error("Backend join workspace integration not implemented yet.")
+  getWorkspace: async (workspaceId: string): Promise<any> => {
+    const response = await api.get(`/workspaces/${workspaceId}`)
+    return response.data
   },
 }

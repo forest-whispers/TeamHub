@@ -61,7 +61,7 @@ export function SelectDropdown({
         <div
           className={`absolute top-[calc(100%+4px)] ${
             align === "right" ? "right-0" : "left-0"
-          } z-50 min-w-[12rem] w-full overflow-hidden rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg animate-in fade-in-50 slide-in-from-top-1 duration-150`}
+          } z-50 min-w-48 w-full overflow-hidden rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg animate-in fade-in-50 slide-in-from-top-1 duration-150`}
         >
           <div className="space-y-0.5">
             {options.map((opt) => {

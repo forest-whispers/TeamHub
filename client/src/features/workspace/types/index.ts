@@ -7,4 +7,5 @@ export interface CreateWorkspaceData {
 export interface WorkspaceService {
   createWorkspace(workspaceData: CreateWorkspaceData): Promise<any>
   joinWorkspace(joinCode: string): Promise<any>
+  getWorkspace(workspaceId: string): Promise<any>
 }

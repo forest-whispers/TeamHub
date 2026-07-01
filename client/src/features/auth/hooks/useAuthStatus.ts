@@ -5,6 +5,6 @@ export function useAuthStatus() {
   return useQuery({
     queryKey: ["auth-status"],
     queryFn: () => authService.getAuthStatus(),
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    staleTime: 1000 * 60 * 5,
   })
 }

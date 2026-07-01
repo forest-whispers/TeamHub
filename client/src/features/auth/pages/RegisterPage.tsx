@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { useRegister } from "../hooks/useRegister"
 import { registerSchema, type RegisterFormData } from "../schemas/registerSchema"
+import { getErrorMessage } from "@/shared/lib/getErrorMessage"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
@@ -35,7 +36,7 @@ export default function RegisterPage() {
         navigate("/dashboard")
       },
       onError: (err) => {
-        toast.error(err instanceof Error ? err.message : "Registration failed")
+        toast.error(getErrorMessage(err));
       },
     })
   }

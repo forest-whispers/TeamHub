@@ -13,7 +13,7 @@ export const ensureWorkspaceMember = async (userId: string, workspaceId: string)
     });
 };
 
-export const ensureWorkspaceRole = async ( userId: string, workspaceId: string, ...roles: WorkspaceRole[ ) => {
+export const ensureWorkspaceRole = async ( userId: string, workspaceId: string, ...roles: WorkspaceRole[] ) => {
     const member = await ensureWorkspaceMember(userId, workspaceId);
 
     if (!roles.includes(member.role)) {

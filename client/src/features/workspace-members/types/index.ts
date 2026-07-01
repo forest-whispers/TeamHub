@@ -3,14 +3,14 @@ export interface WorkspaceMember {
   name: string
   email: string
   role: string
-  status: "online" | "away" | "offline"
+  status?: "online" | "away" | "offline"
   avatarUrl?: string
 }
 
 export interface WorkspaceMemberDetails extends WorkspaceMember {
-  joinedDate: string
-  lastActive: string
-  bio: string
+  joinedDate?: string
+  lastActive?: string
+  bio?: string
 }
 
 export interface WorkspaceMembersService {

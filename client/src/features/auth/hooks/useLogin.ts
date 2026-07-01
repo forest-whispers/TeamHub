@@ -8,9 +8,8 @@ export function useLogin() {
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onSuccess: (data) => {
-      // Optimistically update or invalidate the query cache
+      
       queryClient.setQueryData(["auth-status"], data)
-      queryClient.invalidateQueries({ queryKey: ["auth-status"] })
     },
   })
 }

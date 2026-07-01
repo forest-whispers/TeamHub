@@ -11,8 +11,8 @@ export interface Workspace {
   name: string
   description: string
   memberCount: number
-  documentCount: number
-  lastActivity: string
+  documentCount?: number
+  lastActivity?: string
 }
 
 export interface ActivityItem {

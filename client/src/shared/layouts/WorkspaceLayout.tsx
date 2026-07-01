@@ -3,7 +3,8 @@ import { Link, NavLink, Outlet, useParams, useLocation } from "react-router-dom"
 import { useTheme } from "@/shared/providers/ThemeProvider"
 import { useCommandPalette } from "@/shared/providers/CommandPaletteProvider"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
-import { useWorkspaces } from "@/features/dashboard/hooks/useDashboard"
+import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 import { DocumentTabsProvider } from "@/features/document-editor/context/DocumentTabsContext"
 import { NotificationBell } from "@/features/workspace-notifications/components/NotificationBell"
 import { Spinner } from "@/shared/components/ui/spinner"
@@ -34,7 +35,8 @@ export default function WorkspaceLayout() {
   const { theme, setTheme } = useTheme()
   const { setIsOpen } = useCommandPalette()
   const { data: authStatus } = useAuthStatus()
-  const { data: workspaces } = useWorkspaces()
+  const { data: activeWorkspace } = useWorkspace(workspaceId || "")
+  const logoutMutation = useLogout()
 
   // Layout states
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -43,7 +45,6 @@ export default function WorkspaceLayout() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
 
   // Find active workspace details
-  const activeWorkspace = workspaces?.find((w) => w.id === workspaceId)
   const workspaceName = activeWorkspace?.name || "Engineering Team"
 
   // User details
@@ -169,14 +170,12 @@ export default function WorkspaceLayout() {
 
           {/* Log Out Button */}
           <button
-            onClick={() => {
-              localStorage.removeItem("teamhub-mock-authenticated")
-              window.location.href = "/"
-            }}
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
             className="text-xs text-muted-foreground hover:text-destructive px-2 py-1 rounded-md border border-border hover:bg-muted font-medium cursor-pointer transition-colors"
             title="Log Out"
           >
-            Log Out
+            {logoutMutation.isPending ? "Logging out..." : "Log Out"}
           </button>
         </div>
       </header>

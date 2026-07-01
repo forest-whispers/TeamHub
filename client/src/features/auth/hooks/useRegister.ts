@@ -8,9 +8,8 @@ export function useRegister() {
   return useMutation({
     mutationFn: (userData: RegisterData) => authService.register(userData),
     onSuccess: (data) => {
-      // Optimistically update or invalidate the query cache
+      
       queryClient.setQueryData(["auth-status"], data)
-      queryClient.invalidateQueries({ queryKey: ["auth-status"] })
     },
   })
 }

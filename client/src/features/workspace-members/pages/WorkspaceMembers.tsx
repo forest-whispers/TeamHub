@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { useWorkspaceMembers, useWorkspaceMemberDetails } from "../hooks/useWorkspaceMembers"
 import { InviteMembersDialog } from "../components/InviteMembersDialog"
 import { MemberDetailsPanel } from "../components/MemberDetailsPanel"
+import type { WorkspaceMember } from "../types"
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Input } from "@/shared/components/ui/input"
@@ -35,14 +36,14 @@ export default function WorkspaceMembers() {
   // Unique roles extraction from loaded members for filter dropdown options
   const roleOptions = useMemo(() => {
     if (!members) return []
-    const roles = new Set(members.map((m) => m.role).filter(Boolean))
+    const roles = new Set(members.map((m: WorkspaceMember) => m.role).filter(Boolean))
     return Array.from(roles).sort()
   }, [members])
 
   // Client-side search and filter operations
   const filteredMembers = useMemo(() => {
     if (!members) return []
-    return members.filter((member) => {
+    return members.filter((member: WorkspaceMember) => {
       const memberName = member.name || ""
       const memberEmail = member.email || ""
       const memberRole = member.role || ""
@@ -239,7 +240,7 @@ export default function WorkspaceMembers() {
           ) : (
             /* Member Card Grid list */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredMembers.map((member) => (
+              {filteredMembers.map((member: WorkspaceMember) => (
                 <Card
                   key={member.id}
                   tabIndex={0}
@@ -258,10 +259,12 @@ export default function WorkspaceMembers() {
                       <div className={`size-10 rounded-full flex items-center justify-center font-bold text-xs border ${getAvatarBgColor(member.name)}`}>
                         {getInitials(member.name)}
                       </div>
-                      <span
-                        className={`absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-card ${getStatusColor(member.status)}`}
-                        title={member.status.charAt(0).toUpperCase() + member.status.slice(1)}
-                      />
+                      {member.status && (
+                        <span
+                          className={`absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-card ${getStatusColor(member.status)}`}
+                          title={member.status.charAt(0).toUpperCase() + member.status.slice(1)}
+                        />
+                      )}
                     </div>
 
                     {/* Member Details */}

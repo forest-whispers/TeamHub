@@ -25,7 +25,7 @@ export interface WorkspaceMember {
   id: string
   name: string
   role: string
-  status: "online" | "away" | "offline"
+  status?: "online" | "away" | "offline"
   avatarUrl?: string
 }
 
