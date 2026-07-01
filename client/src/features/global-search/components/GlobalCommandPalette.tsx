@@ -113,7 +113,7 @@ export function GlobalCommandPalette({ isOpen, setIsOpen }: GlobalCommandPalette
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="w-full max-w-[640px] overflow-hidden rounded-xl border border-border bg-background shadow-2xl text-foreground"
+        className="w-full max-w-160 overflow-hidden rounded-xl border border-border bg-background shadow-2xl text-foreground"
         onClick={(e) => e.stopPropagation()}
       >
         <Command shouldFilter={false} label="Command Menu" className="flex flex-col">
@@ -133,7 +133,7 @@ export function GlobalCommandPalette({ isOpen, setIsOpen }: GlobalCommandPalette
             </button>
           </div>
 
-          <Command.List className="max-h-[350px] overflow-y-auto p-2">
+          <Command.List className="max-h-87.5 overflow-y-auto p-2">
             {/* Loading state skeleton */}
             {isLoading && query.trim().length > 0 && (
               <div className="p-4 space-y-3.5 animate-pulse">

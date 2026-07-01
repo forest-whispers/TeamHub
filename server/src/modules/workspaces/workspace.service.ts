@@ -48,7 +48,7 @@ export const createWorkspace = async ( userId: string, data: CreateWorkspaceDto 
 };
 
 export const getWorkspaces = async (userId: string) => {
-    const workspacesRaw =  prisma.workspace.findMany({
+    const workspacesRaw =  await prisma.workspace.findMany({
         where: {
             members: {
                 some: { userId },
@@ -87,7 +87,7 @@ export const getWorkspaces = async (userId: string) => {
 export const getWorkspace = async (userId: string, workspaceId: string) => {
     await ensureWorkspaceMember(userId, workspaceId);
 
-    const rawWorkspace = prisma.workspace.findUniqueOrThrow({
+    const rawWorkspace = await prisma.workspace.findUniqueOrThrow({
         where: { id: workspaceId },
         select: {
             id: true,

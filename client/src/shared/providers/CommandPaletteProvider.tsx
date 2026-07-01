@@ -38,4 +38,3 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     </CommandPaletteContext.Provider>
   )
 }
-

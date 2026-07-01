@@ -1,22 +1,18 @@
 import axios from "axios";
-import api from "@/shared/lib/api"
-import type { AuthService, AuthStatus, LoginCredentials, RegisterData } from "../types"
+import api from "@/shared/lib/api";
+import type { AuthService, AuthStatus, LoginCredentials, RegisterData } from "../types";
 
 export const authService: AuthService = {
-  getAuthStatus: async (): Promise<AuthStatus> => {
+  async getAuthStatus(): Promise<AuthStatus> {
     try {
-      const response = await api.get("/users/me")
-      if (!response.data || typeof response.data !== "object" || !response.data.id) {
-        return {
-          isAuthenticated: false,
-        }
-      }
+      const { data } = await api.get("/users/me");
+
       return {
         isAuthenticated: true,
-        user: response.data,
-      }
+        user: data,
+      };
     } catch (error) {
-      if (axios.isAxiosError(error) && (error.response?.status === 401)) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
         return {
           isAuthenticated: false,
         };
@@ -26,25 +22,29 @@ export const authService: AuthService = {
     }
   },
 
-  login: async (credentials: LoginCredentials): Promise<AuthStatus> => {
-    await api.post("/auth/login", credentials)
-    const response = await api.get("/users/me")
+  async login(credentials: LoginCredentials): Promise<AuthStatus> {
+    await api.post("/auth/login", credentials);
+
+    const { data } = await api.get("/users/me");
+
     return {
       isAuthenticated: true,
-      user: response.data,
-    }
+      user: data,
+    };
   },
 
-  register: async (userData: RegisterData): Promise<AuthStatus> => {
-    await api.post("/auth/register", userData)
-    const response = await api.get("/users/me")
+  async register(userData: RegisterData): Promise<AuthStatus> {
+    await api.post("/auth/register", userData);
+
+    const { data } = await api.get("/users/me");
+
     return {
       isAuthenticated: true,
-      user: response.data,
-    }
+      user: data,
+    };
   },
 
-  logout: async (): Promise<void> => {
-    await api.post("/auth/logout")
+  async logout(): Promise<void> {
+    await api.post("/auth/logout");
   },
-}
+};

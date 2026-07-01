@@ -116,7 +116,7 @@ export default function WorkspaceLayout() {
           >
             <ArrowLeft className="size-4" />
           </Link>
-          <span className="font-semibold text-sm tracking-tight truncate max-w-[120px] sm:max-w-xs md:max-w-md">
+          <span className="font-semibold text-sm tracking-tight truncate max-w-30 sm:max-w-xs md:max-w-md">
             {workspaceName}
           </span>
         </div>
@@ -402,7 +402,7 @@ export default function WorkspaceLayout() {
                         <div className="flex items-center gap-1.5">
                           <span className="font-medium truncate text-foreground">{member.name}</span>
                           {member.role === "You" && (
-                            <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.25 rounded font-semibold uppercase select-none">
+                            <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-px rounded font-semibold uppercase select-none">
                               You
                             </span>
                           )}

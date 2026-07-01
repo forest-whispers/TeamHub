@@ -71,7 +71,7 @@ export default function PublicLayout() {
                     <Link to="/dashboard">Go to Dashboard</Link>
                   </Button>
                   <Button
-                    onClick={() => logoutMutation.mutate}
+                    onClick={() => logoutMutation.mutate()}
                     disabled={logoutMutation.isPending}
                     size="sm"
                     variant="ghost"
@@ -105,4 +105,3 @@ export default function PublicLayout() {
     </div>
   )
 }
-
