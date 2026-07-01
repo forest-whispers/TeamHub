@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuthStatus } from "../../auth/hooks/useAuthStatus"
-import { useContinueWorking, useWorkspaces, useRecentActivity } from "../hooks/useDashboard"
+import { useDashboard } from "../hooks/useDashboard"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
@@ -19,23 +19,15 @@ export default function DashboardPage() {
 
   // Queries
   const {
-    data: recentDoc,
-    isLoading: loadingDoc,
-    error: errorDoc,
-    refetch: refetchDoc,
-  } = useContinueWorking()
-  const {
-    data: workspaces,
-    isLoading: loadingWorkspaces,
-    error: errorWorkspaces,
-    refetch: refetchWorkspaces,
-  } = useWorkspaces()
-  const {
-    data: activity,
-    isLoading: loadingActivity,
-    error: errorActivity,
-    refetch: refetchActivity,
-  } = useRecentActivity()
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useDashboard()
+
+  const recentDoc = data?.continueWorking
+  const workspaces = data?.workspaces
+  const activity = data?.recentActivity
 
   // Modal Dialog States
   const [createOpen, setCreateOpen] = useState(false)
@@ -88,7 +80,7 @@ export default function DashboardPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold tracking-tight">Continue Working</h2>
 
-            {loadingDoc && (
+            {isLoading && (
               <Card className="border border-border">
                 <CardHeader className="pb-3">
                   <Skeleton className="h-5 w-32 mb-1.5" />
@@ -98,25 +90,25 @@ export default function DashboardPage() {
               </Card>
             )}
 
-            {errorDoc && (
+            {error && (
               <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg flex items-center justify-between gap-4">
                 <span className="text-sm text-destructive font-medium flex items-center gap-2">
                   <AlertCircle className="size-4 shrink-0" />
                   Failed to load continue working document.
                 </span>
-                <Button size="xs" variant="outline" onClick={() => refetchDoc()} className="cursor-pointer">
+                <Button size="xs" variant="outline" onClick={() => refetch()} className="cursor-pointer">
                   Retry
                 </Button>
               </div>
             )}
 
-            {!loadingDoc && !errorDoc && !recentDoc && (
+            {!isLoading && !error && !recentDoc && (
               <div className="p-6 border border-dashed border-border rounded-xl text-center text-sm text-muted-foreground">
                 No recently opened documents found. Open a workspace to start drafting.
               </div>
             )}
 
-            {!loadingDoc && !errorDoc && recentDoc && (
+            {!isLoading && !error && recentDoc && (
               <Card
                 onClick={() => navigate(`/workspace/${recentDoc.workspaceId}`)}
                 className="border border-border hover:border-border/80 transition-colors cursor-pointer group"
@@ -142,7 +134,7 @@ export default function DashboardPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold tracking-tight">Workspaces</h2>
 
-            {loadingWorkspaces && (
+            {isLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2].map((i) => (
                   <Card key={i} className="border border-border">
@@ -159,25 +151,25 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {errorWorkspaces && (
+            {error && (
               <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg flex items-center justify-between gap-4">
                 <span className="text-sm text-destructive font-medium flex items-center gap-2">
                   <AlertCircle className="size-4 shrink-0" />
                   Failed to load workspaces.
                 </span>
-                <Button size="xs" variant="outline" onClick={() => refetchWorkspaces()} className="cursor-pointer">
+                <Button size="xs" variant="outline" onClick={() => refetch()} className="cursor-pointer">
                   Retry
                 </Button>
               </div>
             )}
 
-            {!loadingWorkspaces && !errorWorkspaces && workspaces?.length === 0 && (
+            {!isLoading && !error && workspaces?.length === 0 && (
               <div className="p-8 border border-dashed border-border rounded-xl text-center text-sm text-muted-foreground">
                 You are not a member of any workspaces yet. Create or join one above!
               </div>
             )}
 
-            {!loadingWorkspaces && !errorWorkspaces && workspaces && workspaces.length > 0 && (
+            {!isLoading && !error && workspaces && workspaces.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {workspaces.map((workspace) => (
                   <Card
@@ -221,7 +213,7 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <h2 className="text-xl font-bold tracking-tight">Recent Activity</h2>
 
-          {loadingActivity && (
+          {isLoading && (
             <Card className="border border-border p-4 space-y-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex flex-col gap-1.5 border-b border-border/40 pb-3 last:border-0 last:pb-0">
@@ -232,25 +224,25 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {errorActivity && (
+          {error && (
             <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg flex flex-col items-start gap-2">
               <span className="text-sm text-destructive font-medium flex items-center gap-2">
                 <AlertCircle className="size-4 shrink-0" />
                 Failed to load activity feed.
               </span>
-              <Button size="xs" variant="outline" onClick={() => refetchActivity()} className="cursor-pointer mt-1">
+              <Button size="xs" variant="outline" onClick={() => refetch()} className="cursor-pointer mt-1">
                 Retry
               </Button>
             </div>
           )}
 
-          {!loadingActivity && !errorActivity && activity?.length === 0 && (
+          {!isLoading && !error && activity?.length === 0 && (
             <div className="p-6 border border-dashed border-border rounded-xl text-center text-sm text-muted-foreground">
               No recent workspace activity recorded.
             </div>
           )}
 
-          {!loadingActivity && !errorActivity && activity && activity.length > 0 && (
+          {!isLoading && !error && activity && activity.length > 0 && (
             <Card className="border border-border">
               <CardContent className="p-4 divide-y divide-border/60">
                 {activity.map((item) => (

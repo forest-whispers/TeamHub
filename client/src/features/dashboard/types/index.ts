@@ -23,8 +23,12 @@ export interface ActivityItem {
   timestamp: string
 }
 
+export interface DashboardData {
+  workspaces: Workspace[]
+  continueWorking: RecentDocument | null
+  recentActivity: ActivityItem[]
+}
+
 export interface DashboardService {
-  getContinueWorking(): Promise<RecentDocument | null>
-  getWorkspaces(): Promise<Workspace[]>
-  getRecentActivity(): Promise<ActivityItem[]>
+  getDashboard(): Promise<DashboardData>
 }
