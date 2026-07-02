@@ -229,32 +229,32 @@ export default function WorkspaceDocuments() {
                     )}
                     <span className="truncate">{doc.title}</span>
                   </CardTitle>
-                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity ml-auto">
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="text-[11px] h-6 px-2 cursor-pointer border border-transparent hover:border-border"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setUpdatingDocument(doc)
-                        setDialogError(null)
-                      }}
-                    >
-                      Rename
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="text-[11px] h-6 px-2 cursor-pointer border border-transparent hover:border-destructive hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setDeletingDocument(doc)
-                        setDeleteDialogError(null)
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity ml-0">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-[11px] h-6 px-2 cursor-pointer border border-transparent hover:border-border"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setUpdatingDocument(doc)
+                      setDialogError(null)
+                    }}
+                  >
+                    Rename
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-[11px] h-6 px-2 cursor-pointer border border-transparent hover:border-destructive hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeletingDocument(doc)
+                      setDeleteDialogError(null)
+                    }}
+                  >
+                    Delete
+                  </Button>
                 </div>
                 <CardDescription className="text-xs truncate">
                   Edited by {doc.createdBy.name}

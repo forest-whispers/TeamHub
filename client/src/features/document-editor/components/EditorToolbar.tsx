@@ -34,7 +34,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         <Italic className="size-4" />
       </button>
 
-      <div className="w-[1px] h-4 bg-border mx-1" />
+      <div className="w-px h-4 bg-border mx-1" />
 
       {/* Heading 2 */}
       <button
@@ -60,7 +60,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         <Heading3 className="size-4" />
       </button>
 
-      <div className="w-[1px] h-4 bg-border mx-1" />
+      <div className="w-px h-4 bg-border mx-1" />
 
       {/* Bullet List */}
       <button

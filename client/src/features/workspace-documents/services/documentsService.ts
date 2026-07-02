@@ -8,8 +8,9 @@ export const documentsService: DocumentsService = {
   },
 
   getDocument: async (workspaceId, documentId) => {
-    //later
-    throw new Error("later")
+    const { data } = await api.get(`/workspaces/${workspaceId}/documents/${documentId}`)
+
+    return data
   },
 
   createDocument: async (workspaceId: string, data: CreateDocumentData): Promise<{ id: string }> => {

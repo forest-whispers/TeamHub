@@ -1,5 +1,4 @@
 import type { SearchResult } from "../types"
-import { getMockDocuments } from "@/features/workspace-documents/mock/mockDocuments"
 
 const getMockWorkspaceMembers = async (_workspaceId: string): Promise<any[]> => []
 const getMockWorkspaces = async (): Promise<any[]> => []
@@ -90,36 +89,14 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
   }
 
   // Fetch mock data in parallel to capture real changes
-  const [documents, members, workspaces] = await Promise.all([
-    getMockDocuments(workspaceId).catch(() => []),
+  const [members, workspaces] = await Promise.all([
     getMockWorkspaceMembers(workspaceId).catch(() => []),
     getMockWorkspaces().catch(() => []),
   ])
 
   const results: SearchResult[] = []
 
-  // 1. Filter and map Documents
-  documents.forEach((doc: any) => {
-    const keywords = [doc.name.toLowerCase(), doc.lastEditedBy.toLowerCase(), "document", "editor"]
-    const matches =
-      doc.name.toLowerCase().includes(normalizedQuery) ||
-      doc.lastEditedBy.toLowerCase().includes(normalizedQuery)
-
-    if (matches) {
-      results.push({
-        id: `doc-${doc.id}`,
-        title: doc.name,
-        subtitle: `Last edited ${doc.lastEdited} by ${doc.lastEditedBy}`,
-        category: "Documents",
-        type: "document",
-        navigationTarget: `/workspace/${workspaceId}/documents/${doc.id}`,
-        metadata: { documentId: doc.id, workspaceId },
-        keywords,
-      })
-    }
-  })
-
-  // 2. Filter and map Members
+  // 1. Filter and map Members
   members.forEach((member: any) => {
     const keywords = [member.name.toLowerCase(), member.email.toLowerCase(), member.role.toLowerCase(), "member", "user"]
     const matches =
@@ -141,7 +118,7 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
     }
   })
 
-  // 3. Filter and map Workspaces
+  // 2. Filter and map Workspaces
   workspaces.forEach((ws: any) => {
     const keywords = [ws.name.toLowerCase(), ws.description?.toLowerCase() || "", "workspace", "team"]
     const matches =
@@ -162,7 +139,7 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
     }
   })
 
-  // 4. Filter and map Settings
+  // 3. Filter and map Settings
   SETTINGS_ITEMS.forEach((item) => {
     const matches =
       item.name.toLowerCase().includes(normalizedQuery) ||
@@ -182,7 +159,7 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
     }
   })
 
-  // 5. Filter and map Commands
+  // 4. Filter and map Commands
   COMMANDS_ITEMS.forEach((item) => {
     const matches =
       item.name.toLowerCase().includes(normalizedQuery) ||

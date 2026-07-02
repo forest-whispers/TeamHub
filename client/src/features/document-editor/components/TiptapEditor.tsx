@@ -3,10 +3,10 @@ import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
-import type { WorkspaceDocumentDetail } from "../types"
+import type { WorkspaceDocument } from "../types"
 
 interface TiptapEditorProps {
-  documentData: WorkspaceDocumentDetail
+  documentData: WorkspaceDocument
 }
 
 export function TiptapEditor({ documentData }: TiptapEditorProps) {
@@ -31,10 +31,10 @@ export function TiptapEditor({ documentData }: TiptapEditorProps) {
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Editor Header */}
       <EditorHeader
-        name={documentData.name}
+        title={documentData.title}
         isDirty={isDirty}
-        lastEdited={documentData.lastEdited}
-        lastEditedBy={documentData.lastEditedBy}
+        updatedAt={documentData.updatedAt}
+        lastEditedBy={documentData.createdBy.name}
       />
 
       {/* Editor Toolbar */}

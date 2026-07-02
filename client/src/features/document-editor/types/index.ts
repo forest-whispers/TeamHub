@@ -1,13 +1,18 @@
-export interface WorkspaceDocumentDetail {
-  id: string
-  name: string
-  content: any // Tiptap JSON node structure
-  lastEdited: string
-  lastEditedBy: string
-  createdAt: string
-  workspaceId: string
-}
+import type { JSONContent } from "@tiptap/core"
 
-export interface DocumentEditorService {
-  getDocument(workspaceId: string, documentId: string): Promise<WorkspaceDocumentDetail>
+export interface WorkspaceDocument {
+    id: string
+    title: string
+    icon?: string | null
+
+    createdAt: string
+    updatedAt: string
+
+    createdBy: {
+        id: string
+        name: string
+    }
+
+    workspaceId?: string
+    content?: JSONContent
 }

@@ -23,7 +23,7 @@ export function EditorTabs() {
             }`}
           >
             <FileText className="size-3.5 shrink-0" />
-            <span className="truncate max-w-[120px]">{tab.name}</span>
+            <span className="truncate max-w-30">{tab.title}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation()

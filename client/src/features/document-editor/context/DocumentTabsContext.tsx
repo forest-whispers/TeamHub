@@ -3,16 +3,16 @@ import { useNavigate, useParams, useLocation } from "react-router-dom"
 
 export interface TabMetadata {
   id: string
-  name: string
+  title: string
   workspaceId: string
 }
 
 interface DocumentTabsContextType {
   openTabs: TabMetadata[]
   activeTabId: string | null
-  openTab: (id: string, name: string, workspaceId: string) => void
+  openTab: (id: string, title: string, workspaceId: string) => void
   closeTab: (id: string) => void
-  updateTabName: (id: string, name: string) => void
+  updateTabName: (id: string, title: string) => void
 }
 
 const DocumentTabsContext = createContext<DocumentTabsContextType | undefined>(undefined)
@@ -30,18 +30,18 @@ export function DocumentTabsProvider({ children }: { children: React.ReactNode }
     setActiveTabId(null)
   }, [workspaceId])
 
-  const openTab = (id: string, name: string, workspaceId: string) => {
+  const openTab = (id: string, title: string, workspaceId: string) => {
     setOpenTabs((prev) => {
       const exists = prev.some((tab) => tab.id === id)
       if (exists) return prev
-      return [...prev, { id, name, workspaceId }]
+      return [...prev, { id, title, workspaceId }]
     })
     setActiveTabId(id)
   }
 
-  const updateTabName = (id: string, name: string) => {
+  const updateTabName = (id: string, title: string) => {
     setOpenTabs((prev) =>
-      prev.map((tab) => (tab.id === id ? { ...tab, name } : tab))
+      prev.map((tab) => (tab.id === id ? { ...tab, title } : tab))
     )
   }
 
