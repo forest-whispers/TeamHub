@@ -9,8 +9,7 @@ export function useCreateWorkspace() {
     mutationFn: (workspaceData: CreateWorkspaceData) =>
       workspaceService.createWorkspace(workspaceData),
     onSuccess: () => {
-      // Invalidate the workspaces query to trigger a background refetch
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }
@@ -21,8 +20,7 @@ export function useJoinWorkspace() {
   return useMutation({
     mutationFn: (joinCode: string) => workspaceService.joinWorkspace(joinCode),
     onSuccess: () => {
-      // Invalidate the workspaces query to trigger a background refetch
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }

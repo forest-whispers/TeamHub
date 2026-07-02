@@ -1,39 +1,19 @@
-import type { WorkspaceHomeService, WorkspaceSummary, RecentDocument, RecentActivity, WorkspaceMember } from "../types"
-import {
-  getMockWorkspaceSummary,
-  getMockRecentDocuments,
-  getMockRecentActivity,
-  getMockWorkspaceMembers,
-} from "../mock/mockWorkspaceHome"
-
-const USE_MOCK = true
+import type { WorkspaceHomeService } from "../types"
 
 export const workspaceHomeService: WorkspaceHomeService = {
-  getWorkspaceSummary: async (workspaceId: string): Promise<WorkspaceSummary> => {
-    if (USE_MOCK) {
-      return getMockWorkspaceSummary(workspaceId)
-    }
-    throw new Error("Live workspace summary endpoint not integrated.")
-  },
+  getWorkspaceHome: async (workspaceId) => {
 
-  getRecentDocuments: async (workspaceId: string): Promise<RecentDocument[]> => {
-    if (USE_MOCK) {
-      return getMockRecentDocuments(workspaceId)
-    }
-    throw new Error("Live recent documents endpoint not integrated.")
-  },
+    /*
+    const { data } = await api.get<WorkspaceHomeData>(`/workspaces/${workspaceId}/home`);
 
-  getRecentActivity: async (workspaceId: string): Promise<RecentActivity[]> => {
-    if (USE_MOCK) {
-      return getMockRecentActivity(workspaceId)
-    }
-    throw new Error("Live recent activity endpoint not integrated.")
-  },
+    return data;
+    */
 
-  getWorkspaceMembers: async (workspaceId: string): Promise<WorkspaceMember[]> => {
-    if (USE_MOCK) {
-      return getMockWorkspaceMembers(workspaceId)
-    }
-    throw new Error("Live workspace members endpoint not integrated.")
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    return {
+      recentDocuments: [],
+      recentActivity: [],
+    };
   },
-}
+};

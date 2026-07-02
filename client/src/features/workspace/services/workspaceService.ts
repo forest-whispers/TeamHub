@@ -1,25 +1,33 @@
 import api from "@/shared/lib/api"
-import type { WorkspaceService, CreateWorkspaceData } from "../types"
+import type {
+  Workspace,
+  WorkspaceService,
+  CreateWorkspaceData,
+  CreateWorkspaceResponse,
+  JoinWorkspaceResponse,
+} from "../types"
 
 export const workspaceService: WorkspaceService = {
-  createWorkspace: async (workspaceData: CreateWorkspaceData): Promise<any> => {
-    const response = await api.post("/workspaces", {
+  async createWorkspace(workspaceData: CreateWorkspaceData): Promise<CreateWorkspaceResponse> {
+    const { data } = await api.post("/workspaces", {
       name: workspaceData.name,
       description: workspaceData.description,
       color: workspaceData.accentColor,
     })
-    return response.data
+
+    return data
   },
 
-  joinWorkspace: async (joinCode: string): Promise<any> => {
-    const response = await api.post("/workspaces/join", {
+  async joinWorkspace(joinCode: string): Promise<JoinWorkspaceResponse> {
+    const { data } = await api.post("/workspaces/join", {
       inviteCode: joinCode,
     })
-    return response.data
+
+    return data
   },
 
-  getWorkspace: async (workspaceId: string): Promise<any> => {
-    const response = await api.get(`/workspaces/${workspaceId}`)
-    return response.data
+  async getWorkspace(workspaceId: string): Promise<Workspace> {
+    const { data } = await api.get(`/workspaces/${workspaceId}`)
+    return data
   },
 }
