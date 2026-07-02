@@ -69,12 +69,6 @@ export default function WorkspaceLayout() {
   ]
 
   // Mock collaboration data
-  const mockMembers = [
-    { id: 1, name: "Alex Developer", role: "You", status: "online" },
-    { id: 2, name: "Jamie Product", role: "Product Manager", status: "online" },
-    { id: 3, name: "Taylor Support", role: "Support Lead", status: "away" },
-    { id: 4, name: "Morgan Designer", role: "UI Designer", status: "offline" },
-  ]
 
   const mockMessages = [
     { id: 1, sender: "Alex Developer", time: "10:32 AM", text: "Welcome to the workspace chat room! Feel free to coordinate tasks here." },
@@ -233,7 +227,7 @@ export default function WorkspaceLayout() {
             <div className="min-w-0 flex-1 text-left">
               <h3 className="font-semibold text-sm truncate text-foreground">{workspaceName}</h3>
               <p className="text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">
-                {activeWorkspace?.memberCount || 1} Member{activeWorkspace?.memberCount !== 1 && "s"}
+                {activeWorkspace?.members.length || 1} Member{activeWorkspace?.members.length !== 1 && "s"}
               </p>
             </div>
           </div>
@@ -377,9 +371,9 @@ export default function WorkspaceLayout() {
                 /* Members Tab Placeholder */
                 <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
                   <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 select-none">
-                    Active Members ({mockMembers.length})
+                    Active Members ({activeWorkspace?.members.length})
                   </div>
-                  {mockMembers.map((member) => (
+                  {activeWorkspace?.members.map((member) => (
                     <div key={member.id} className="flex items-center gap-3 text-sm">
                       <div className="relative select-none">
                         <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs border border-primary/20">
@@ -401,7 +395,7 @@ export default function WorkspaceLayout() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-medium truncate text-foreground">{member.name}</span>
-                          {member.role === "You" && (
+                          {member.name === userName && (
                             <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-px rounded font-semibold uppercase select-none">
                               You
                             </span>
