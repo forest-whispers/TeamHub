@@ -30,4 +30,8 @@ export const workspaceService: WorkspaceService = {
     const { data } = await api.get(`/workspaces/${workspaceId}`)
     return data
   },
+
+  async leaveWorkspace(workspaceId: string): Promise<void> {
+    await api.post(`/workspaces/${workspaceId}/members/leave`)
+  },
 }

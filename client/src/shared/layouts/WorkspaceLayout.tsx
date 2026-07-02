@@ -1,14 +1,18 @@
 import { useState, Suspense } from "react"
-import { Link, NavLink, Outlet, useParams, useLocation } from "react-router-dom"
+import { Link, NavLink, Outlet, useParams, useLocation, useNavigate } from "react-router-dom"
 import { useTheme } from "@/shared/providers/ThemeProvider"
 import { useCommandPalette } from "@/shared/providers/CommandPaletteProvider"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
 import { useLogout } from "@/features/auth/hooks/useLogout"
+import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
 import { DocumentTabsProvider } from "@/features/document-editor/context/DocumentTabsContext"
 import { NotificationBell } from "@/features/workspace-notifications/components/NotificationBell"
 import { Spinner } from "@/shared/components/ui/spinner"
 import { AssistantPanel } from "@/features/workspace-ai/components/AssistantPanel"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/shared/components/ui/dialog"
+import { Button } from "@/shared/components/ui/button"
+import { toast } from "sonner"
 import {
   Home,
   FileText,
@@ -32,17 +36,20 @@ import {
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
   const location = useLocation()
+  const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
   const { setIsOpen } = useCommandPalette()
   const { data: authStatus } = useAuthStatus()
   const { data: activeWorkspace } = useWorkspace(workspaceId || "")
   const logoutMutation = useLogout()
+  const leaveWorkspaceMutation = useLeaveWorkspace()
 
   // Layout states
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<"members" | "chat">("members")
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false)
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
 
   // Find active workspace details
   const workspaceName = activeWorkspace?.name || "Engineering Team"
@@ -72,33 +79,6 @@ export default function WorkspaceLayout() {
       .substring(0, 2)
   }
 
-  // Consistent, premium background colors for avatar initials based on name hash
-  const getAvatarBgColor = (name: string) => {
-    const colors = [
-      "bg-red-500/10 text-red-500 border-red-500/20",
-      "bg-orange-500/10 text-orange-500 border-orange-500/20",
-      "bg-amber-500/10 text-amber-500 border-amber-500/20",
-      "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      "bg-green-500/10 text-green-500 border-green-500/20",
-      "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-      "bg-teal-500/10 text-teal-500 border-teal-500/20",
-      "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-      "bg-sky-500/10 text-sky-500 border-sky-500/20",
-      "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
-      "bg-violet-500/10 text-violet-500 border-violet-500/20",
-      "bg-purple-500/10 text-purple-500 border-purple-500/20",
-      "bg-fuchsia-500/10 text-fuchsia-500 border-fuchsia-500/20",
-      "bg-pink-500/10 text-pink-500 border-pink-500/20",
-      "bg-rose-500/10 text-rose-500 border-rose-500/20",
-    ]
-    let hash = 0
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    const index = Math.abs(hash) % colors.length
-    return colors[index]
-  }
 
   // Mock collaboration data
 
@@ -114,6 +94,20 @@ export default function WorkspaceLayout() {
     const lastPart = parts[parts.length - 1]
     if (!lastPart || lastPart === workspaceId) return "Home"
     return lastPart.charAt(0).toUpperCase() + lastPart.slice(1)
+  }
+
+  const handleLeaveConfirm = () => {
+    if (!workspaceId) return
+    leaveWorkspaceMutation.mutate(workspaceId, {
+      onSuccess: () => {
+        setLeaveConfirmOpen(false)
+        toast.success("Successfully left the workspace.")
+        navigate("/dashboard")
+      },
+      onError: () => {
+        toast.error("Something went wrong. Please try again.")
+      },
+    })
   }
 
   const toggleTheme = () => {
@@ -244,6 +238,14 @@ export default function WorkspaceLayout() {
                 ))}
               </nav>
             </aside>
+              {/* Leave Workspace Button */}
+              <button
+                onClick={() => setLeaveConfirmOpen(true)}
+                className="text-xs bg-destructive text-muted hover:text-destructive px-2 py-1 rounded-md border border-border hover:bg-muted font-medium cursor-pointer transition-colors"
+                title="Leave Workspace"
+              >
+                Leave Workspace
+              </button>
           </div>
         )}
 
@@ -279,6 +281,14 @@ export default function WorkspaceLayout() {
               </NavLink>
             ))}
           </nav>
+            {/* Leave Workspace Button */}
+            <button
+              onClick={() => setLeaveConfirmOpen(true)}
+              className="text-xs bg-destructive text-muted hover:text-destructive px-2 py-1 rounded-md border border-border hover:bg-muted font-medium cursor-pointer transition-colors"
+              title="Leave Workspace"
+            >
+              Leave Workspace
+            </button>
         </aside>
 
         {/* Main Content Area */}
@@ -470,6 +480,37 @@ export default function WorkspaceLayout() {
       </div>
 
       <AssistantPanel isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
+
+      <Dialog open={leaveConfirmOpen} onOpenChange={setLeaveConfirmOpen}>
+        <DialogContent className="sm:max-w-md text-left select-none">
+          <DialogHeader>
+            <DialogTitle>Leave Workspace</DialogTitle>
+            <DialogDescription className="text-xs pt-1.5">
+              Are you sure you want to leave this workspace? You will lose access to all its documents, chat rooms, and files.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4 flex justify-end gap-2 flex-row">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLeaveConfirmOpen(false)}
+              disabled={leaveWorkspaceMutation.isPending}
+              className="cursor-pointer text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleLeaveConfirm}
+              disabled={leaveWorkspaceMutation.isPending}
+              className="cursor-pointer text-xs"
+            >
+              {leaveWorkspaceMutation.isPending ? "Leaving..." : "Leave Workspace"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DocumentTabsProvider>
   )
 }

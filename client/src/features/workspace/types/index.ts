@@ -17,6 +17,7 @@ export interface Workspace {
   ownerId: string
   createdAt: string
   members: WorkspaceMember[]
+  onlineCount?: number
 }
 
 export interface CreateWorkspaceData {
@@ -39,4 +40,5 @@ export interface WorkspaceService {
   createWorkspace(workspaceData: CreateWorkspaceData): Promise<CreateWorkspaceResponse>
   joinWorkspace(joinCode: string): Promise<JoinWorkspaceResponse>
   getWorkspace(workspaceId: string): Promise<Workspace>
+  leaveWorkspace(workspaceId: string): Promise<void>
 }

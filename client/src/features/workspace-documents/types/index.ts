@@ -1,14 +1,29 @@
 export interface WorkspaceDocument {
   id: string
-  name: string
-  lastEdited: string
-  lastEditedBy: string
-  createdAt: string
-  workspaceId: string
+  title: string
+  icon: string | null
+  updatedAt: string
+  createdAt?: string
+  createdBy: {
+    id: string
+    name: string
+  }
+}
+
+export interface CreateDocumentData {
+  title: string
+  icon?: string
+}
+
+export interface UpdateDocumentData {
+  title: string
+  icon?: string | null
 }
 
 export interface DocumentsService {
   getDocuments(workspaceId: string): Promise<WorkspaceDocument[]>
-  renameDocument(workspaceId: string, documentId: string, newName: string): Promise<WorkspaceDocument>
+  getDocument(workspaceId: string, documentId: string): Promise<any>
+  createDocument(workspaceId: string, data: CreateDocumentData): Promise<{ id: string }>
+  updateDocument( workspaceId: string, documentId: string, data: UpdateDocumentData): Promise<any>
   deleteDocument(workspaceId: string, documentId: string): Promise<void>
 }

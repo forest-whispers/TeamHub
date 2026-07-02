@@ -24,3 +24,14 @@ export function useJoinWorkspace() {
     },
   })
 }
+
+export function useLeaveWorkspace() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (workspaceId: string) => workspaceService.leaveWorkspace(workspaceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}

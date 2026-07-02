@@ -1,16 +1,16 @@
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { useWorkspaceDocuments, useRenameDocument, useDeleteDocument } from "../hooks/useWorkspaceDocuments"
+import { useWorkspaceDocuments, useUpdateDocument, useDeleteDocument } from "../hooks/useWorkspaceDocuments"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Skeleton } from "@/shared/components/ui/skeleton"
-import { CreateDocumentPlaceholderDialog } from "../components/CreateDocumentPlaceholderDialog"
+import { CreateDocumentDialog } from "../components/CreateDocumentDialog"
 import { RenameDocumentDialog } from "../components/RenameDocumentDialog"
 import { DeleteDocumentDialog } from "../components/DeleteDocumentDialog"
 import { useDocumentTabs } from "@/features/document-editor/context/DocumentTabsContext"
 import { toast } from "sonner"
-import type { WorkspaceDocument } from "../types"
+import type { UpdateDocumentData, WorkspaceDocument } from "../types"
 import {
   Search,
   Plus,
@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
 
-type SortOption = "lastEdited" | "name" | "createdAt"
+type SortOption = "updatedAt" | "title" | "createdAt"
 
 export default function WorkspaceDocuments() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
@@ -30,9 +30,9 @@ export default function WorkspaceDocuments() {
 
   // States
   const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState<SortOption>("lastEdited")
+  const [sortBy, setSortBy] = useState<SortOption>("updatedAt")
   const [createOpen, setCreateOpen] = useState(false)
-  const [renamingDocument, setRenamingDocument] = useState<WorkspaceDocument | null>(null)
+  const [UpdatingDocument, setUpdatingDocument] = useState<WorkspaceDocument | null>(null)
   const [deletingDocument, setDeletingDocument] = useState<WorkspaceDocument | null>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
   const [deleteDialogError, setDeleteDialogError] = useState<string | null>(null)
@@ -48,18 +48,18 @@ export default function WorkspaceDocuments() {
     refetch,
   } = useWorkspaceDocuments(workspaceId || "")
 
-  const { mutate: renameDocument, isPending: isRenaming } = useRenameDocument(workspaceId || "")
+  const { mutate: updateDocument, isPending: isUpdating } = useUpdateDocument(workspaceId || "")
   const { mutate: deleteDocument, isPending: isDeleting } = useDeleteDocument(workspaceId || "")
 
-  const handleRenameSubmit = (newName: string) => {
-    if (!renamingDocument) return
-    renameDocument(
-      { documentId: renamingDocument.id, newName },
+  const handleUpdateSubmit = (data: UpdateDocumentData) => {
+    if (!UpdatingDocument) return
+    updateDocument(
+      { documentId: UpdatingDocument.id, data },
       {
         onSuccess: (updatedDoc) => {
-          updateTabName(renamingDocument.id, updatedDoc.name)
+          updateTabName(UpdatingDocument.id, updatedDoc.name)
           toast.success("Document renamed successfully")
-          setRenamingDocument(null)
+          setUpdatingDocument(null)
           setDialogError(null)
         },
         onError: (err: any) => {
@@ -87,15 +87,15 @@ export default function WorkspaceDocuments() {
   // Search filtering
   const filteredDocs =
     documents?.filter((doc) =>
-      doc.name.toLowerCase().includes(searchQuery.toLowerCase())
+      doc.title.toLowerCase().includes(searchQuery.toLowerCase())
     ) || []
 
   // Client-side sorting
   const sortedDocs = [...filteredDocs].sort((a, b) => {
-    if (sortBy === "name") {
-      return a.name.localeCompare(b.name)
+    if (sortBy === "title") {
+      return a.title.localeCompare(b.title)
     } else if (sortBy === "createdAt") {
-      return b.createdAt.localeCompare(a.createdAt)
+      return b.title.localeCompare(a.title)
     } else {
       // Default: Last Edited. In mock data, doc-1 is newest, doc-3 is oldest.
       // We can sort by document ID to maintain the logical order of mock documents.
@@ -219,8 +219,15 @@ export default function WorkspaceDocuments() {
               <CardHeader className="pb-3 text-left">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base font-bold group-hover:text-primary transition-colors flex items-center gap-2 truncate flex-1 min-w-0">
-                    <FileText className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{doc.name}</span>
+                    {doc.icon ? (
+                      <img
+                        src={doc.icon}
+                        className="size-4 rounded"
+                      />
+                    ) : (
+                        <FileText className="size-4 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="truncate">{doc.title}</span>
                   </CardTitle>
                   <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity ml-auto">
                     <Button
@@ -229,7 +236,7 @@ export default function WorkspaceDocuments() {
                       className="text-[11px] h-6 px-2 cursor-pointer border border-transparent hover:border-border"
                       onClick={(e) => {
                         e.stopPropagation()
-                        setRenamingDocument(doc)
+                        setUpdatingDocument(doc)
                         setDialogError(null)
                       }}
                     >
@@ -250,15 +257,15 @@ export default function WorkspaceDocuments() {
                   </div>
                 </div>
                 <CardDescription className="text-xs truncate">
-                  Edited by {doc.lastEditedBy}
+                  Edited by {doc.createdBy.name}
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-[10px] text-muted-foreground border-t border-border/50 pt-3 flex justify-between items-center select-none uppercase font-semibold tracking-wider">
                 <span className="flex items-center gap-1">
-                  <Clock className="size-3" /> {doc.lastEdited}
+                  <Clock className="size-3" /> {doc.updatedAt}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="size-3" /> {doc.createdAt}
+                  <Calendar className="size-3" /> {doc.createdAt || doc.updatedAt}
                 </span>
               </CardContent>
             </Card>
@@ -267,20 +274,27 @@ export default function WorkspaceDocuments() {
       )}
 
       {/* Placeholder dialog */}
-      <CreateDocumentPlaceholderDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateDocumentDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        workspaceId={workspaceId || ""}
+        onSuccess={(doc) => {
+          navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
+        }}
+      />
 
       {/* Rename dialog */}
       <RenameDocumentDialog
-        open={renamingDocument !== null}
+        open={UpdatingDocument !== null}
         onOpenChange={(open) => {
           if (!open) {
-            setRenamingDocument(null)
+            setUpdatingDocument(null)
             setDialogError(null)
           }
         }}
-        currentName={renamingDocument?.name || ""}
-        onRename={handleRenameSubmit}
-        isPending={isRenaming}
+        currentTitle={UpdatingDocument?.title || ""}
+        onUpdate={handleUpdateSubmit}
+        isPending={isUpdating}
         errorMsg={dialogError}
       />
 
@@ -293,7 +307,7 @@ export default function WorkspaceDocuments() {
             setDeleteDialogError(null)
           }
         }}
-        documentName={deletingDocument?.name || ""}
+        documentName={deletingDocument?.title || ""}
         onConfirm={handleDeleteSubmit}
         isPending={isDeleting}
         errorMsg={deleteDialogError}
@@ -301,4 +315,3 @@ export default function WorkspaceDocuments() {
     </div>
   )
 }
-

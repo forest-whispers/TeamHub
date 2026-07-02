@@ -1,7 +1,8 @@
 import type { SearchResult } from "../types"
 import { getMockDocuments } from "@/features/workspace-documents/mock/mockDocuments"
-import { getMockWorkspaceMembers } from "@/features/workspace-members/mock/mockWorkspaceMembers"
-import { getMockWorkspaces } from "@/features/dashboard/mock/mockDashboard"
+
+const getMockWorkspaceMembers = async (_workspaceId: string): Promise<any[]> => []
+const getMockWorkspaces = async (): Promise<any[]> => []
 
 // Static settings items definition
 const SETTINGS_ITEMS = [
@@ -98,7 +99,7 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
   const results: SearchResult[] = []
 
   // 1. Filter and map Documents
-  documents.forEach((doc) => {
+  documents.forEach((doc: any) => {
     const keywords = [doc.name.toLowerCase(), doc.lastEditedBy.toLowerCase(), "document", "editor"]
     const matches =
       doc.name.toLowerCase().includes(normalizedQuery) ||
@@ -119,7 +120,7 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
   })
 
   // 2. Filter and map Members
-  members.forEach((member) => {
+  members.forEach((member: any) => {
     const keywords = [member.name.toLowerCase(), member.email.toLowerCase(), member.role.toLowerCase(), "member", "user"]
     const matches =
       member.name.toLowerCase().includes(normalizedQuery) ||
@@ -141,7 +142,7 @@ export async function mockGlobalSearch(workspaceId: string, query: string): Prom
   })
 
   // 3. Filter and map Workspaces
-  workspaces.forEach((ws) => {
+  workspaces.forEach((ws: any) => {
     const keywords = [ws.name.toLowerCase(), ws.description?.toLowerCase() || "", "workspace", "team"]
     const matches =
       ws.name.toLowerCase().includes(normalizedQuery) ||

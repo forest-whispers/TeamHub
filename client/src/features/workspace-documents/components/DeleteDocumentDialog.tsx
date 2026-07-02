@@ -59,7 +59,7 @@ export function DeleteDocumentDialog({
             size="sm"
             disabled={isPending}
             onClick={onConfirm}
-            className="cursor-pointer min-w-[80px] flex items-center justify-center"
+            className="cursor-pointer min-w-20 flex items-center justify-center"
           >
             {isPending && <Loader2 className="size-3.5 animate-spin shrink-0 mr-1.5" />}
             Confirm

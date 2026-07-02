@@ -333,7 +333,14 @@ export default function WorkspaceHome() {
       </div>
 
       {/* Action dialog modals */}
-      <NewDocumentDialog open={newDocOpen} onOpenChange={setNewDocOpen} />
+      <NewDocumentDialog
+        open={newDocOpen}
+        onOpenChange={setNewDocOpen}
+        workspaceId={workspaceId!}
+        onSuccess={(doc) => {
+          navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
+        }}
+      />
       <InviteMembersDialog open={inviteOpen} onOpenChange={setInviteOpen} inviteCode={workspace?.inviteCode} workspaceId={workspace?.id} />
     </div>
   )

@@ -1,31 +1,32 @@
-import type { DocumentsService, WorkspaceDocument } from "../types"
-import { getMockDocuments, renameMockDocument, deleteMockDocument } from "../mock/mockDocuments"
-
-const USE_MOCK = true
+import api from "@/shared/lib/api"
+import type { DocumentsService, CreateDocumentData, UpdateDocumentData } from "../types"
 
 export const documentsService: DocumentsService = {
-  getDocuments: async (workspaceId: string): Promise<WorkspaceDocument[]> => {
-    if (USE_MOCK) {
-      return getMockDocuments(workspaceId)
-    }
-    throw new Error("Live documents retrieval endpoint not integrated.")
+  getDocuments: async (workspaceId) => {
+    const { data } = await api.get(`/workspaces/${workspaceId}/documents`)
+    return data
   },
 
-  renameDocument: async (
-    workspaceId: string,
-    documentId: string,
-    newName: string
-  ): Promise<WorkspaceDocument> => {
-    if (USE_MOCK) {
-      return renameMockDocument(workspaceId, documentId, newName)
-    }
-    throw new Error("Live document renaming endpoint not integrated.")
+  getDocument: async (workspaceId, documentId) => {
+    //later
+    throw new Error("later")
+  },
+
+  createDocument: async (workspaceId: string, data: CreateDocumentData): Promise<{ id: string }> => {
+    const response = await api.post(`/workspaces/${workspaceId}/documents`, {
+      title: data.title,
+      icon: data.icon,
+    })
+    return response.data
+  },
+
+  updateDocument: async ( workspaceId: string, documentId: string, data: UpdateDocumentData): Promise<any> => {
+    // later
+    throw new Error("Not implemented yet")
   },
 
   deleteDocument: async (workspaceId: string, documentId: string): Promise<void> => {
-    if (USE_MOCK) {
-      return deleteMockDocument(workspaceId, documentId)
-    }
-    throw new Error("Live document deletion endpoint not integrated.")
+    // later
+    throw new Error("Not implemented yet")
   },
 }

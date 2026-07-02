@@ -4,12 +4,13 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
 import { Loader2, AlertCircle } from "lucide-react"
+import type { UpdateDocumentData } from "../types"
 
 interface RenameDocumentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentName: string
-  onRename: (newName: string) => void
+  currentTitle: string
+  onUpdate: (data: UpdateDocumentData) => void
   isPending: boolean
   errorMsg: string | null
 }
@@ -17,24 +18,24 @@ interface RenameDocumentDialogProps {
 export function RenameDocumentDialog({
   open,
   onOpenChange,
-  currentName,
-  onRename,
+  currentTitle,
+  onUpdate,
   isPending,
   errorMsg,
 }: RenameDocumentDialogProps) {
-  const [name, setName] = useState(currentName)
+  const [name, setName] = useState(currentTitle)
 
   // Sync state with prop when dialog opens
   useEffect(() => {
     if (open) {
-      setName(currentName)
+      setName(currentTitle)
     }
-  }, [open, currentName])
+  }, [open, currentTitle])
 
   const trimmedName = name.trim()
   const isNameEmpty = trimmedName.length === 0
   const isNameTooLong = trimmedName.length > 100
-  const isUnchanged = trimmedName === currentName.trim()
+  const isUnchanged = trimmedName === currentTitle.trim()
 
   const isValid = !isNameEmpty && !isNameTooLong
   const canSave = isValid && !isUnchanged && !isPending
@@ -42,7 +43,7 @@ export function RenameDocumentDialog({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
     if (!canSave) return
-    onRename(trimmedName)
+    onUpdate({title: trimmedName})
   }
 
   return (
@@ -100,7 +101,7 @@ export function RenameDocumentDialog({
               type="submit"
               size="sm"
               disabled={!canSave}
-              className="cursor-pointer min-w-[70px] flex items-center justify-center"
+              className="cursor-pointer min-w-17.5 flex items-center justify-center"
             >
               {isPending && <Loader2 className="size-3.5 animate-spin shrink-0 mr-1.5" />}
               Save

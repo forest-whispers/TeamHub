@@ -17,8 +17,8 @@ router.use("/auth", authRouter);
 
 router.use("/users", userRouter);
 
+router.use("/workspaces/:workspaceId/members", memberRouter);
+
+router.use("/workspaces/:workspaceId/documents", documentRouter);
+
 router.use("/workspaces", workspaceRouter);
-
-router.use("/:workspaceId/members", memberRouter);
-
-router.use("/:workspaceId/documents", documentRouter);

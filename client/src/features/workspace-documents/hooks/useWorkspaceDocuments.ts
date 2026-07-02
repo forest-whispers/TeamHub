@@ -1,21 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { documentsService } from "../services/documentsService"
-import type { WorkspaceDocument } from "../types"
+import type { UpdateDocumentData, WorkspaceDocument } from "../types"
 
 export function useWorkspaceDocuments(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-documents", workspaceId],
     queryFn: () => documentsService.getDocuments(workspaceId),
     enabled: !!workspaceId,
-    staleTime: 1000 * 60 * 2, // 2 minutes cache
+    staleTime: 1000 * 60 * 2,
   })
 }
 
-export function useRenameDocument(workspaceId: string) {
+export function useCreateDocument(workspaceId: string) {
+  return useMutation({
+    mutationFn: (data: { title: string; icon?: string }) =>
+      documentsService.createDocument(workspaceId, data),
+  })
+}
+
+export function useUpdateDocument(workspaceId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ documentId, newName }: { documentId: string; newName: string }) =>
-      documentsService.renameDocument(workspaceId, documentId, newName),
+    mutationFn: ({ documentId, data }: { documentId: string; data: UpdateDocumentData }) =>
+      documentsService.updateDocument(workspaceId, documentId, data),
     onSuccess: (updatedDoc) => {
       // Update cache directly using setQueryData to avoid unnecessary refetches
       queryClient.setQueryData<WorkspaceDocument[]>(
@@ -51,4 +58,3 @@ export function useDeleteDocument(workspaceId: string) {
     },
   })
 }
-
