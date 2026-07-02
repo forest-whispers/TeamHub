@@ -7,6 +7,7 @@ import {
   useDeleteWorkspace,
   useRegenerateInviteCode,
 } from "../hooks/useWorkspaceSettings"
+import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
 import { GeneralSettingsSection } from "../components/GeneralSettingsSection"
 import { MembersSettingsSection } from "../components/MembersSettingsSection"
 import { PreferencesSettingsSection } from "../components/PreferencesSettingsSection"
@@ -25,6 +26,8 @@ export default function WorkspaceSettings() {
   // Danger Zone dialog trigger states
   const [leaveOpen, setLeaveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+
+  const leaveWorkspaceMutation = useLeaveWorkspace()
 
   // Fetch Settings
   const {
@@ -101,6 +104,20 @@ export default function WorkspaceSettings() {
     if (formState) {
       setFormState({ ...formState, ...fields })
     }
+  }
+
+  const handleLeaveWorkspace = () => {
+    if (!workspaceId) return
+    leaveWorkspaceMutation.mutate(workspaceId, {
+      onSuccess: () => {
+        setLeaveOpen(false)
+        toast.success("Successfully left the workspace.")
+        navigate("/dashboard")
+      },
+      onError: () => {
+        toast.error("Something went wrong. Please try again.")
+      },
+    })
   }
 
   const handleDeleteWorkspace = () => {
@@ -183,7 +200,7 @@ export default function WorkspaceSettings() {
         </div>
       ) : !formState ? (
         /* Empty/Unavailable state */
-        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-[300px]">
+        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-75">
           <Settings className="size-12 text-muted-foreground/60 mb-3" />
           <h3 className="text-sm font-bold text-foreground">Settings data unavailable</h3>
           <p className="text-xs text-muted-foreground max-w-xs mt-1 leading-relaxed">
@@ -227,7 +244,7 @@ export default function WorkspaceSettings() {
 
           {/* Unsaved Changes Sticky Banner */}
           {hasChanges && (
-            <div className="fixed bottom-6 left-6 md:left-[280px] right-6 max-w-4xl mx-auto bg-card border border-border/80 rounded-xl px-4 py-3 flex items-center justify-between shadow-xl z-35 animate-in slide-in-from-bottom duration-200">
+            <div className="fixed bottom-6 left-6 md:left-70 right-6 max-w-4xl mx-auto bg-card border border-border/80 rounded-xl px-4 py-3 flex items-center justify-between shadow-xl z-35 animate-in slide-in-from-bottom duration-200">
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-xs font-semibold text-foreground">
@@ -267,7 +284,7 @@ export default function WorkspaceSettings() {
         description="Are you sure you want to leave this workspace? You will lose access to all collaborative documents, files, and chat rooms. This is a structural placeholder and no action will be executed."
         confirmText="Leave Workspace"
         variant="destructive"
-        onConfirm={() => toast.success("Leave workspace action confirmed (placeholder)")}
+        onConfirm={handleLeaveWorkspace}
       />
 
       <ConfirmationDialog

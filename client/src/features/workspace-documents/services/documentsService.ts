@@ -21,12 +21,14 @@ export const documentsService: DocumentsService = {
   },
 
   updateDocument: async ( workspaceId: string, documentId: string, data: UpdateDocumentData): Promise<any> => {
-    // later
-    throw new Error("Not implemented yet")
+    const response = await api.patch(`/workspaces/${workspaceId}/documents/${documentId}`, {
+      title: data.title,
+      icon: data.icon,
+    })
+    return response.data
   },
 
   deleteDocument: async (workspaceId: string, documentId: string): Promise<void> => {
-    // later
-    throw new Error("Not implemented yet")
+    await api.delete(`/workspaces/${workspaceId}/documents/${documentId}`)
   },
 }

@@ -83,7 +83,12 @@ export const updateDocument = async ( requesterId: string, workspaceId: string, 
             icon: true,
             content: true,
             workspaceId: true,
-            createdById: true,
+            createdBy: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            },
             createdAt: true,
             updatedAt: true,
         },

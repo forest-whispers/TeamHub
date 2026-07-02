@@ -47,7 +47,7 @@ export function useDeleteWorkspace(workspaceId: string) {
   return useMutation({
     mutationFn: () => workspaceSettingsService.deleteWorkspace(workspaceId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }

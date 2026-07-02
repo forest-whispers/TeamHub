@@ -8,6 +8,7 @@ export function useLogout() {
     mutationFn: () => authService.logout(),
     onSuccess: () => {
       queryClient.setQueryData(["auth-status"], { isAuthenticated: false })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
     onError: () => {
       // Fallback: clear status anyway on failure to prevent blockages
