@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useParams } from "react-router-dom"
-import { useWorkspaceMembers, useWorkspaceMemberDetails } from "../hooks/useWorkspaceMembers"
+import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
 import { InviteMembersDialog } from "../components/InviteMembersDialog"
 import { MemberDetailsPanel } from "../components/MemberDetailsPanel"
 import type { WorkspaceMember } from "../types"
@@ -20,18 +20,44 @@ export default function WorkspaceMembers() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
 
   const {
-    data: members,
+    data: workspace,
     isLoading,
     error,
     refetch,
-  } = useWorkspaceMembers(workspaceId || "")
+  } = useWorkspace(workspaceId || "")
 
-  const {
-    data: memberDetails,
-    isLoading: isDetailsLoading,
-    error: detailsError,
-    refetch: refetchDetails,
-  } = useWorkspaceMemberDetails(workspaceId || "", selectedMemberId || "")
+  const members = useMemo(() => {
+    return (
+      workspace?.members.map((m) => ({
+        id: m.id,
+        name: m.name,
+        email: m.email,
+        role: m.role,
+        avatar: m.avatar ?? undefined,
+      })) ?? []
+    )
+  }, [workspace])
+
+  const memberDetails = useMemo(() => {
+    if (!selectedMemberId) return null
+
+    const member = workspace?.members.find(
+      (m) => m.id === selectedMemberId
+    )
+
+    if (!member) return null
+
+    return {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      role: member.role,
+      avatar: member.avatar ?? undefined,
+      joinedDate: member.joinedAt
+        ? new Date(member.joinedAt).toLocaleDateString()
+        : undefined,
+    }
+  }, [workspace, selectedMemberId])
 
   // Unique roles extraction from loaded members for filter dropdown options
   const roleOptions = useMemo(() => {
@@ -199,7 +225,7 @@ export default function WorkspaceMembers() {
         <>
           {filteredMembers.length === 0 ? (
             /* Empty State layout */
-            <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-[300px]">
+            <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-75">
               {members.length === 0 ? (
                 <>
                   <Users2 className="size-12 text-muted-foreground/60 mb-3" />
@@ -282,7 +308,7 @@ export default function WorkspaceMembers() {
                       {/* Role indicator badge */}
                       <div className="pt-1 flex items-center gap-1 select-none">
                         <Shield className="size-3 text-primary/75 shrink-0" />
-                        <span className="text-[10px] font-bold text-primary bg-primary/5 border border-primary/10 rounded px-1.5 py-0.25 leading-none">
+                        <span className="text-[10px] font-bold text-primary bg-primary/5 border border-primary/10 rounded px-1.5 py-px leading-none">
                           {member.role}
                         </span>
                       </div>
@@ -296,7 +322,7 @@ export default function WorkspaceMembers() {
       )}
 
       {/* Invite overlay Dialog container */}
-      <InviteMembersDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <InviteMembersDialog open={inviteOpen} onOpenChange={setInviteOpen} inviteCode={workspace?.inviteCode} workspaceId={workspace?.id} />
 
       {/* Member Details side panel */}
       <MemberDetailsPanel
@@ -304,10 +330,10 @@ export default function WorkspaceMembers() {
         onOpenChange={(open) => {
           if (!open) setSelectedMemberId(null)
         }}
-        isLoading={isDetailsLoading}
-        error={detailsError}
+        isLoading={false}
+        error={false}
         memberDetails={memberDetails || null}
-        onRetry={refetchDetails}
+        onRetry={refetch}
         onSendMessage={() => toast.success("Send Message is a placeholder action.")}
         onViewActivity={() => toast.success("View Activity is a placeholder action.")}
       />

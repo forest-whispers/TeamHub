@@ -334,7 +334,7 @@ export default function WorkspaceHome() {
 
       {/* Action dialog modals */}
       <NewDocumentDialog open={newDocOpen} onOpenChange={setNewDocOpen} />
-      <InviteMembersDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <InviteMembersDialog open={inviteOpen} onOpenChange={setInviteOpen} inviteCode={workspace?.inviteCode} workspaceId={workspace?.id} />
     </div>
   )
 }
