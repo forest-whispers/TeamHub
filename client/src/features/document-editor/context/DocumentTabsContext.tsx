@@ -1,10 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 
 export interface TabMetadata {
   id: string
   title: string
   workspaceId: string
+  content?: any
+  savedContent?: any
+  isDirty?: boolean
 }
 
 interface DocumentTabsContextType {
@@ -13,6 +16,7 @@ interface DocumentTabsContextType {
   openTab: (id: string, title: string, workspaceId: string) => void
   closeTab: (id: string) => void
   updateTabName: (id: string, title: string) => void
+  updateTabContent: (id: string, content: any, savedContent: any, isDirty: boolean) => void
 }
 
 const DocumentTabsContext = createContext<DocumentTabsContextType | undefined>(undefined)
@@ -30,22 +34,28 @@ export function DocumentTabsProvider({ children }: { children: React.ReactNode }
     setActiveTabId(null)
   }, [workspaceId])
 
-  const openTab = (id: string, title: string, workspaceId: string) => {
+  const openTab = useCallback((id: string, title: string, workspaceId: string) => {
     setOpenTabs((prev) => {
       const exists = prev.some((tab) => tab.id === id)
       if (exists) return prev
       return [...prev, { id, title, workspaceId }]
     })
     setActiveTabId(id)
-  }
+  }, [])
 
-  const updateTabName = (id: string, title: string) => {
+  const updateTabName = useCallback((id: string, title: string) => {
     setOpenTabs((prev) =>
       prev.map((tab) => (tab.id === id ? { ...tab, title } : tab))
     )
-  }
+  }, [])
 
-  const closeTab = (id: string) => {
+  const updateTabContent = useCallback((id: string, content: any, savedContent: any, isDirty: boolean) => {
+    setOpenTabs((prev) =>
+      prev.map((tab) => (tab.id === id ? { ...tab, content, savedContent, isDirty } : tab))
+    )
+  }, [])
+
+  const closeTab = useCallback((id: string) => {
     setOpenTabs((prev) => {
       const tabIndex = prev.findIndex((tab) => tab.id === id)
       if (tabIndex === -1) return prev
@@ -82,10 +92,10 @@ export function DocumentTabsProvider({ children }: { children: React.ReactNode }
 
       return nextTabs
     })
-  }
+  }, [activeTabId, location.pathname, navigate])
 
   return (
-    <DocumentTabsContext.Provider value={{ openTabs, activeTabId, openTab, closeTab, updateTabName }}>
+    <DocumentTabsContext.Provider value={{ openTabs, activeTabId, openTab, closeTab, updateTabName, updateTabContent }}>
       {children}
     </DocumentTabsContext.Provider>
   )

@@ -5,6 +5,7 @@ import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
 import type { WorkspaceDocument } from "../types"
 import { useUpdateDocumentContent } from "../hooks/useUpdateDocumentContent"
+import { useDocumentTabs } from "../context/DocumentTabsContext"
 import { toast } from "sonner"
 
 interface TiptapEditorProps {
@@ -13,18 +14,20 @@ interface TiptapEditorProps {
 }
 
 export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
-  const [savedContent, setSavedContent] = useState(documentData.content)
-  const [isDirty, setIsDirty] = useState(false)
+  const { openTabs, updateTabContent } = useDocumentTabs()
+  const currentTab = openTabs.find((t) => t.id === documentData.id)
+  const initialContent = currentTab?.content ?? documentData.content
+  const initialSavedContent = currentTab?.savedContent ?? documentData.content
+  const initialIsDirty = currentTab?.isDirty ?? false
+
+  const [savedContent, setSavedContent] = useState(initialSavedContent)
+  const [isDirty, setIsDirty] = useState(initialIsDirty)
 
   const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const editor = useEditor({
     extensions: [StarterKit],
-    // content: documentData?.content ? {
-    //   type: "doc",
-    //   content: documentData.content,
-    // } : null,
-    content: documentData.content,
+    content: initialContent,
     editorProps: {
       attributes: {
         class:
@@ -33,61 +36,88 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
     },
     onUpdate: ({ editor }) => {
       const currentJSON = editor.getJSON()
-      setIsDirty(JSON.stringify(currentJSON) !== JSON.stringify(savedContent))
+      const dirty = JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current)
+      setIsDirty(dirty)
+      updateTabContent(documentData.id, currentJSON, savedContent, dirty)
     },
   })
 
-  // Keep lastSavedContent in sync if documentData.content changes from parent
-  // useEffect(() => {
-  //   console.log("documentData.content changed");
-  //   setSavedContent(documentData.content)
-  //   setIsDirty(false)
-  // }, [documentData.content])
+  // Maintain refs of variables to access them in the unmount cleanup correctly
+  const editorRef = useRef(editor)
+  const isDirtyRef = useRef(isDirty)
+  const savedContentRef = useRef(initialSavedContent)
+  const documentIdRef = useRef(documentData.id)
+  const workspaceIdRef = useRef(workspaceId)
 
-  // useEffect(() => {
-  //   if (!editor) return;
-  //   if (!documentData.content) return;
-
-  //   editor.commands.setContent(documentData.content)
-  //   setSavedContent(documentData.content);
-  //   setIsDirty(false);
-  // }, [documentData.id, editor]);
-
-  // Update dirty check if lastSavedContent changes
   useEffect(() => {
-    if (editor) {
-      const currentJSON = editor.getJSON()
-      setIsDirty(JSON.stringify(currentJSON) !== JSON.stringify(savedContent))
-    }
-  }, [savedContent, editor])
+    editorRef.current = editor
+  }, [editor])
 
-  const { mutate: saveContent, isPending: isSaving } = useUpdateDocumentContent(
-    workspaceId,
-    documentData.id
-  )
+  useEffect(() => {
+    isDirtyRef.current = isDirty
+  }, [isDirty])
+
+  useEffect(() => {
+    savedContentRef.current = savedContent
+  }, [savedContent])
+
+  useEffect(() => {
+    documentIdRef.current = documentData.id
+  }, [documentData.id])
+
+  useEffect(() => {
+    workspaceIdRef.current = workspaceId
+  }, [workspaceId])
+
+  const { mutate: saveContent, isPending: isSaving } = useUpdateDocumentContent()
+
+  // Save on unmount if dirty
+  useEffect(() => {
+    return () => {
+      if (isDirtyRef.current && editorRef.current) {
+        const content = editorRef.current.getJSON()
+        const docId = documentIdRef.current
+        
+        // Background fire-and-forget save
+        saveContent(
+          {
+            workspaceId: workspaceIdRef.current,
+            documentId: documentIdRef.current,
+            content,
+          },
+          {
+            onSuccess: () => {
+              updateTabContent(docId, content, content, false)
+            }})
+      }
+    }
+  }, [updateTabContent])
 
   const handleSave = useCallback(() => {
     if (!editor || isSaving) return
-    // if (!editor) return
-    // if (isSaving || !isDirty) return
     const content = editor.getJSON()
 
-    const hasChanges =
-      JSON.stringify(content) !== JSON.stringify(savedContent)
+    if (!isDirty) return
 
-    if (!hasChanges) return
-
-    saveContent(content, {
-      onSuccess: () => {
-        setSavedContent(content)
-        setIsDirty(false)
-        toast.success("Document saved successfully!")
+    saveContent(
+      {
+        workspaceId: workspaceIdRef.current,
+        documentId: documentIdRef.current,
+        content,
       },
-      onError: (err) => {
-        toast.error(err instanceof Error ? err.message : "Failed to save document")
-      },
-    })
-  }, [editor, saveContent, savedContent, isSaving])
+      {
+        onSuccess: () => {
+          setSavedContent(content)
+          setIsDirty(false)
+          updateTabContent(documentData.id, content, content, false)
+          toast.success("Document saved successfully!")
+        },
+        onError: (err) => {
+          toast.error(err instanceof Error ? err.message : "Failed to save document")
+        },
+      }
+    )
+  }, [editor, saveContent, savedContent, isSaving, workspaceId, documentData.id, updateTabContent])
 
   // Ctrl+S / Cmd+S handler
   useEffect(() => {
@@ -103,6 +133,7 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
     }
   }, [handleSave])
 
+  // Autosave timeout effect
   useEffect(() => {
     if (!isDirty) return
 
