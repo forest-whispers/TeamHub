@@ -10,7 +10,5 @@ export const updateDocumentSchema = z.object({
 });
 
 export const updateDocumentContentValidator = z.object({
-    body: z.object({
-        content: z.any(),
-    }),
+    content: z.any(),
 });

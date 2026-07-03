@@ -29,6 +29,11 @@ export const documentsService: DocumentsService = {
     return response.data
   },
 
+  updateDocumentContent: async (workspaceId: string, documentId: string, content: any): Promise<any> => {
+    const response = await api.patch(`/workspaces/${workspaceId}/documents/${documentId}/content`, { content })
+    return response.data
+  },
+
   deleteDocument: async (workspaceId: string, documentId: string): Promise<void> => {
     await api.delete(`/workspaces/${workspaceId}/documents/${documentId}`)
   },

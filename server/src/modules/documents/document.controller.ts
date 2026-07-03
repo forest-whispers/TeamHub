@@ -20,7 +20,7 @@ export const updateDocumentController = asyncHandler(async (req: Request, res: R
 
 export async function updateDocumentContentController(req: Request, res: Response) {
 
-    const document = updateDocumentContent( req.user!.id, req.params.workspaceId, req.params.documentId, req.body);
+    const document = await updateDocumentContent( req.user!.id, req.params.workspaceId, req.params.documentId, req.body.content);
 
     res.json(document);
   }

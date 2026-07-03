@@ -32,6 +32,7 @@ export function useUpdateDocument(workspaceId: string) {
           return old.map((doc) => (doc.id === updatedDoc.id ? updatedDoc : doc))
         }
       )
+      queryClient.invalidateQueries({ queryKey: ["document-detail"] })
     },
   })
 }
@@ -50,6 +51,7 @@ export function useDeleteDocument(workspaceId: string) {
           return old.filter((doc) => doc.id !== documentId)
         }
       )
+      queryClient.invalidateQueries({ queryKey: ["document-detail"] })
 
       // Clean up any details cache queries matching this document ID
       queryClient.removeQueries({

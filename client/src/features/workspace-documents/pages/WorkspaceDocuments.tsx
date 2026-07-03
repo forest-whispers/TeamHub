@@ -38,7 +38,7 @@ export default function WorkspaceDocuments() {
   const [deleteDialogError, setDeleteDialogError] = useState<string | null>(null)
 
   // Context & Hooks
-  const { updateTabName, closeTab } = useDocumentTabs()
+  const { updateTabName, closeTab, openTab } = useDocumentTabs()
 
   // Queries & Mutations
   const {
@@ -57,7 +57,7 @@ export default function WorkspaceDocuments() {
       { documentId: UpdatingDocument.id, data },
       {
         onSuccess: (updatedDoc) => {
-          updateTabName(UpdatingDocument.id, updatedDoc.name)
+          updateTabName(UpdatingDocument.id, updatedDoc.title)
           toast.success("Document renamed successfully")
           setUpdatingDocument(null)
           setDialogError(null)
@@ -211,6 +211,7 @@ export default function WorkspaceDocuments() {
                 // Navigate on Enter or Space, but NOT if the focus is on the Rename button itself!
                 if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
                   e.preventDefault()
+                  openTab(doc.id, doc.title, workspaceId || "")
                   navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
                 }
               }}

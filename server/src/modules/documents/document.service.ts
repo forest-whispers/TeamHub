@@ -51,7 +51,7 @@ export const getDocument = async (requesterId: string, workspaceId: string, docu
 
     const document = await ensureDocumentInWorkspace(workspaceId, documentId);
 
-    return prisma.document.findUniqueOrThrow({
+    const doc = await prisma.document.findUniqueOrThrow({
         where: { id: document.id },
         select: {
             id: true,
@@ -69,6 +69,15 @@ export const getDocument = async (requesterId: string, workspaceId: string, docu
             },
         },
     });
+
+    return doc
+
+    // const documentJson = doc.content as any;
+    // const innerContent = documentJson?.content || [];
+
+    // return {
+    //     ...doc, content: innerContent
+    // }
 };
 
 export const updateDocument = async ( requesterId: string, workspaceId: string, documentId: string, data: UpdateDocumentDto) => {
@@ -98,7 +107,7 @@ export const updateDocument = async ( requesterId: string, workspaceId: string, 
 };
 
 export async function updateDocumentContent( requesterId: string, workspaceId: string, documentId: string, content: any) {
-    await ensureWorkspaceMember(workspaceId, requesterId);
+    await ensureWorkspaceMember(requesterId, workspaceId);
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
 

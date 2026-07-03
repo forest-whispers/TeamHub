@@ -22,7 +22,7 @@ export default function WorkspaceDocumentEditor() {
   // Register open tab metadata once document is successfully resolved
   useEffect(() => {
     if (documentDetail) {
-      openTab(documentDetail.id, documentDetail.name, documentDetail.workspaceId)
+      openTab(documentDetail.id, documentDetail.title, documentDetail.workspaceId)
     }
   }, [documentDetail, openTab])
 
@@ -73,7 +73,7 @@ export default function WorkspaceDocumentEditor() {
 
       {/* Query-gated Editor Instance */}
       {!isLoading && !error && documentDetail && (
-        <TiptapEditor key={documentDetail.id} documentData={documentDetail} />
+        <TiptapEditor key={documentDetail.id} documentData={documentDetail} workspaceId={workspaceId || ""} />
       )}
     </div>
   )

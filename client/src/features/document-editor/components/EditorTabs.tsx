@@ -9,7 +9,7 @@ export function EditorTabs() {
   if (openTabs.length === 0) return null
 
   return (
-    <div className="flex border-b border-border bg-muted/40 overflow-x-auto select-none scrollbar-none shrink-0 h-10 text-left">
+    <div className="flex border-b border-border bg-muted/40 overflow-x-auto select-none scrollbar-none shrink-0 h-8 text-left">
       {openTabs.map((tab) => {
         const isActive = tab.id === activeTabId
         return (

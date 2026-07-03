@@ -36,6 +36,7 @@ import {
 export default function WorkspaceLayout() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
   const location = useLocation()
+  const isDocumentDetailPage = /^\/workspace\/[^/]+\/documents\/[^/]+$/.test(location.pathname)
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
   const { setIsOpen } = useCommandPalette()
@@ -294,15 +295,17 @@ export default function WorkspaceLayout() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden bg-background relative flex flex-col h-full">
           {/* Breadcrumb Header */}
-          <div className="h-12 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-medium hover:text-foreground transition-colors cursor-pointer">
-                {workspaceName}
-              </span>
-              <span className="text-border text-xs">/</span>
-              <span className="font-semibold text-foreground">{getActiveModuleName()}</span>
+          {!isDocumentDetailPage && (
+            <div className="h-12 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-medium hover:text-foreground transition-colors cursor-pointer">
+                  {workspaceName}
+                </span>
+                <span className="text-border text-xs">/</span>
+                <span className="font-semibold text-foreground">{getActiveModuleName()}</span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Module Content Viewport */}
           <div className="flex-1 overflow-y-auto h-full">

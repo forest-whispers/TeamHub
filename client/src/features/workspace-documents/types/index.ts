@@ -26,4 +26,5 @@ export interface DocumentsService {
   createDocument(workspaceId: string, data: CreateDocumentData): Promise<{ id: string }>
   updateDocument( workspaceId: string, documentId: string, data: UpdateDocumentData): Promise<any>
   deleteDocument(workspaceId: string, documentId: string): Promise<void>
+  updateDocumentContent(workspaceId: string, documentId: string, content: any): Promise<any>
 }
