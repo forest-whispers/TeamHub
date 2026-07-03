@@ -4,6 +4,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom"
 export interface TabMetadata {
   id: string
   title: string
+  icon?: string | null
   workspaceId: string
   content?: any
   savedContent?: any
@@ -13,7 +14,7 @@ export interface TabMetadata {
 interface DocumentTabsContextType {
   openTabs: TabMetadata[]
   activeTabId: string | null
-  openTab: (id: string, title: string, workspaceId: string) => void
+  openTab: (id: string, title: string, workspaceId: string, icon?: string | null) => void
   closeTab: (id: string) => void
   updateTabName: (id: string, title: string) => void
   updateTabContent: (id: string, content: any, savedContent: any, isDirty: boolean) => void
@@ -34,11 +35,11 @@ export function DocumentTabsProvider({ children }: { children: React.ReactNode }
     setActiveTabId(null)
   }, [workspaceId])
 
-  const openTab = useCallback((id: string, title: string, workspaceId: string) => {
+  const openTab = useCallback((id: string, title: string, workspaceId: string, icon?: string | null) => {
     setOpenTabs((prev) => {
       const exists = prev.some((tab) => tab.id === id)
       if (exists) return prev
-      return [...prev, { id, title, workspaceId }]
+      return [...prev, { id, title, workspaceId, icon }]
     })
     setActiveTabId(id)
   }, [])

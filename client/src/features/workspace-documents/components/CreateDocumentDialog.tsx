@@ -35,6 +35,8 @@ export function CreateDocumentDialog({ open, onOpenChange, workspaceId, onSucces
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<DocumentFormData>({
     resolver: zodResolver(documentSchema),
     defaultValues: {
@@ -42,6 +44,8 @@ export function CreateDocumentDialog({ open, onOpenChange, workspaceId, onSucces
       icon: "",
     },
   })
+
+  const selectedIcon = watch("icon")
 
   const onSubmit = (data: DocumentFormData) => {
     if (!activeWorkspaceId) {
@@ -101,15 +105,30 @@ export function CreateDocumentDialog({ open, onOpenChange, workspaceId, onSucces
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="document-icon">Document Icon (optional)</Label>
-            <Input
-              id="document-icon"
-              type="text"
-              placeholder="e.g. 📄, 📝, or image URL"
-              disabled={isPending}
-              {...register("icon")}
-            />
+          <div className="space-y-2">
+            <Label>Document Icon (optional)</Label>
+            <div className="flex flex-wrap gap-2">
+              {["📄", "📝", "📚", "📊", "🚀", "💡", "🧪", "⚙️", "💬", "📌"].map((emoji) => {
+                const isSelected = selectedIcon === emoji
+                return (
+                  <button
+                    key={emoji}
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => {
+                      setValue("icon", isSelected ? "" : emoji)
+                    }}
+                    className={`size-8 flex items-center justify-center text-lg rounded-md border transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-primary bg-primary/10 scale-105"
+                        : "border-border hover:bg-muted hover:border-muted-foreground"
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           <DialogFooter className="pt-4 flex flex-row gap-2 justify-end">

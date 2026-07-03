@@ -12,9 +12,13 @@ export function useWorkspaceDocuments(workspaceId: string) {
 }
 
 export function useCreateDocument(workspaceId: string) {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: { title: string; icon?: string }) =>
       documentsService.createDocument(workspaceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspace-documents"] })
+    }
   })
 }
 
@@ -23,7 +27,7 @@ export function useUpdateDocument(workspaceId: string) {
   return useMutation({
     mutationFn: ({ documentId, data }: { documentId: string; data: UpdateDocumentData }) =>
       documentsService.updateDocument(workspaceId, documentId, data),
-    onSuccess: (updatedDoc) => {
+    onSuccess: (updatedDoc, variables) => {
       // Update cache directly using setQueryData to avoid unnecessary refetches
       queryClient.setQueryData<WorkspaceDocument[]>(
         ["workspace-documents", workspaceId],
@@ -32,7 +36,18 @@ export function useUpdateDocument(workspaceId: string) {
           return old.map((doc) => (doc.id === updatedDoc.id ? updatedDoc : doc))
         }
       )
-      queryClient.invalidateQueries({ queryKey: ["document-detail"] })
+      // Synchronously update the document details query cache
+      queryClient.setQueryData(
+        ["document-detail", workspaceId, variables.documentId],
+        (old: any) => {
+          if (!old) return old
+          return {
+            ...old,
+            title: updatedDoc.title,
+            icon: updatedDoc.icon,
+          }
+        }
+      )
     },
   })
 }

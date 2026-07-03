@@ -22,7 +22,7 @@ export default function WorkspaceDocumentEditor() {
   // Register open tab metadata once document is successfully resolved
   useEffect(() => {
     if (documentDetail) {
-      openTab(documentDetail.id, documentDetail.title, documentDetail.workspaceId)
+      openTab(documentDetail.id, documentDetail.title, documentDetail.workspaceId, documentDetail.icon,)
     }
   }, [documentDetail, openTab])
 

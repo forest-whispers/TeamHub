@@ -10,9 +10,11 @@ export const createDocument = async (requesterId: string, workspaceId: string, d
     const document = await prisma.document.create({
         data: {
             title: data.title,
+            // icon: data.icon ?? null,
             content: EMPTY_DOCUMENT,
             workspaceId,
             createdById: requesterId,
+            ...(data.icon !== undefined && { icon: data.icon }),
         },
         select: {
             id: true,
@@ -110,6 +112,8 @@ export async function updateDocumentContent( requesterId: string, workspaceId: s
     await ensureWorkspaceMember(requesterId, workspaceId);
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
+
+    console.log(content)
 
     return prisma.document.update({
         where: {

@@ -22,7 +22,13 @@ export function EditorTabs() {
                 : "text-muted-foreground bg-muted/20 hover:bg-muted/50 hover:text-foreground"
             }`}
           >
-            <FileText className="size-3.5 shrink-0" />
+            {tab.icon ? (
+              <span className="text-base leading-none">
+                {tab.icon}
+              </span>
+            ) : (
+              <FileText className="size-4 text-muted-foreground" />
+            )}
             <span className="truncate max-w-30">{tab.title}</span>
             <button
               onClick={(e) => {

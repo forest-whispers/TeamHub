@@ -211,7 +211,7 @@ export default function WorkspaceDocuments() {
                 // Navigate on Enter or Space, but NOT if the focus is on the Rename button itself!
                 if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
                   e.preventDefault()
-                  openTab(doc.id, doc.title, workspaceId || "")
+                  openTab(doc.id, doc.title, workspaceId || "", doc.icon)
                   navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
                 }
               }}
@@ -221,10 +221,9 @@ export default function WorkspaceDocuments() {
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base font-bold group-hover:text-primary transition-colors flex items-center gap-2 truncate flex-1 min-w-0">
                     {doc.icon ? (
-                      <img
-                        src={doc.icon}
-                        className="size-4 rounded"
-                      />
+                      <span className="text-base leading-none">
+                        {doc.icon}
+                      </span>
                     ) : (
                         <FileText className="size-4 shrink-0 text-muted-foreground" />
                     )}

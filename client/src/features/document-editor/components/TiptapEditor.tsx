@@ -1,10 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
+import Underline from "@tiptap/extension-underline"
+import Highlight from "@tiptap/extension-highlight"
+import Placeholder from "@tiptap/extension-placeholder"
+import TaskList from "@tiptap/extension-task-list"
+import TaskItem from "@tiptap/extension-task-item"
+import { Table } from "@tiptap/extension-table"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableCell } from "@tiptap/extension-table-cell"
+import Link from "@tiptap/extension-link"
+import TextAlign from "@tiptap/extension-text-align"
+import { SlashCommand } from "../extensions/SlashCommand"
 import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
+import { BubbleMenuWrapper } from "./BubbleMenuWrapper"
 import type { WorkspaceDocument } from "../types"
 import { useUpdateDocumentContent } from "../hooks/useUpdateDocumentContent"
+import { useUpdateDocument } from "../../workspace-documents/hooks/useWorkspaceDocuments"
 import { useDocumentTabs } from "../context/DocumentTabsContext"
 import { toast } from "sonner"
 
@@ -14,7 +28,7 @@ interface TiptapEditorProps {
 }
 
 export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
-  const { openTabs, updateTabContent } = useDocumentTabs()
+  const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
   const initialContent = currentTab?.content ?? documentData.content
   const initialSavedContent = currentTab?.savedContent ?? documentData.content
@@ -23,10 +37,38 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
   const [savedContent, setSavedContent] = useState(initialSavedContent)
   const [isDirty, setIsDirty] = useState(initialIsDirty)
 
+  const savedContentRef = useRef(initialSavedContent)
+
   const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Underline,
+      Highlight.configure({ multicolor: true }),
+      Placeholder.configure({
+        placeholder: "Type '/' for commands or start writing...",
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+      }),
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center"],
+      }),
+      SlashCommand,
+    ],
     content: initialContent,
     editorProps: {
       attributes: {
@@ -45,7 +87,6 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
   // Maintain refs of variables to access them in the unmount cleanup correctly
   const editorRef = useRef(editor)
   const isDirtyRef = useRef(isDirty)
-  const savedContentRef = useRef(initialSavedContent)
   const documentIdRef = useRef(documentData.id)
   const workspaceIdRef = useRef(workspaceId)
 
@@ -77,33 +118,48 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
       if (isDirtyRef.current && editorRef.current) {
         const content = editorRef.current.getJSON()
         const docId = documentIdRef.current
+        // const wsId = workspaceIdRef.current
         
         // Background fire-and-forget save
-        saveContent(
-          {
-            workspaceId: workspaceIdRef.current,
-            documentId: documentIdRef.current,
-            content,
+        saveContent({
+          workspaceId: workspaceIdRef.current,
+          documentId: documentIdRef.current,
+          content,
           },
           {
-            onSuccess: () => {
-              updateTabContent(docId, content, content, false)
-            }})
+            onSuccess: () => { 
+              updateTabContent(docId, content, content, false) 
+            } })
       }
     }
   }, [updateTabContent])
+
+  // const { mutate: saveContent, isPending: isSaving } = useUpdateDocumentContent()
+  const renameMutation = useUpdateDocument(workspaceId)
+
+  const handleRename = async (newTitle: string) => {
+    try {
+      await renameMutation.mutateAsync({
+        documentId: documentData.id,
+        data: { title: newTitle },
+      })
+      updateTabName(documentData.id, newTitle)
+      toast.success("Document renamed successfully!")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to rename document")
+    }
+  }
 
   const handleSave = useCallback(() => {
     if (!editor || isSaving) return
     const content = editor.getJSON()
 
-    if (!isDirty) return
+    if (!isDirtyRef) return
 
-    saveContent(
-      {
-        workspaceId: workspaceIdRef.current,
-        documentId: documentIdRef.current,
-        content,
+    saveContent({
+      workspaceId: workspaceIdRef.current,
+      documentId: documentIdRef.current,
+      content,
       },
       {
         onSuccess: () => {
@@ -157,21 +213,25 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
       {/* Editor Header */}
       <EditorHeader
         title={documentData.title}
+        icon={documentData.icon}
         isDirty={isDirty}
         updatedAt={documentData.updatedAt}
         lastEditedBy={documentData.createdBy.name}
         onSave={handleSave}
         isSaving={isSaving}
+        onRename={handleRename}
+        isRenaming={renameMutation.isPending}
       />
 
       {/* Editor Toolbar */}
       <EditorToolbar editor={editor} />
 
       {/* Editor Body */}
-      <div className="flex-1 overflow-y-auto bg-background/50 p-2 sm:p-3">
+      <div className="flex-1 overflow-y-auto bg-background/50 p-2 sm:p-3 relative">
         <div className="max-w-4xl mx-auto border border-border/50 rounded-lg min-h-full bg-background shadow-sm overflow-hidden">
           <EditorContent editor={editor} />
         </div>
+        <BubbleMenuWrapper editor={editor} />
       </div>
     </div>
   )
