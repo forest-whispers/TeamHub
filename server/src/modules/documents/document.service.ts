@@ -33,6 +33,7 @@ export const getDocuments = async (requesterId: string, workspaceId: string) => 
             title: true,
             icon: true,
             updatedAt: true,
+            workspaceId: true,
             createdBy: {
                 select: {
                     id: true,
@@ -59,6 +60,7 @@ export const getDocument = async (requesterId: string, workspaceId: string, docu
             content: true,
             createdAt: true,
             updatedAt: true,
+            workspaceId: true,
             createdBy: {
                 select: {
                     id: true,
@@ -94,6 +96,25 @@ export const updateDocument = async ( requesterId: string, workspaceId: string, 
         },
     });
 };
+
+export async function updateDocumentContent( requesterId: string, workspaceId: string, documentId: string, content: any) {
+    await ensureWorkspaceMember(workspaceId, requesterId);
+
+    await ensureDocumentInWorkspace(workspaceId, documentId);
+
+    return prisma.document.update({
+        where: {
+            id: documentId,
+        },
+        data: {
+            content,
+        },
+        select: {
+            id: true,
+            updatedAt: true,
+        },
+    });
+  }
 
 export const deleteDocument = async (requesterId: string, workspaceId: string, documentId: string) => {
     await ensureWorkspaceMember(requesterId, workspaceId);

@@ -88,6 +88,12 @@ model WorkspaceMember {
   @@index([userId])
 }
 
+enum DocumentType {
+  DOCUMENT
+  MEETING_NOTES
+  PRESENTATION
+}
+
 model Document {
   id String @id @default(cuid())
 
@@ -95,6 +101,8 @@ model Document {
   icon  String?
 
   content Json
+
+  type DocumentType @default(DOCUMENT)
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
