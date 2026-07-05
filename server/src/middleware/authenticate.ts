@@ -17,7 +17,17 @@ export const authenticate = async ( req: Request, _res: Response, next: NextFunc
 
         const session = await prisma.session.findUnique({
             where: { id: payload.sessionId },
-            include: { user: true },
+            select: {
+                id: true,
+                expiresAt: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            }
         });
 
         if (!session) {

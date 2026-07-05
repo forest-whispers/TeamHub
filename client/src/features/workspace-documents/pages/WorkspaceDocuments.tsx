@@ -10,6 +10,7 @@ import { RenameDocumentDialog } from "../components/RenameDocumentDialog"
 import { DeleteDocumentDialog } from "../components/DeleteDocumentDialog"
 import { useDocumentTabs } from "@/features/document-editor/context/DocumentTabsContext"
 import { toast } from "sonner"
+import { socket } from "../../../socket.ts";
 import type { UpdateDocumentData, WorkspaceDocument } from "../types"
 import {
   Search,
@@ -82,6 +83,28 @@ export default function WorkspaceDocuments() {
         setDeleteDialogError(err.message || "Failed to delete document.")
       },
     })
+  }
+
+  const openDocument = (doc: any) => {
+    openTab(doc.id, doc.title, workspaceId || "", doc.icon)
+    console.log("document:join")
+    socket.emit("document:join", {
+      workspaceId,
+      documentId: doc.id,
+    },
+      (response: {
+        success: boolean;
+        data?: { documentId: string };
+        message?: string;
+      }) => {
+        if (!response.success) {
+          console.error(response.message);
+          return;
+        }
+
+        console.log(response.data);
+      });
+    navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
   }
 
   // Search filtering
@@ -206,13 +229,12 @@ export default function WorkspaceDocuments() {
             <Card
               key={doc.id}
               tabIndex={0}
-              onClick={() => navigate(`/workspace/${workspaceId}/documents/${doc.id}`)}
+              onClick={() => openDocument(doc)}
               onKeyDown={(e) => {
                 // Navigate on Enter or Space, but NOT if the focus is on the Rename button itself!
                 if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
                   e.preventDefault()
-                  openTab(doc.id, doc.title, workspaceId || "", doc.icon)
-                  navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
+                  openDocument(doc)
                 }
               }}
               className="border border-border hover:border-border/80 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none transition-all cursor-pointer flex flex-col justify-between group"

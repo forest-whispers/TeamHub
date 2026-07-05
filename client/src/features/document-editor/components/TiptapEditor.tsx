@@ -43,7 +43,10 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: false,
+        underline: false,
+      }),
       Underline,
       Highlight.configure({ multicolor: true }),
       Placeholder.configure({
