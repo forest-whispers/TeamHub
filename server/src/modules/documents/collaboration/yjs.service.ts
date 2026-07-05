@@ -29,11 +29,13 @@ class YjsService {
             return document;
         }
 
-        const ydoc = new Y.Doc();
-
         const json = await persistenceService.loadDocument(documentId);
 
-        TiptapTransformer.toYdoc(json as any, "default", ydoc as any);
+        const ydoc = TiptapTransformer.toYdoc(
+            json,
+            "default",
+            TiptapTransformer.defaultExtensions
+        );
 
         document = {
             ydoc,
@@ -66,11 +68,19 @@ class YjsService {
 
         const json = TiptapTransformer.fromYdoc( document.ydoc, "default" );
 
-        await persistenceService.saveDocument(documentId, json);
+        try
+        {
+            await persistenceService.saveDocument(documentId, json);
 
-        document.ydoc.destroy();
+            if (document.users.size === 0) {
 
-        this.documents.delete(documentId);
+                document.ydoc.destroy();
+
+                this.documents.delete(documentId);
+            }
+        } catch (error) {
+            console.error("Failed to save document on room close:", error);
+        }
     }
 
     getUsers(documentId: string) {

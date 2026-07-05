@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
+import Collaboration from "@tiptap/extension-collaboration";
 import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
 import Highlight from "@tiptap/extension-highlight"
@@ -16,6 +17,8 @@ import { SlashCommand } from "../extensions/SlashCommand"
 import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
 import { BubbleMenuWrapper } from "./BubbleMenuWrapper"
+import * as Y from "yjs";
+
 import type { WorkspaceDocument } from "../types"
 import { useUpdateDocumentContent } from "../hooks/useUpdateDocumentContent"
 import { useUpdateDocument } from "../../workspace-documents/hooks/useWorkspaceDocuments"
@@ -25,12 +28,13 @@ import { toast } from "sonner"
 interface TiptapEditorProps {
   documentData: WorkspaceDocument
   workspaceId: string
+  ydoc: Y.Doc
 }
 
-export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
+export function TiptapEditor({ documentData, workspaceId, ydoc }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
-  const initialContent = currentTab?.content ?? documentData.content
+  // const initialContent = currentTab?.content ?? documentData.content
   const initialSavedContent = currentTab?.savedContent ?? documentData.content
   const initialIsDirty = currentTab?.isDirty ?? false
 
@@ -41,11 +45,18 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
 
   const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  console.log(documentData.content)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        undoRedo: false,
         link: false,
         underline: false,
+      }),
+      Collaboration.configure({
+        document: ydoc,
+        field: "default",
       }),
       Underline,
       Highlight.configure({ multicolor: true }),
@@ -72,7 +83,6 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
       }),
       SlashCommand,
     ],
-    content: initialContent,
     editorProps: {
       attributes: {
         class:
@@ -81,11 +91,11 @@ export function TiptapEditor({ documentData, workspaceId }: TiptapEditorProps) {
     },
     onUpdate: ({ editor }) => {
       const currentJSON = editor.getJSON()
-      const dirty = JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current)
+      const dirty = JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current);
       setIsDirty(dirty)
-      updateTabContent(documentData.id, currentJSON, savedContent, dirty)
+      updateTabContent(documentData.id, currentJSON, savedContentRef.current, dirty)
     },
-  })
+  }, [ydoc])
 
   // Maintain refs of variables to access them in the unmount cleanup correctly
   const editorRef = useRef(editor)

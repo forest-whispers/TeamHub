@@ -20,6 +20,7 @@ export function registerDocumentSockets(io: Server) {
                 }) => void
             ) => {
                 try {
+                    console.log("document:joined requested")
                     const response = await joinDocument(
                         client,
                         payload.workspaceId,
@@ -51,6 +52,7 @@ export function registerDocumentSockets(io: Server) {
                 }) => void
             ) => {
                 try {
+                    console.log("document:leave requested")
                     const response = await leaveDocument(
                         client,
                         payload.documentId

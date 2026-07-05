@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 import { useDocumentDetail } from "../hooks/useDocumentDetail"
 import { useDocumentTabs } from "../context/DocumentTabsContext"
 import { EditorTabs } from "../components/EditorTabs"
-import { TiptapEditor } from "../components/TiptapEditor"
+import { CollaborativeEditor } from "../components/CollaborativeEditor"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { AlertCircle, FileQuestion } from "lucide-react"
@@ -73,7 +73,10 @@ export default function WorkspaceDocumentEditor() {
 
       {/* Query-gated Editor Instance */}
       {!isLoading && !error && documentDetail && (
-        <TiptapEditor key={documentDetail.id} documentData={documentDetail} workspaceId={workspaceId || ""} />
+        <CollaborativeEditor
+        documentData={documentDetail}
+        workspaceId={workspaceId!}
+        />
       )}
     </div>
   )
