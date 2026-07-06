@@ -46,53 +46,6 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
     }, [workspaceId, documentId]);
 
     useEffect(() => {
-        hasInitialSyncRef.current = false;
-        function applyInitialState(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
-
-            const update = normalizeUpdate(rawUpdate)
-
-            if (!hasInitialSyncRef.current) {
-                Y.applyUpdate(ydoc, update, "initial");
-                hasInitialSyncRef.current = true;
-            }
-        }
-
-        socket.emit("document:join",
-            {
-                workspaceId,
-                documentId,
-            },
-            (response: {
-                success: boolean;
-                message?: string;
-                data?: {
-                    initialState?: any;
-                };
-            }) => {
-                if (!response.success) {
-                    console.error(response.message);
-                    return;
-                }
-
-                if (response.data?.initialState) {
-                    applyInitialState(response.data.initialState);
-                }
-            }
-        );
-
-        return () => {
-            hasInitialSyncRef.current = false;
-
-            socket.emit("document:leave",
-                {
-                    documentId,
-                },
-                () => { }
-            );
-        };
-    }, [workspaceId, documentId, ydoc]);
-
-    useEffect(() => {
         function handleUpdate(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
 
             const update = normalizeUpdate(rawUpdate)
@@ -142,4 +95,52 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
             ydoc.off("update", handleLocalUpdate);
         };
     }, [ydoc]);
+
+    useEffect(() => {
+        hasInitialSyncRef.current = false;
+        function applyInitialState(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
+
+            const update = normalizeUpdate(rawUpdate)
+
+            if (hasInitialSyncRef.current) return;
+
+            hasInitialSyncRef.current = true;
+
+            Y.applyUpdate(ydoc, update, "initial");
+        }
+
+        socket.emit("document:join",
+            {
+                workspaceId,
+                documentId,
+            },
+            (response: {
+                success: boolean;
+                message?: string;
+                data?: {
+                    initialState?: any;
+                };
+            }) => {
+                if (!response.success) {
+                    console.error(response.message);
+                    return;
+                }
+
+                if (response.data?.initialState) {
+                    applyInitialState(response.data.initialState);
+                }
+            }
+        );
+
+        return () => {
+            hasInitialSyncRef.current = false;
+
+            socket.emit("document:leave",
+                {
+                    documentId,
+                },
+                () => { }
+            );
+        };
+    }, [workspaceId, documentId, ydoc]);
 }

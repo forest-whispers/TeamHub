@@ -3,6 +3,7 @@ import { ensureDocumentInWorkspace } from "../../../shared/authorization/documen
 import { ensureWorkspaceMember } from "../../../shared/authorization/workspace.js"
 import { yjsService } from "./yjs.service.js";
 import * as Y from "yjs";
+import { TiptapTransformer } from "@hocuspocus/transformer";
 
 export async function joinDocument(
     socket: AuthenticatedSocket,
@@ -13,10 +14,18 @@ export async function joinDocument(
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
 
-
     const document = await yjsService.addUser(documentId, socket.data.user.id);
 
+    console.log("join document",
+        (TiptapTransformer.fromYdoc(
+            document.ydoc,
+            "default"
+        )).content[0]
+    );
+
     const state = Y.encodeStateAsUpdate(document.ydoc);
+
+    console.log("join document", state);
 
     socket.join(`document:${documentId}`);
 
@@ -39,10 +48,24 @@ export async function updateDocument(
 
     const document = await yjsService.getOrCreateDocument(documentId);
 
+    console.log("update document",
+        (TiptapTransformer.fromYdoc(
+            document.ydoc,
+            "default"
+        )).content[0]
+    );
+
     Y.applyUpdate(
         document.ydoc,
         update,
         socket.id
+    );
+
+    console.log("updated document",
+        (TiptapTransformer.fromYdoc(
+            document.ydoc,
+            "default"
+        )).content[0]
     );
 
     socket.to(`document:${documentId}`).emit(
