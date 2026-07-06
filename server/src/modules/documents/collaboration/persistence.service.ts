@@ -1,5 +1,3 @@
-import * as Y from "yjs";
-
 import { prisma } from "../../../lib/prisma.js";
 
 class PersistenceService {

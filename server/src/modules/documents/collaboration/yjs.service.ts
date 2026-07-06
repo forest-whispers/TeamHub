@@ -11,6 +11,16 @@ class YjsService {
         return this.documents.get(documentId);
     }
 
+    getDocumentState(documentId: string) {
+        const document = this.documents.get(documentId);
+
+        if (!document) {
+            throw new Error("Document not loaded");
+        }
+
+        return Y.encodeStateAsUpdate(document.ydoc);
+    }
+
     getActiveDocuments() {
         return [...this.documents.entries()].map(([documentId, document]) => ({
             documentId,

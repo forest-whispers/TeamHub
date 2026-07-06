@@ -10,7 +10,6 @@ import { RenameDocumentDialog } from "../components/RenameDocumentDialog"
 import { DeleteDocumentDialog } from "../components/DeleteDocumentDialog"
 import { useDocumentTabs } from "@/features/document-editor/context/DocumentTabsContext"
 import { toast } from "sonner"
-import { socket } from "../../../shared/lib/socket.ts";
 import type { UpdateDocumentData, WorkspaceDocument } from "../types"
 import {
   Search,
@@ -87,23 +86,6 @@ export default function WorkspaceDocuments() {
 
   const openDocument = (doc: any) => {
     openTab(doc.id, doc.title, workspaceId || "", doc.icon)
-    console.log("document:join")
-    socket.emit("document:join", {
-      workspaceId,
-      documentId: doc.id,
-    },
-      (response: {
-        success: boolean;
-        data?: { documentId: string };
-        message?: string;
-      }) => {
-        if (!response.success) {
-          console.error(response.message);
-          return;
-        }
-
-        console.log(response.data);
-      });
     navigate(`/workspace/${workspaceId}/documents/${doc.id}`)
   }
 

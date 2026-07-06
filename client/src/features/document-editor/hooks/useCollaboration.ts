@@ -8,7 +8,31 @@ interface Props {
     ydoc: Y.Doc;
 }
 
-export function useCollaboration({ workspaceId, documentId, ydoc,}: Props) {
+function normalizeUpdate(raw: any): Uint8Array {
+    if (raw instanceof Uint8Array) return raw;
+
+    if (raw instanceof ArrayBuffer) {
+        return new Uint8Array(raw);
+    }
+
+    if (Array.isArray(raw)) {
+        return Uint8Array.from(raw);
+    }
+
+    if ( raw && raw.type === "Buffer" && Array.isArray(raw.data)) {
+        return new Uint8Array(raw.data);
+    }
+
+    throw new Error("Unknown update format");
+}
+
+export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
+    const hasInitialSyncRef = useRef(false);
+
+    useEffect(() => {
+        hasInitialSyncRef.current = false;
+    }, [documentId]);
+
     const idsRef = useRef({
         workspaceId,
         documentId,
@@ -22,6 +46,17 @@ export function useCollaboration({ workspaceId, documentId, ydoc,}: Props) {
     }, [workspaceId, documentId]);
 
     useEffect(() => {
+        hasInitialSyncRef.current = false;
+        function applyInitialState(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
+
+            const update = normalizeUpdate(rawUpdate)
+
+            if (!hasInitialSyncRef.current) {
+                Y.applyUpdate(ydoc, update, "initial");
+                hasInitialSyncRef.current = true;
+            }
+        }
+
         socket.emit("document:join",
             {
                 workspaceId,
@@ -30,14 +65,24 @@ export function useCollaboration({ workspaceId, documentId, ydoc,}: Props) {
             (response: {
                 success: boolean;
                 message?: string;
+                data?: {
+                    initialState?: any;
+                };
             }) => {
                 if (!response.success) {
                     console.error(response.message);
+                    return;
+                }
+
+                if (response.data?.initialState) {
+                    applyInitialState(response.data.initialState);
                 }
             }
         );
 
         return () => {
+            hasInitialSyncRef.current = false;
+
             socket.emit("document:leave",
                 {
                     documentId,
@@ -45,20 +90,12 @@ export function useCollaboration({ workspaceId, documentId, ydoc,}: Props) {
                 () => { }
             );
         };
-    }, [workspaceId, documentId]);
+    }, [workspaceId, documentId, ydoc]);
 
     useEffect(() => {
-        function handleUpdate(rawUpdate: Uint8Array | ArrayBuffer | number[]) {
-            console.log("LOCAL UPDATE");
-            let update: Uint8Array;
+        function handleUpdate(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
 
-            if (rawUpdate instanceof Uint8Array) {
-                update = rawUpdate;
-            } else if (rawUpdate instanceof ArrayBuffer) {
-                update = new Uint8Array(rawUpdate);
-            } else {
-                update = Uint8Array.from(rawUpdate);
-            }
+            const update = normalizeUpdate(rawUpdate)
 
             Y.applyUpdate(ydoc, update, "remote");
         }
@@ -73,14 +110,16 @@ export function useCollaboration({ workspaceId, documentId, ydoc,}: Props) {
     useEffect(() => {
         function handleLocalUpdate(update: Uint8Array, origin: unknown) {
             if (origin === "remote") return;
+            if (origin === "initial") return;
+
+            if (!hasInitialSyncRef.current) return;
 
             const {
                 workspaceId: currentWorkspaceId,
                 documentId: currentDocumentId,
             } = idsRef.current;
 
-            socket.emit(
-                "document:update",
+            socket.emit("document:update",
                 {
                     workspaceId: currentWorkspaceId,
                     documentId: currentDocumentId,

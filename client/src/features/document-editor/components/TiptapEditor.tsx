@@ -34,7 +34,7 @@ interface TiptapEditorProps {
 export function TiptapEditor({ documentData, workspaceId, ydoc }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
-  const initialSavedContent = currentTab?.savedContent ?? documentData.content
+  const initialSavedContent = currentTab?.savedContent ?? null
   const initialIsDirty = currentTab?.isDirty ?? false
 
   const [savedContent, setSavedContent] = useState(initialSavedContent)
@@ -43,8 +43,6 @@ export function TiptapEditor({ documentData, workspaceId, ydoc }: TiptapEditorPr
   const savedContentRef = useRef(initialSavedContent)
 
   const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  console.log(documentData.content)
 
   const editor = useEditor({
     extensions: [
@@ -88,9 +86,13 @@ export function TiptapEditor({ documentData, workspaceId, ydoc }: TiptapEditorPr
           "focus:outline-none min-h-[400px] p-4 text-left text-sm space-y-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1",
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor, transaction }) => {
+      // Ignore remote/sync updates from Yjs
+      const isRemote = transaction.getMeta("y-sync$") !== undefined;
+      if (isRemote) return;
+
       const currentJSON = editor.getJSON()
-      const dirty = JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current);
+      const dirty = savedContentRef.current === null || JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current);
       setIsDirty(dirty)
       updateTabContent(documentData.id, currentJSON, savedContentRef.current, dirty)
     },

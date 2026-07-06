@@ -1,58 +1,23 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import * as Y from "yjs";
-import { TiptapTransformer } from "@hocuspocus/transformer";
 
 export function useYDoc(documentId: string) {
-    const ydocRef = useRef<Y.Doc | null>(null);
-    const hydratedRef = useRef<string | null>(null);
+    const ydocRef = useRef(new Y.Doc());
+    const previousId = useRef(documentId);
 
-    if (!ydocRef.current) {
+    if (previousId.current !== documentId) {
+        ydocRef.current.destroy();
         ydocRef.current = new Y.Doc();
+        previousId.current = documentId;
     }
 
     useEffect(() => {
         return () => {
-            if (ydocRef.current) {
-                ydocRef.current.destroy();
-                ydocRef.current = null;
-            }
+            ydocRef.current.destroy();
         };
-    }, [documentId]);
-
-    const prevDocIdRef = useRef(documentId);
-
-    useEffect(() => {
-        if (prevDocIdRef.current === documentId) return;
-
-        ydocRef.current?.destroy();
-        ydocRef.current = new Y.Doc();
-        hydratedRef.current = null;
-        prevDocIdRef.current = documentId;
-    }, [documentId]);
-
-    const hydrate = useCallback(
-        (content: any) => {
-            if (hydratedRef.current === documentId || !content || !ydocRef.current) return;
-
-            const tempDoc = TiptapTransformer.toYdoc(
-                content,
-                "default",
-                TiptapTransformer.defaultExtensions
-            );
-            const currentDoc = ydocRef.current;
-
-            currentDoc.transact(() => {
-                const update = Y.encodeStateAsUpdate(tempDoc);
-                Y.applyUpdate(currentDoc, update);
-            });
-
-            tempDoc.destroy();
-            hydratedRef.current = documentId;
-            return true;
-        }, [documentId]);
+    }, []);
 
     return {
         ydoc: ydocRef.current,
-        hydrate,
     };
 }

@@ -47,8 +47,8 @@ export function registerDocumentSockets(io: Server) {
                 payload: DocumentUpdatePayload,
                 callback: (response: SocketResponse) => void
             ) => {
-                console.log("received updates")
                 try {
+                    console.log("document:update received")
                     await updateDocument(
                         client,
                         payload.workspaceId,
@@ -102,7 +102,7 @@ export function registerDocumentSockets(io: Server) {
             }
         );
 
-        client.on("disconnect", async () => {
+        client.on("disconnecting", async () => {
             for (const room of client.rooms) {
                 if (!room.startsWith("document:")) continue;
 

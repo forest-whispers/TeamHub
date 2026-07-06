@@ -13,13 +13,17 @@ export async function joinDocument(
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
 
-    socket.join(`document:${documentId}`);
 
     const document = await yjsService.addUser(documentId, socket.data.user.id);
+
+    const state = Y.encodeStateAsUpdate(document.ydoc);
+
+    socket.join(`document:${documentId}`);
 
     return {
         documentId,
         users: document.users.size,
+        initialState: state,
     };
 }
 
@@ -34,8 +38,6 @@ export async function updateDocument(
     await ensureDocumentInWorkspace( workspaceId, documentId,);
 
     const document = await yjsService.getOrCreateDocument(documentId);
-
-    console.log("broadcasting");
 
     Y.applyUpdate(
         document.ydoc,

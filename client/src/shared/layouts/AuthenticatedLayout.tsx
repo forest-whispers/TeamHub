@@ -1,9 +1,17 @@
+import { useEffect } from "react"
 import { Navigate, Outlet } from "react-router-dom"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { Spinner } from "@/shared/components/ui/spinner"
+import { socket } from "@/shared/lib/socket"
 
 export default function AuthenticatedLayout() {
   const { data: authStatus, isLoading } = useAuthStatus()
+
+  useEffect(() => {
+    if (authStatus?.isAuthenticated && !socket.connected) {
+      socket.connect()
+    }
+  }, [authStatus?.isAuthenticated])
 
   if (isLoading) {
     return (
