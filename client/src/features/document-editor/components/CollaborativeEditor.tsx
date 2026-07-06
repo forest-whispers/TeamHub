@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import * as Y from "yjs";
 import { useYDoc } from "../hooks/useYDoc";
+import { useCollaboration } from "../hooks/useCollaboration";
 import { TiptapEditor } from "./TiptapEditor";
 import type { WorkspaceDocument } from "../types";
 
@@ -17,6 +18,12 @@ export function CollaborativeEditor({
 
     const [activeYdoc, setActiveYdoc] = useState<Y.Doc | null>(null);
     const lastProcessedId = useRef<string | null>(null);
+
+    useCollaboration({
+        workspaceId,
+        documentId: documentData.id,
+        ydoc,
+    });
 
     useEffect(() => {
         if (documentData.content && lastProcessedId.current !== documentData.id) {

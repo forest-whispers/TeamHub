@@ -13,5 +13,5 @@ export const updateWorkspaceSchema = z.object({
 });
 
 export const joinWorkspaceSchema = z.object({
-    inviteCode: z.string().trim().length(8),
+    inviteCode: z.string().trim(),
 });

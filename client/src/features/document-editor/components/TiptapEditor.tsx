@@ -34,7 +34,6 @@ interface TiptapEditorProps {
 export function TiptapEditor({ documentData, workspaceId, ydoc }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
-  // const initialContent = currentTab?.content ?? documentData.content
   const initialSavedContent = currentTab?.savedContent ?? documentData.content
   const initialIsDirty = currentTab?.isDirty ?? false
 

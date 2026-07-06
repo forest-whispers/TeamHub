@@ -8,7 +8,7 @@ import { UnauthorizedError } from "../../shared/errors/index.js";
 
 export async function socketAuth(socket: Socket, next: (err?: ExtendedError) => void) {
     try {
-        console.log("socket auth")
+        console.log("socket auth requested")
         const cookies = socket.request.headers.cookie || "";
         const parsed = parseCookie(cookies);
         const token = parsed.accessToken;
@@ -48,6 +48,8 @@ export async function socketAuth(socket: Socket, next: (err?: ExtendedError) => 
             await prisma.session.delete({ where: { id: session.id } });
             throw new UnauthorizedError("Session expired");
         }
+
+        console.log("socket auth")
 
         const user = session.user as AuthUser;
 

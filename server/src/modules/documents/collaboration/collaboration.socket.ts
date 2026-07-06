@@ -1,8 +1,8 @@
 import type { Server } from "socket.io";
 
 import type { AuthenticatedSocket } from "../../../infrastructure/websocket/types.js";
-import { joinDocument, leaveDocument } from "./collaboration.service.js";
-import type { JoinDocumentPayload, LeaveDocumentPayload, } from "./collaboration.types.ts";
+import { joinDocument, updateDocument, leaveDocument } from "./collaboration.service.js";
+import type { JoinDocumentPayload, DocumentUpdatePayload, LeaveDocumentPayload, SocketResponse } from "./collaboration.types.ts";
 import { yjsService } from "./yjs.service.js";
 
 export function registerDocumentSockets(io: Server) {
@@ -36,6 +36,36 @@ export function registerDocumentSockets(io: Server) {
                     callback({
                         success: false,
                         message: error instanceof Error ? error.message : "Something went wrong",
+                    });
+                }
+            }
+        );
+
+        client.on(
+            "document:update",
+            async (
+                payload: DocumentUpdatePayload,
+                callback: (response: SocketResponse) => void
+            ) => {
+                console.log("received updates")
+                try {
+                    await updateDocument(
+                        client,
+                        payload.workspaceId,
+                        payload.documentId,
+                        payload.update
+                    );
+
+                    callback({
+                        success: true,
+                    });
+                } catch (error) {
+                    callback({
+                        success: false,
+                        message:
+                            error instanceof Error
+                                ? error.message
+                                : "Unknown error",
                     });
                 }
             }
@@ -80,6 +110,7 @@ export function registerDocumentSockets(io: Server) {
 
                 await yjsService.removeUser(documentId, client.data.user.id);
             }
+            console.log("document:disconnected")
         });
     });
 }

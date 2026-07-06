@@ -10,7 +10,7 @@ import { RenameDocumentDialog } from "../components/RenameDocumentDialog"
 import { DeleteDocumentDialog } from "../components/DeleteDocumentDialog"
 import { useDocumentTabs } from "@/features/document-editor/context/DocumentTabsContext"
 import { toast } from "sonner"
-import { socket } from "../../../socket.ts";
+import { socket } from "../../../shared/lib/socket.ts";
 import type { UpdateDocumentData, WorkspaceDocument } from "../types"
 import {
   Search,
