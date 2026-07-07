@@ -1,16 +1,16 @@
 import type { Server } from "socket.io";
 
 import type { AuthenticatedSocket } from "../../../infrastructure/websocket/types.js";
-import { joinDocument, updateDocument, leaveDocument } from "./collaboration.service.js";
-import type { JoinDocumentPayload, DocumentUpdatePayload, LeaveDocumentPayload, SocketResponse } from "./collaboration.types.ts";
+import { joinDocument, updateDocument, updateAwareness, leaveDocument } from "./collaboration.service.js";
+import { unregisterAwarenessClient } from "./awareness.service.js";
+import type { JoinDocumentPayload, DocumentUpdatePayload, AwarenessUpdatePayload, LeaveDocumentPayload, SocketResponse } from "./collaboration.types.ts";
 import { yjsService } from "./yjs.service.js";
 
 export function registerDocumentSockets(io: Server) {
     io.on("connection", (socket) => {
         const client = socket as AuthenticatedSocket;
 
-        client.on(
-            "document:join",
+        client.on("document:join",
             async (
                 payload: JoinDocumentPayload,
                 callback: (response: {
@@ -41,8 +41,7 @@ export function registerDocumentSockets(io: Server) {
             }
         );
 
-        client.on(
-            "document:update",
+        client.on("document:update",
             async (
                 payload: DocumentUpdatePayload,
                 callback: (response: SocketResponse) => void
@@ -62,17 +61,40 @@ export function registerDocumentSockets(io: Server) {
                 } catch (error) {
                     callback({
                         success: false,
-                        message:
-                            error instanceof Error
-                                ? error.message
-                                : "Unknown error",
+                        message: error instanceof Error ? error.message : "Unknown error",
                     });
                 }
             }
         );
 
-        client.on(
-            "document:leave",
+        client.on("awareness:update",
+            async (
+                payload: AwarenessUpdatePayload,
+                callback: (response: SocketResponse) => void
+            ) => {
+                try {
+                    console.log("awareness:update received")
+                    await updateAwareness(
+                        client,
+                        payload.workspaceId,
+                        payload.documentId,
+                        payload.clientId,
+                        payload.update
+                    );
+
+                    callback({
+                        success: true,
+                    });
+                } catch (error) {
+                    callback({
+                        success: false,
+                        message: error instanceof Error ? error.message : "Unknown error",
+                    });
+                }
+            }
+        );
+
+        client.on("document:leave",
             async (
                 payload: LeaveDocumentPayload,
                 callback: (response: {
@@ -108,7 +130,12 @@ export function registerDocumentSockets(io: Server) {
 
                 const documentId = room.replace("document:", "");
 
-                await yjsService.removeUser(documentId, client.data.user.id);
+                const update = unregisterAwarenessClient( documentId, socket.id );
+                if (update) {
+                    socket.to(`document:${documentId}`).emit("awareness:update", update);
+                }
+
+                await yjsService.removeUser(documentId, socket.id);
             }
             console.log("document:disconnected")
         });

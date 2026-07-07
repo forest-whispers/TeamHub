@@ -9,6 +9,13 @@ export interface DocumentUpdatePayload {
     update: Uint8Array;
 }
 
+export interface AwarenessUpdatePayload {
+    workspaceId: string;
+    documentId: string;
+    clientId: number;
+    update: Uint8Array;
+}
+
 export interface SocketResponse<T = void> {
     success: boolean;
     data?: T;

@@ -1,5 +1,6 @@
 import * as Y from "yjs";
 import { TiptapTransformer } from "@hocuspocus/transformer";
+import { Awareness } from "y-protocols/awareness";
 
 import { persistenceService } from "./persistence.service.js";
 import type { ActiveDocument } from "./yjs.types.js";
@@ -50,27 +51,31 @@ class YjsService {
         document = {
             ydoc,
             users: new Set(),
+            awareness: new Awareness(ydoc),
+            awarenessClients: new Map(),
         };
+
+        document.awareness.states.delete(ydoc.clientID);
 
         this.documents.set(documentId, document);
 
         return document;
     }
 
-    async addUser(documentId: string, userId: string) {
+    async addUser(documentId: string, socketId: string) {
         const document = await this.getOrCreateDocument(documentId);
 
-        document.users.add(userId);
+        document.users.add(socketId);
 
         return document;
     }
 
-    async removeUser(documentId: string, userId: string) {
+    async removeUser(documentId: string, socketId: string) {
         const document = this.documents.get(documentId);
 
         if (!document) return;
 
-        document.users.delete(userId);
+        document.users.delete(socketId);
 
         if (document.users.size > 0) {
             return;

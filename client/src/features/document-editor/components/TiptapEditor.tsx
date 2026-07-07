@@ -18,6 +18,7 @@ import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
 import { BubbleMenuWrapper } from "./BubbleMenuWrapper"
 import * as Y from "yjs";
+import type { Awareness } from "y-protocols/awareness.js";
 
 import type { WorkspaceDocument } from "../types"
 import { useUpdateDocumentContent } from "../hooks/useUpdateDocumentContent"
@@ -29,9 +30,10 @@ interface TiptapEditorProps {
   documentData: WorkspaceDocument
   workspaceId: string
   ydoc: Y.Doc
+  awareness: Awareness
 }
 
-export function TiptapEditor({ documentData, workspaceId, ydoc }: TiptapEditorProps) {
+export function TiptapEditor({ documentData, workspaceId, ydoc, awareness }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
   const initialSavedContent = currentTab?.savedContent ?? null

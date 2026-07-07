@@ -6,6 +6,8 @@ interface Props {
     workspaceId: string;
     documentId: string;
     ydoc: Y.Doc;
+    onInitialAwareness?: (update: Uint8Array) => void;
+    publishLocalState: () => void;
 }
 
 function normalizeUpdate(raw: any): Uint8Array {
@@ -26,7 +28,7 @@ function normalizeUpdate(raw: any): Uint8Array {
     throw new Error("Unknown update format");
 }
 
-export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
+export function useCollaboration({ workspaceId, documentId, ydoc, onInitialAwareness, publishLocalState}: Props) {
     const hasInitialSyncRef = useRef(false);
 
     useEffect(() => {
@@ -102,35 +104,12 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
 
             const update = normalizeUpdate(rawUpdate)
 
-            // if (hasInitialSyncRef.current) return;
+            if (hasInitialSyncRef.current) return;
 
-            // hasInitialSyncRef.current = true;
+            hasInitialSyncRef.current = true;
 
             Y.applyUpdate(ydoc, update, "initial");
         }
-
-        // socket.emit("document:join",
-        //     {
-        //         workspaceId,
-        //         documentId,
-        //     },
-        //     (response: {
-        //         success: boolean;
-        //         message?: string;
-        //         data?: {
-        //             initialState?: any;
-        //         };
-        //     }) => {
-        //         if (!response.success) {
-        //             console.error(response.message);
-        //             return;
-        //         }
-
-        //         if (response.data?.initialState) {
-        //             applyInitialState(response.data.initialState);
-        //         }
-        //     }
-        // );
 
         socket.emit("document:join",
             {
@@ -142,6 +121,7 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
                 message?: string;
                 data?: {
                     initialState?: any;
+                    awarenessState?: any;
                 };
             }) => {
                 if (!response.success) {
@@ -152,22 +132,27 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
                 if (response.data?.initialState) {
                     applyInitialState(response.data.initialState);
 
-                    const localUpdate = Y.encodeStateAsUpdate(ydoc);
-                    socket.emit("document:update",
-                        {
-                            workspaceId,
-                            documentId,
-                            update: localUpdate
-                        },
-                        (response: {
-                            success: boolean;
-                            message?: string;
-                        }) => {
-                            if (!response.success) {
-                                console.error(response.message);
-                            }
-                        }
-                    );
+                    if (response.data.awarenessState && onInitialAwareness) {
+                        onInitialAwareness(normalizeUpdate(response.data.awarenessState));
+                        publishLocalState();
+                    }
+
+                    // const localUpdate = Y.encodeStateAsUpdate(ydoc);
+                    // socket.emit("document:update",
+                    //     {
+                    //         workspaceId,
+                    //         documentId,
+                    //         update: localUpdate
+                    //     },
+                    //     (response: {
+                    //         success: boolean;
+                    //         message?: string;
+                    //     }) => {
+                    //         if (!response.success) {
+                    //             console.error(response.message);
+                    //         }
+                    //     }
+                    // );
                 }
                 hasInitialSyncRef.current = true;
             }
