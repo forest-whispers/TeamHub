@@ -3,9 +3,20 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+@keyframes caret-label-appear {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .collaboration-caret {
   position: relative;
-  border-left: 2px solid;
+  border-left: 2px solid var(--caret-color);
   margin-left: -1px;
   margin-right: -1px;
   pointer-events: none;
@@ -13,18 +24,50 @@
 
 .collaboration-caret-label {
   position: absolute;
-  top: -1.4em;
-  left: -2px;
-
-  color: white;
-  font-size: 12px;
+  top: -24px;
+  left: 0;
+  background-color: var(--caret-color);
+  color: #ffffff;
+  font-family: var(--sans);
+  font-size: 11px;
   font-weight: 600;
-
-  padding: 2px 6px;
-  border-radius: 4px;
-
+  padding: 2px 8px;
+  border-radius: 9999px;
   white-space: nowrap;
   user-select: none;
+  box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.16), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  line-height: 1.2;
+  pointer-events: none;
+  animation: caret-label-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.collaboration-caret-label-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.collaboration-caret-label-text {
+  display: inline-block;
+}
+
+.collaboration-caret-label::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 8px;
+  border-width: 3px 3px 0;
+  border-style: solid;
+  border-color: var(--caret-color) transparent;
+}
+
+.collaboration-selection {
+  position: relative;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-color: color-mix(in srgb, var(--selection-color) 15%, transparent);
 }
 
 .ProseMirror table {

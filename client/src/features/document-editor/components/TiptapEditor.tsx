@@ -68,8 +68,34 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
           name: authUser!.name,
           color: getUserColor(authUser!.id),
           avatar: authUser!.avatar,
-      },
-    }),
+        },
+        render: (user) => {
+          const cursor = document.createElement("span");
+          cursor.classList.add("collaboration-caret");
+          cursor.style.setProperty("--caret-color", user.color);
+
+          const label = document.createElement("span");
+          label.classList.add("collaboration-caret-label");
+
+          const content = document.createElement("span");
+          content.classList.add("collaboration-caret-label-content");
+
+          const text = document.createElement("span");
+          text.classList.add("collaboration-caret-label-text");
+          text.textContent = user.name;
+
+          content.appendChild(text);
+          label.appendChild(content);
+          cursor.appendChild(label);
+          return cursor;
+        },
+        selectionRender: (user) => {
+          return {
+            class: "collaboration-selection",
+            style: `--selection-color: ${user.color}`,
+          };
+        },
+      }),
       Underline,
       Highlight.configure({ multicolor: true }),
       Placeholder.configure({
