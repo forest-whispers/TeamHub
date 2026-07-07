@@ -3,6 +3,30 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+.collaboration-caret {
+  position: relative;
+  border-left: 2px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+}
+
+.collaboration-caret-label {
+  position: absolute;
+  top: -1.4em;
+  left: -2px;
+
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+
+  padding: 2px 6px;
+  border-radius: 4px;
+
+  white-space: nowrap;
+  user-select: none;
+}
+
 .ProseMirror table {
   border-collapse: collapse;
   width: 100%;

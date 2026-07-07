@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useYDoc } from "../hooks/useYDoc";
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus";
 import { useCollaboration } from "../hooks/useCollaboration";
@@ -26,6 +27,12 @@ export function CollaborativeEditor({
         authUser: authStatus?.user as AuthUser
     });
 
+    const provider = useMemo(
+        () => ({
+            awareness,
+        }),
+        [awareness]);
+
     useCollaboration({
         workspaceId,
         documentId: documentData.id,
@@ -40,7 +47,8 @@ export function CollaborativeEditor({
             documentData={documentData}
             workspaceId={workspaceId}
             ydoc={ydoc}
-            awareness={awareness}
+            provider={provider}
+            authUser={authStatus?.user as AuthUser}
         />
     );
 }

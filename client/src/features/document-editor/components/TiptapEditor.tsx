@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
 import Highlight from "@tiptap/extension-highlight"
@@ -21,19 +22,22 @@ import * as Y from "yjs";
 import type { Awareness } from "y-protocols/awareness.js";
 
 import type { WorkspaceDocument } from "../types"
+import type { AuthUser } from "@/features/auth/types";
 import { useUpdateDocumentContent } from "../hooks/useUpdateDocumentContent"
 import { useUpdateDocument } from "../../workspace-documents/hooks/useWorkspaceDocuments"
 import { useDocumentTabs } from "../context/DocumentTabsContext"
+import { getUserColor } from "@/shared/lib/utils";
 import { toast } from "sonner"
 
 interface TiptapEditorProps {
   documentData: WorkspaceDocument
   workspaceId: string
   ydoc: Y.Doc
-  awareness: Awareness
+  provider: { awareness: Awareness; }
+  authUser?: AuthUser;
 }
 
-export function TiptapEditor({ documentData, workspaceId, ydoc, awareness }: TiptapEditorProps) {
+export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUser }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
   const initialSavedContent = currentTab?.savedContent ?? null
@@ -57,6 +61,15 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, awareness }: Tip
         document: ydoc,
         field: "default",
       }),
+      CollaborationCaret.configure({
+        provider,
+        user: {
+          id: authUser!.id,
+          name: authUser!.name,
+          color: getUserColor(authUser!.id),
+          avatar: authUser!.avatar,
+      },
+    }),
       Underline,
       Highlight.configure({ multicolor: true }),
       Placeholder.configure({
