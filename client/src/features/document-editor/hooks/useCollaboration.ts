@@ -102,12 +102,35 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
 
             const update = normalizeUpdate(rawUpdate)
 
-            if (hasInitialSyncRef.current) return;
+            // if (hasInitialSyncRef.current) return;
 
-            hasInitialSyncRef.current = true;
+            // hasInitialSyncRef.current = true;
 
             Y.applyUpdate(ydoc, update, "initial");
         }
+
+        // socket.emit("document:join",
+        //     {
+        //         workspaceId,
+        //         documentId,
+        //     },
+        //     (response: {
+        //         success: boolean;
+        //         message?: string;
+        //         data?: {
+        //             initialState?: any;
+        //         };
+        //     }) => {
+        //         if (!response.success) {
+        //             console.error(response.message);
+        //             return;
+        //         }
+
+        //         if (response.data?.initialState) {
+        //             applyInitialState(response.data.initialState);
+        //         }
+        //     }
+        // );
 
         socket.emit("document:join",
             {
@@ -128,7 +151,25 @@ export function useCollaboration({ workspaceId, documentId, ydoc}: Props) {
 
                 if (response.data?.initialState) {
                     applyInitialState(response.data.initialState);
+
+                    const localUpdate = Y.encodeStateAsUpdate(ydoc);
+                    socket.emit("document:update",
+                        {
+                            workspaceId,
+                            documentId,
+                            update: localUpdate
+                        },
+                        (response: {
+                            success: boolean;
+                            message?: string;
+                        }) => {
+                            if (!response.success) {
+                                console.error(response.message);
+                            }
+                        }
+                    );
                 }
+                hasInitialSyncRef.current = true;
             }
         );
 
