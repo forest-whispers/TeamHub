@@ -1,7 +1,8 @@
 import type { Server } from "socket.io";
 
 import type { AuthenticatedSocket } from "../../../infrastructure/websocket/types.js";
-import { joinWorkspace, updateWorkspace, leaveWorkspace } from "./presence.handlers.js";
+import { joinWorkspace, updateWorkspace } from "./presence.handlers.js";
+import { presenceService } from "./presence.service.js";
 import type { JoinWorkspacePayload, UpdatePresencePayload, LeaveWorkspacePayload } from "./presence.types.js";
 import type { SocketResponse } from "../../documents/collaboration/collaboration.types.js";
 
@@ -84,26 +85,33 @@ export function workspacePresenceSockets(io: Server) {
         );
 
         client.on("workspace:leave",
-            async (
+            (
                 payload: LeaveWorkspacePayload,
                 callback: (response: SocketResponse) => void
             ) => {
                 try {
                     console.log("workspace:leave requested")
 
-                    const users = await leaveWorkspace(
-                        client,
-                        payload.workspaceId
+                    // const users = await leaveWorkspace(
+                    //     client,
+                    //     payload.workspaceId
+                    // );
+
+                    presenceService.removeConnection(
+                        payload.workspaceId,
+                        client.id,
                     );
+
+                    const users = presenceService.getPresenceList(payload.workspaceId);
+
+                    socket.leave(`workspace:${payload.workspaceId}`);
 
                     io.to(`workspace:${payload.workspaceId}`).emit("workspace:presence",
                         {
                             users,
                         });
 
-                    socket.leave(`workspace:${payload.workspaceId}`);
-
-                    console.log("workspace:leave")
+                    console.log("workspace:leave", client.id,)
                     callback({
                         success: true,
                     });
@@ -119,8 +127,9 @@ export function workspacePresenceSockets(io: Server) {
             }
         );
 
-        client.on("disconnecting", async () => {
-            for (const room of client.rooms) {
+        client.on("disconnecting", () => {
+            const rooms = Array.from(client.rooms);
+            for (const room of rooms) {
 
                 if (!room.startsWith("workspace:")) {
                     continue;
@@ -128,10 +137,20 @@ export function workspacePresenceSockets(io: Server) {
 
                 const workspaceId = room.replace("workspace:", "");
 
-                await leaveWorkspace(
-                    client,
-                    workspaceId
+                presenceService.removeConnection(
+                    workspaceId,
+                    client.id,
                 );
+
+                const users = presenceService.getPresenceList(workspaceId);
+
+                io.to(room).emit("workspace:presence",
+                    {
+                        users,
+                    },
+                );
+
+                console.log("workspace:disconnect", client.id,);
             }
         });
 

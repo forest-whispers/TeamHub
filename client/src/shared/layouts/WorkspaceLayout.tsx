@@ -1,12 +1,13 @@
-import { useState, Suspense, useEffect } from "react"
+import { useState, Suspense, useEffect, useMemo } from "react"
 import { Link, NavLink, Outlet, useParams, useLocation, useNavigate } from "react-router-dom"
-import { socket } from "../lib/socket"
 import { useTheme } from "@/shared/providers/ThemeProvider"
 import { useCommandPalette } from "@/shared/providers/CommandPaletteProvider"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
+import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePresence"
+import type { AuthUser } from "@/features/auth/types"
 import { DocumentTabsProvider } from "@/features/document-editor/context/DocumentTabsContext"
 import { NotificationBell } from "@/features/workspace-notifications/components/NotificationBell"
 import { Spinner } from "@/shared/components/ui/spinner"
@@ -45,6 +46,24 @@ export default function WorkspaceLayout() {
   const { data: activeWorkspace } = useWorkspace(workspaceId || "")
   const logoutMutation = useLogout()
   const leaveWorkspaceMutation = useLeaveWorkspace()
+  const { onlineUsers } = useWorkspacePresence({
+    workspaceId: workspaceId!,
+    authUser: authStatus?.user as AuthUser,
+  });
+
+  const onlineUsersMap = useMemo(() => {
+    if (!Array.isArray(onlineUsers)) {
+      return new Map();
+    }
+
+    return new Map(
+      onlineUsers.map(user => [user.user.id, user])
+    );
+  }, [onlineUsers]);
+
+  useEffect(() => {
+    console.log(onlineUsers);
+  }, [onlineUsers]);
 
   // Layout states
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -54,10 +73,10 @@ export default function WorkspaceLayout() {
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
 
   // Find active workspace details
-  const workspaceName = activeWorkspace?.name || "Engineering Team"
+  const workspaceName = activeWorkspace?.name || "@my-workspace"
 
   // User details
-  const userName = authStatus?.user?.name || "Developer"
+  const userName = authStatus?.user?.name || "@developer"
 
   // Navigation items
   const navItems = [
@@ -110,36 +129,6 @@ export default function WorkspaceLayout() {
       },
     })
   }
-
-  useEffect(() => {
-    socket.emit("workspace:join",
-      {
-        workspaceId,
-        presence: {
-        user: {
-          id: authStatus?.user?.id,
-          name: authStatus?.user?.name,
-          color: "red"
-        },
-
-        status: "online",
-
-        activity: "files"
-        }
-      },
-      (response: {
-        success: boolean;
-        message?: string;
-      }) => {
-        if (!response.success) {
-          console.error(response.message);
-        }
-      });
-
-      socket.on("workspace:presence", (data)=>{
-        console.log(data)
-      })
-  }, [getActiveModuleName()])
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark")
@@ -445,26 +434,33 @@ export default function WorkspaceLayout() {
                   <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 select-none">
                     Active Members ({activeWorkspace?.members.length})
                   </div>
-                  {activeWorkspace?.members.map((member) => (
-                    <div key={member.id} className="flex items-center gap-3 text-sm">
+                  {activeWorkspace?.members.map((member) => {
+                    const presence = onlineUsersMap.get(member.id);
+                    // let presence: any
+                    // if(Array.isArray(onlineUsers) && onlineUsers.length > 0)
+                    // {
+                    //   presence = onlineUsersMap.get(member.id);
+                    // }
+                    return (<div key={member.id} className="flex items-center gap-3 text-sm">
                       <div className="relative select-none">
                         <div className={`size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs border border-primary/20`}>
                           {getInitials(member.name)}
                         </div>
                         <span
                           className={`absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-card ${
-                            member.status === "online"
-                              ? "bg-emerald-500"
-                              : member.status === "away"
-                              ? "bg-amber-500"
-                              : "bg-muted-foreground/45"
+                            presence ? "bg-emerald-500" : "bg-muted-foreground/45"
+                            // member.status === "online"
+                            //   ? "bg-emerald-500"
+                            //   : member.status === "away"
+                            //   ? "bg-amber-500"
+                            //   : "bg-muted-foreground/45"
                           }`}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-medium truncate text-foreground">{member.name}</span>
-                          {member.name === userName && (
+                          {member.id === authStatus?.user?.id && (
                             <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-px rounded font-semibold uppercase select-none">
                               You
                             </span>
@@ -472,10 +468,10 @@ export default function WorkspaceLayout() {
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{member.role}</p>
                       </div>
-                    </div>
-                  ))}
+                    </div>)
+                  })}
                 </div>
-              ) : (
+                 ) : (
                 /* Chat Tab Placeholder */
                 <div className="flex-1 flex flex-col justify-between overflow-hidden">
                   <div className="flex-1 overflow-y-auto p-4 space-y-3.5">

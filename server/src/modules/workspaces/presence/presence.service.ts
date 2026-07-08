@@ -33,6 +33,8 @@ class PresenceService {
             }
         );
 
+        console.log("workspace map:", Array.from(workspace.users.keys()));
+
         return workspace;
     }
 
@@ -60,7 +62,7 @@ class PresenceService {
         );
     }
 
-    leaveWorkspace( workspaceId: string, socketId: string ) {
+    removeConnection( workspaceId: string, socketId: string ) {
         const workspace = this.workspaces.get(workspaceId);
 
         if (!workspace) return;

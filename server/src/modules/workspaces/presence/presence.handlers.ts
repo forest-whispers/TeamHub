@@ -27,6 +27,8 @@ export async function joinWorkspace(
 
     socket.join(`workspace:${workspaceId}`);
 
+    console.log("socket join", socket.id);
+
     return users
 }
 
@@ -64,7 +66,7 @@ export async function leaveWorkspace(
         workspaceId
     );
 
-    const workspace = presenceService.leaveWorkspace(
+    presenceService.removeConnection(
             workspaceId,
             socket.id
         );

@@ -125,7 +125,8 @@ export function registerDocumentSockets(io: Server) {
         );
 
         client.on("disconnecting", async () => {
-            for (const room of client.rooms) {
+            const rooms = Array.from(client.rooms);
+            for (const room of rooms) {
                 if (!room.startsWith("document:")) continue;
 
                 const documentId = room.replace("document:", "");
