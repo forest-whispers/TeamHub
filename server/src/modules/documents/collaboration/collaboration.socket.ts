@@ -123,22 +123,5 @@ export function registerDocumentSockets(io: Server) {
                 }
             }
         );
-
-        client.on("disconnecting", async () => {
-            const rooms = Array.from(client.rooms);
-            for (const room of rooms) {
-                if (!room.startsWith("document:")) continue;
-
-                const documentId = room.replace("document:", "");
-
-                const update = unregisterAwarenessClient( documentId, socket.id );
-                if (update) {
-                    socket.to(`document:${documentId}`).emit("awareness:update", update);
-                }
-
-                await yjsService.removeUser(documentId, socket.id);
-            }
-            console.log("document:disconnected")
-        });
     });
 }

@@ -112,6 +112,7 @@ export function workspacePresenceSockets(io: Server) {
                         });
 
                     console.log("workspace:leave", client.id,)
+                    console.log("total users active in workspace:", users.length)
                     callback({
                         success: true,
                     });
@@ -126,33 +127,5 @@ export function workspacePresenceSockets(io: Server) {
                 }
             }
         );
-
-        client.on("disconnecting", () => {
-            const rooms = Array.from(client.rooms);
-            for (const room of rooms) {
-
-                if (!room.startsWith("workspace:")) {
-                    continue;
-                }
-
-                const workspaceId = room.replace("workspace:", "");
-
-                presenceService.removeConnection(
-                    workspaceId,
-                    client.id,
-                );
-
-                const users = presenceService.getPresenceList(workspaceId);
-
-                io.to(room).emit("workspace:presence",
-                    {
-                        users,
-                    },
-                );
-
-                console.log("workspace:disconnect", client.id,);
-            }
-        });
-
     });
 }
