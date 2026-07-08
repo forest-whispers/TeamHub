@@ -1,5 +1,6 @@
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { Link, NavLink, Outlet, useParams, useLocation, useNavigate } from "react-router-dom"
+import { socket } from "../lib/socket"
 import { useTheme } from "@/shared/providers/ThemeProvider"
 import { useCommandPalette } from "@/shared/providers/CommandPaletteProvider"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
@@ -56,7 +57,7 @@ export default function WorkspaceLayout() {
   const workspaceName = activeWorkspace?.name || "Engineering Team"
 
   // User details
-  const userName = authStatus?.user?.name || "Alex Developer"
+  const userName = authStatus?.user?.name || "Developer"
 
   // Navigation items
   const navItems = [
@@ -79,7 +80,6 @@ export default function WorkspaceLayout() {
       .toUpperCase()
       .substring(0, 2)
   }
-
 
   // Mock collaboration data
 
@@ -110,6 +110,36 @@ export default function WorkspaceLayout() {
       },
     })
   }
+
+  useEffect(() => {
+    socket.emit("workspace:join",
+      {
+        workspaceId,
+        presence: {
+        user: {
+          id: authStatus?.user?.id,
+          name: authStatus?.user?.name,
+          color: "red"
+        },
+
+        status: "online",
+
+        activity: "files"
+        }
+      },
+      (response: {
+        success: boolean;
+        message?: string;
+      }) => {
+        if (!response.success) {
+          console.error(response.message);
+        }
+      });
+
+      socket.on("workspace:presence", (data)=>{
+        console.log(data)
+      })
+  }, [getActiveModuleName()])
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark")
@@ -296,13 +326,13 @@ export default function WorkspaceLayout() {
         <main className="flex-1 overflow-hidden bg-background relative flex flex-col h-full">
           {/* Breadcrumb Header */}
           {!isDocumentDetailPage && (
-            <div className="h-12 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-10.5 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="font-medium hover:text-foreground transition-colors cursor-pointer">
                   {workspaceName}
                 </span>
-                <span className="text-border text-xs">/</span>
-                <span className="font-semibold text-foreground">{getActiveModuleName()}</span>
+                <span className="text-border text-lg">/</span>
+                <span className="font-semibold text-foreground text-sm">{getActiveModuleName()}</span>
               </div>
             </div>
           )}
