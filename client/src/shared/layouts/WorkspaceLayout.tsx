@@ -67,6 +67,14 @@ export default function WorkspaceLayout() {
 
   // Layout states
   const [isCollapsed, setIsCollapsed] = useState(false)
+  
+  // Route change listener to collapse/expand right sidebar by default
+  useEffect(() => {
+    const parts = location.pathname.split("/")
+    const lastPart = parts[parts.length - 1]
+    const isHome = !lastPart || lastPart === workspaceId || lastPart === "home"
+    setIsCollapsed(!isHome)
+  }, [location.pathname, workspaceId])
   const [activeTab, setActiveTab] = useState<"members" | "chat">("members")
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false)
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
@@ -201,7 +209,7 @@ export default function WorkspaceLayout() {
           </button>
 
           {/* User Avatar */}
-            <div className={`size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/25 cursor-default select-none shrink-0`}>
+            <div className={`size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/25 hover:scale-105 cursor-default select-none shrink-0`}>
               {getInitials(userName)}
             </div>
 
@@ -271,13 +279,13 @@ export default function WorkspaceLayout() {
 
         {/* Desktop Left Navigation Sidebar */}
         <aside className="hidden md:flex w-64 border-r border-border bg-card flex-col overflow-hidden shrink-0 select-none">
-          <div className="p-4 border-b border-border flex items-center gap-3 shrink-0">
+          <div className="p-3.5 border-b border-border flex items-center gap-3 shrink-0">
             <div className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0 uppercase">
               {workspaceName.substring(0, 2)}
             </div>
             <div className="min-w-0 flex-1 text-left">
-              <h3 className="font-semibold text-sm truncate text-foreground">{workspaceName}</h3>
-              <p className="text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">
+              <h3 className="font-semibold text-sm capitalize truncate text-foreground">{workspaceName}</h3>
+              <p className="text-[10px] text-muted-foreground truncate font-semibold tracking-wider">
                 {activeWorkspace?.members.length || 1} Member{activeWorkspace?.members.length !== 1 && "s"}
               </p>
             </div>
@@ -291,7 +299,7 @@ export default function WorkspaceLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer select-none ${
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary/80 text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   }`
                 }
@@ -315,7 +323,7 @@ export default function WorkspaceLayout() {
         <main className="flex-1 overflow-hidden bg-background relative flex flex-col h-full">
           {/* Breadcrumb Header */}
           {!isDocumentDetailPage && (
-            <div className="h-10.5 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
+            <div className="h-11 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="font-medium hover:text-foreground transition-colors cursor-pointer">
                   {workspaceName}
@@ -430,8 +438,8 @@ export default function WorkspaceLayout() {
               {/* Sidebar Content Placeholder View */}
               {activeTab === "members" ? (
                 /* Members Tab Placeholder */
-                <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 select-none">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4.5">
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-3 select-none">
                     Active Members ({activeWorkspace?.members.length})
                   </div>
                   {activeWorkspace?.members.map((member) => {

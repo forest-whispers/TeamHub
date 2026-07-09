@@ -70,7 +70,7 @@ export default function WorkspaceHome() {
       {!loadingWorkspace && !errorWorkspace && workspace && (
         <div className="bg-card border border-border rounded-xl p-6 mb-8 text-left select-none relative overflow-hidden">
           <div className="absolute right-0 top-0 bg-primary/5 size-40 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl mb-2 text-foreground">
+          <h1 className="text-2xl font-bold capitalize tracking-tight sm:text-3xl mb-2 text-foreground">
             {workspace.name}
           </h1>
           <p className="text-muted-foreground text-sm max-w-2xl mb-4 leading-relaxed">

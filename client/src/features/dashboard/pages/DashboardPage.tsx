@@ -41,7 +41,7 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 text-left">
       {/* Greeting Banner */}
       <section className="space-y-1.5">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+        <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl">
           Welcome back, {userName}
         </h1>
         <p className="text-muted-foreground text-sm">

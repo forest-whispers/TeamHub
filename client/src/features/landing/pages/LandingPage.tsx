@@ -141,10 +141,10 @@ function FeatureCard({ title, description, icon, delay, animationsPlayed }: Feat
         <div className="size-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-5 border border-primary/5 shadow-inner transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:bg-primary/20 group-hover:shadow-[0_0_15px_rgba(139,92,246,0.25)]">
           {icon}
         </div>
-        <h3 className="text-xl font-bold tracking-tight mb-2 group-hover:text-primary transition-colors duration-300">
+        <h3 className="text-lg font-semibold tracking-tight mb-1 text-foreground transition-colors duration-300 group-hover:text-primary">
           {title}
         </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+        <p className="text-sm text-muted-foreground/80 leading-relaxed mt-1">
           {description}
         </p>
       </div>
@@ -178,66 +178,11 @@ export default function LandingPage() {
     return false
   })
 
-  // Hero Section mounted states
-  const [mounted, setMounted] = useState(false)
-
-  // Hero typing animations states
-  const [typedHeroHeading, setTypedHeroHeading] = useState(animationsPlayed ? "The collaborative workspace built for engineering velocity" : "")
-  const [typedHeroParagraph, setTypedHeroParagraph] = useState(animationsPlayed ? "Bring your team's documents, project structures, and real-time collaboration together. Stop switching between chat apps, wiki pages, and trackers." : "")
-  const [showHeroButtons, setShowHeroButtons] = useState(animationsPlayed)
-
-  const heroHeadingText = "The collaborative workspace built for engineering velocity"
-  const heroParagraphText = "Bring your team's documents, project structures, and real-time collaboration together. Stop switching between chat apps, wiki pages, and trackers."
-
   useEffect(() => {
-    setMounted(true)
     if (typeof window !== "undefined" && !animationsPlayed) {
       sessionStorage.setItem("landingAnimationsPlayed", "true")
     }
   }, [animationsPlayed])
-
-  // Typing effect for Hero
-  useEffect(() => {
-    if (animationsPlayed || !mounted) return
-
-    let currentHeading = ""
-    let headingIndex = 0
-
-    const typeHeading = () => {
-      if (headingIndex < heroHeadingText.length) {
-        currentHeading += heroHeadingText[headingIndex]
-        setTypedHeroHeading(currentHeading)
-        headingIndex++
-        const delay = Math.random() * (40 - 20) + 20
-        setTimeout(typeHeading, delay)
-      } else {
-        setTimeout(startParagraph, 400)
-      }
-    }
-
-    let currentParagraph = ""
-    let paragraphIndex = 0
-
-    const typeParagraph = () => {
-      if (paragraphIndex < heroParagraphText.length) {
-        currentParagraph += heroParagraphText[paragraphIndex]
-        setTypedHeroParagraph(currentParagraph)
-        paragraphIndex++
-        const delay = Math.random() * (40 - 20) + 20
-        setTimeout(typeParagraph, delay)
-      } else {
-        setTimeout(() => {
-          setShowHeroButtons(true)
-        }, 250)
-      }
-    }
-
-    const startParagraph = () => {
-      typeParagraph()
-    }
-
-    typeHeading()
-  }, [mounted, animationsPlayed])
 
   // CTA viewport observer states
   const [ctaVisible, setCtaVisible] = useState(animationsPlayed)
@@ -404,16 +349,43 @@ export default function LandingPage() {
       {/* Grid lines layout wrapper for tech SaaS appearance */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-size[16px_28px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none -z-10" />
 
-      {/* Decorative Drift Ambient Blobs */}
-      <div className="absolute top-[8%] left-[-15%] w-162.5 h-162.5 bg-primary/4 rounded-full blur-[140px] pointer-events-none -z-20 bg-drift-slow" />
-      <div className="absolute top-[50%] right-[-15%] w-137.5 h-137.5 bg-blue-500/3 rounded-full blur-[130px] pointer-events-none -z-20 bg-drift-reverse" />
-
       {/* Hero Section */}
       <section
         ref={heroRef}
         onMouseMove={handleHeroMouseMove}
         className="relative overflow-hidden py-24 sm:py-25 flex flex-col items-center justify-center"
       >
+        {/* Background glows */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        >
+          <div
+            style={{
+              width: 700,
+              height: 700,
+              background:
+                "radial-gradient(circle, var(--hero-glow-1) 0%, transparent 65%)",
+              borderRadius: "50%",
+              transform: "translateY(-80px)",
+            }}
+          />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 right-0"
+        >
+          <div
+            style={{
+              width: 400,
+              height: 400,
+              background:
+                "radial-gradient(circle, var(--hero-glow-2) 0%, transparent 70%)",
+              borderRadius: "50%",
+            }}
+          />
+        </div>
+
         {/* Cursor-responsive spring light overlay */}
         <motion.div
           style={{
@@ -429,35 +401,38 @@ export default function LandingPage() {
           <motion.div
             initial={animationsPlayed ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={animationsPlayed ? { duration: 0 } : { duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-muted/40 text-xs font-semibold text-muted-foreground mb-8 badge-sparkles-animated select-none cursor-default"
+            transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-muted/40 text-xs font-semibold text-muted-foreground mb-3 badge-sparkles-animated select-none cursor-default"
           >
             <Sparkles className="size-3.5 text-primary animate-sparkles-icon" />
             <span>Introducing Real-Time Engineering Workspaces</span>
           </motion.div>
 
           {/* Heading */}
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-7xl max-w-4xl leading-[1.08] mb-6 min-h-12 sm:min-h-18">
-            <span>{typedHeroHeading}</span>
-            {mounted && typedHeroHeading.length < heroHeadingText.length && (
-              <span className="inline-block w-[3.5px] h-[0.9em] bg-primary ml-1 align-middle animate-pulse" />
-            )}
-            <span className="opacity-0 select-none">{heroHeadingText.slice(typedHeroHeading.length)}</span>
-          </h1>
+          <motion.h1
+            initial={animationsPlayed ? { opacity: 1, y: 0 } : { opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+            className="text-4xl font-extrabold tracking-tight sm:text-7xl max-w-2xl leading-[1.08] mb-6 text-foreground"
+          >
+            The collaborative workspace built for engineering velocity
+          </motion.h1>
 
           {/* Description */}
-          <p className="mt-8 text-lg sm:text-2xl text-muted-foreground max-w-2xl leading-relaxed min-h-12 sm:min-h-16">
-            <span>{typedHeroParagraph}</span>
-            {mounted && typedHeroHeading.length === heroHeadingText.length && typedHeroParagraph.length < heroParagraphText.length && (
-              <span className="inline-block w-[3.5px] h-[0.9em] bg-primary ml-1 align-middle animate-pulse" />
-            )}
-            <span className="opacity-0 select-none">{heroParagraphText.slice(typedHeroParagraph.length)}</span>
-          </p>
+          <motion.p
+            initial={animationsPlayed ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
+            className="mt-8 text-lg sm:text-xl text-muted-foreground max-w-2xl leading-relaxed"
+          >
+            Bring your team's documents, project structures, and real-time collaboration together. Stop switching between chat apps, wiki pages, and trackers.
+          </motion.p>
 
           {/* CTA Actions */}
           <motion.div
-            animate={showHeroButtons ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 15, scale: 0.95 }}
-            transition={animationsPlayed ? { duration: 0 } : { duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            initial={animationsPlayed ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 15, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.28 }}
             className="mt-12 flex flex-wrap gap-4 justify-center"
           >
             {authStatus?.isAuthenticated ? (
@@ -499,7 +474,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Highlights Section */}
-      <section className="py-20 sm:py-32 border-y border-border/50 bg-muted/10 relative">
+      <section className="py-20 sm:py-26 border-y border-border/50 bg-muted/10 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header section with scroll reveal */}
