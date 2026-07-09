@@ -95,7 +95,7 @@ function FeatureCard({ title, description, icon, delay, animationsPlayed }: Feat
           }
         }
       }}
-      className="flex flex-col p-8 border border-border/80 rounded-2xl bg-card/60 backdrop-blur-md cursor-pointer select-none relative overflow-hidden group shadow-sm transition-colors duration-300 hover:border-primary/20"
+      className="flex flex-col p-8 border border-border/40 rounded-2xl bg-card/90 backdrop-blur-md cursor-pointer select-none relative overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.01)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary/30 transition-all duration-300"
     >
       {/* 3D Border Glow Reflection Layer */}
       <motion.div
@@ -474,7 +474,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Highlights Section */}
-      <section className="py-20 sm:py-26 border-y border-border/50 bg-muted/10 relative">
+      <section className="py-20 sm:py-26 border-t border-b border-border/30 bg-linear-to-b from-background via-muted/10 to-muted/25 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header section with scroll reveal */}

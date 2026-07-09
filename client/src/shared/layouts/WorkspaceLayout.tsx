@@ -253,16 +253,16 @@ export default function WorkspaceLayout() {
                     to={`/workspace/${workspaceId}/${item.path}`}
                     onClick={() => setIsMobileLeftOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer select-none ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      }`
-                    }
-                  >
-                    <item.icon className="size-4 shrink-0" />
-                    <span>{item.name}</span>
-                  </NavLink>
+                      `flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ease-premium cursor-pointer select-none ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`
+                }
+              >
+                <item.icon className="size-4 shrink-0" />
+                <span>{item.name}</span>
+              </NavLink>
                 ))}
               </nav>
             </aside>
@@ -297,7 +297,7 @@ export default function WorkspaceLayout() {
                 key={item.path}
                 to={`/workspace/${workspaceId}/${item.path}`}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer select-none ${
+                  `flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ease-premium cursor-pointer select-none ${
                     isActive
                       ? "bg-primary/80 text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -359,7 +359,7 @@ export default function WorkspaceLayout() {
                 {/* Expand Button */}
                 <button
                   onClick={() => setIsCollapsed(false)}
-                  className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer"
+                  className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-all duration-200 ease-premium cursor-pointer"
                   title="Expand Sidebar"
                 >
                   <ChevronLeft className="size-4.5" />
@@ -428,7 +428,7 @@ export default function WorkspaceLayout() {
                 {/* Collapse Button */}
                 <button
                   onClick={() => setIsCollapsed(true)}
-                  className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer"
+                  className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-all duration-200 ease-premium cursor-pointer"
                   title="Collapse Sidebar"
                 >
                   <ChevronRight className="size-4.5" />

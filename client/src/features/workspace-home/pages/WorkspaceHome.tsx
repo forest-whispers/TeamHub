@@ -68,7 +68,7 @@ export default function WorkspaceHome() {
       )}
 
       {!loadingWorkspace && !errorWorkspace && workspace && (
-        <div className="bg-card border border-border rounded-xl p-6 mb-8 text-left select-none relative overflow-hidden">
+        <div className="bg-card border border-border/40 rounded-xl p-6 mb-8 text-left select-none relative overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.03)]">
           <div className="absolute right-0 top-0 bg-primary/5 size-40 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
           <h1 className="text-2xl font-bold capitalize tracking-tight sm:text-3xl mb-2 text-foreground">
             {workspace.name}
@@ -134,7 +134,7 @@ export default function WorkspaceHome() {
                 <Card
                   key={doc.id}
                   onClick={() => navigate(`/workspace/${workspaceId}/documents`)}
-                  className="border border-border hover:border-border/80 transition-colors cursor-pointer group flex flex-col justify-between"
+                  className="border border-border/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200 ease-premium cursor-pointer group flex flex-col justify-between"
                 >
                   <CardHeader className="pb-3 text-left">
                     <CardTitle className="text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-1.5">
@@ -162,7 +162,7 @@ export default function WorkspaceHome() {
         {/* Quick Actions Panel */}
         <div className="lg:col-span-1 space-y-3">
           <h2 className="text-lg font-bold tracking-tight text-left select-none opacity-0 pointer-events-none hidden lg:block">Actions</h2>
-          <Card className="border border-border">
+          <Card className="border border-border/30 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-card/75">
             <CardHeader className="pb-3 text-left">
               <CardTitle className="text-sm font-bold tracking-tight uppercase text-muted-foreground">Quick Actions</CardTitle>
               <CardDescription className="text-xs">Common workspace actions</CardDescription>
@@ -220,7 +220,7 @@ export default function WorkspaceHome() {
           )}
 
           {!loadingHome && !errorHome && activities && activities.length > 0 && (
-            <Card className="border border-border">
+            <Card className="border border-border/30 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-card/75">
               <CardContent className="p-4 divide-y divide-border/60">
                 {activities.map((item) => (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex gap-3 text-xs align-top text-left">
@@ -289,7 +289,7 @@ export default function WorkspaceHome() {
           )}
 
           {!loadingWorkspace && !errorWorkspace && members && members.length > 0 && (
-            <Card className="border border-border">
+            <Card className="border border-border/30 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-card/75">
               <CardHeader className="pb-3 text-left">
                 <CardTitle className="text-sm font-bold tracking-tight uppercase text-muted-foreground">Members</CardTitle>
                 <CardDescription className="text-xs">Workspace collaborators</CardDescription>

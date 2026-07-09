@@ -111,7 +111,7 @@ export default function DashboardPage() {
             {!isLoading && !error && recentDoc && (
               <Card
                 onClick={() => navigate(`/workspace/${recentDoc.workspaceId}`)}
-                className="border border-border hover:border-border/80 transition-colors cursor-pointer group"
+                className="border border-border/40 shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-200 ease-premium cursor-pointer group"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -175,7 +175,7 @@ export default function DashboardPage() {
                   <Card
                     key={workspace.id}
                     onClick={() => navigate(`/workspace/${workspace.id}`)}
-                    className="border border-border hover:border-border/80 transition-colors cursor-pointer flex flex-col justify-between group"
+                    className="border border-border/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200 ease-premium cursor-pointer flex flex-col justify-between group"
                   >
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base font-bold group-hover:text-primary transition-colors">
@@ -243,7 +243,7 @@ export default function DashboardPage() {
           )}
 
           {!isLoading && !error && activity && activity.length > 0 && (
-            <Card className="border border-border">
+            <Card className="border border-border/30 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-card/75">
               <CardContent className="p-4 divide-y divide-border/60">
                 {activity.map((item) => (
                   <div key={item.id} className="py-3.5 first:pt-0 last:pb-0 flex gap-3 text-xs align-top">
