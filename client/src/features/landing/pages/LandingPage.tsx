@@ -95,7 +95,7 @@ function FeatureCard({ title, description, icon, delay, animationsPlayed }: Feat
           }
         }
       }}
-      className="flex flex-col p-8 border border-border/40 rounded-2xl bg-card/90 backdrop-blur-md cursor-pointer select-none relative overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.01)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary/30 transition-all duration-300"
+      className="flex flex-col p-8 border border-border/60 rounded-2xl bg-card/95 backdrop-blur-md cursor-pointer select-none relative overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.01)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary/30 transition-all duration-300"
     >
       {/* 3D Border Glow Reflection Layer */}
       <motion.div
@@ -353,7 +353,7 @@ export default function LandingPage() {
       <section
         ref={heroRef}
         onMouseMove={handleHeroMouseMove}
-        className="relative overflow-hidden py-24 sm:py-25 flex flex-col items-center justify-center"
+        className="relative overflow-hidden py-22 sm:py-24 flex flex-col items-center justify-center"
       >
         {/* Background glows */}
         <div
@@ -413,9 +413,13 @@ export default function LandingPage() {
             initial={animationsPlayed ? { opacity: 1, y: 0 } : { opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-            className="text-4xl font-extrabold tracking-tight sm:text-7xl max-w-2xl leading-[1.08] mb-6 text-foreground"
+            className="text-4xl font-extrabold tracking-tight sm:text-7xl max-w-4xl leading-[1.08] mb-3 text-foreground"
           >
-            The collaborative workspace built for engineering velocity
+            <span className="block">The collaborative workspace </span>
+            <span className="block pb-1 bg-linear-to-r from-[#A78BFA] via-[#8B5CF6] to-[#6366F1] bg-clip-text drop-shadow-[0_0_16px_rgba(139,92,246,0.25)] text-transparent">
+              built for engineering teams
+            </span>
+            {/* <p className="text-primary/80">built for engineering velocity</p> */}
           </motion.h1>
 
           {/* Description */}
@@ -423,9 +427,9 @@ export default function LandingPage() {
             initial={animationsPlayed ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
-            className="mt-8 text-lg sm:text-xl text-muted-foreground max-w-2xl leading-relaxed"
+            className="text-lg sm:text-xl font-medium text-muted-foreground max-w-xl leading-relaxed"
           >
-            Bring your team's documents, project structures, and real-time collaboration together. Stop switching between chat apps, wiki pages, and trackers.
+            One workspace for documents, discussions, and projects—built for fast-moving engineering teams.
           </motion.p>
 
           {/* CTA Actions */}
@@ -433,7 +437,7 @@ export default function LandingPage() {
             initial={animationsPlayed ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 15, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={animationsPlayed ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.28 }}
-            className="mt-12 flex flex-wrap gap-4 justify-center"
+            className="mt-9 flex flex-wrap gap-4 justify-center"
           >
             {authStatus?.isAuthenticated ? (
               <motion.div
@@ -474,7 +478,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Highlights Section */}
-      <section className="py-20 sm:py-26 border-t border-b border-border/30 bg-linear-to-b from-background via-muted/10 to-muted/25 relative">
+      <section className="py-16 sm:py-20 border-t border-b border-border/30 bg-linear-to-b from-background via-muted/10 to-muted/25 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header section with scroll reveal */}
