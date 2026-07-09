@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Clock,
   ArrowRight,
+  Crown,
 } from "lucide-react"
 
 export default function WorkspaceHome() {
@@ -321,8 +322,11 @@ export default function WorkspaceHome() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 font-medium text-foreground">
                         <span className="truncate">{member.name}</span>
+                        {(member.role === "OWNER" || member.id === workspace?.ownerId) && (
+                          <Crown className="size-2.5 text-amber-500 fill-amber-500 shrink-0" />
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{member.role}</p>
+                      <p className="text-xs text-muted-foreground lowercase truncate">{member.email}</p>
                     </div>
                   </div>
                 ))}

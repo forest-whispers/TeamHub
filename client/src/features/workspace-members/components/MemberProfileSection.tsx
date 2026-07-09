@@ -1,4 +1,4 @@
-import { Mail, Shield } from "lucide-react"
+import { Mail, Shield, Crown } from "lucide-react"
 
 interface MemberProfileSectionProps {
   name: string
@@ -75,7 +75,12 @@ export function MemberProfileSection({
       </div>
 
       <div className="space-y-1">
-        <h3 className="font-bold text-base text-foreground leading-tight">{name}</h3>
+        <h3 className="font-bold text-base text-foreground leading-tight flex items-center justify-center gap-1.5">
+          <span>{name}</span>
+          {role === "OWNER" && (
+            <Crown className="size-4 text-amber-500 fill-amber-500 shrink-0" />
+          )}
+        </h3>
 
         {/* Email row */}
         <span className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground truncate">

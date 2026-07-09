@@ -33,6 +33,7 @@ import {
   Menu,
   X,
   Sparkles,
+  Crown,
 } from "lucide-react"
 
 export default function WorkspaceLayout() {
@@ -468,13 +469,18 @@ export default function WorkspaceLayout() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-medium truncate text-foreground">{member.name}</span>
+                          {(member.role === "OWNER" || member.id === activeWorkspace?.ownerId) && (
+                            <Crown className="size-2.5 text-amber-500 fill-amber-500 shrink-0" />
+                          )}
                           {member.id === authStatus?.user?.id && (
                             <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-px rounded font-semibold uppercase select-none">
                               You
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">{member.role}</p>
+                        <p className={`text-xs truncate ${presence?.status ? 'text-foreground/85' : 'text-muted-foreground/60'}`}>
+                          {presence?.status || "offline"}
+                        </p>
                       </div>
                     </div>)
                   })}

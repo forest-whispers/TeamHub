@@ -10,7 +10,7 @@ import { Input } from "@/shared/components/ui/input"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
 import { toast } from "sonner"
-import { Search, Filter, UserPlus, Mail, Shield, AlertCircle, Users2, HelpCircle } from "lucide-react"
+import { Search, Filter, UserPlus, Mail, Shield, AlertCircle, Users2, HelpCircle, Crown } from "lucide-react"
 
 export default function WorkspaceMembers() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
@@ -296,8 +296,11 @@ export default function WorkspaceMembers() {
                     {/* Member Details */}
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center justify-between gap-1.5">
-                        <span className="font-semibold text-sm text-foreground truncate block leading-tight">
-                          {member.name}
+                        <span className="font-semibold text-sm text-foreground truncate leading-tight flex items-center gap-1.5">
+                          <span>{member.name}</span>
+                          {(member.role === "OWNER" || member.id === workspace?.ownerId) && (
+                            <Crown className="size-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                          )}
                         </span>
                       </div>
                       <span className="flex items-center gap-1 text-[11px] text-muted-foreground truncate leading-none">
