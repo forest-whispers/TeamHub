@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import *  as authService from "./auth.service.js";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { clearAuthCookies, setAuthCookies } from "../../shared/utils/cookies.js";
-import { REFRESH_COOKIE_NAME } from "../../config/constants.js";
+import { constants } from "../../config/constants.js";
 import { UnauthorizedError } from "../../shared/errors/index.js";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
@@ -22,7 +22,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
-    const refreshToken = req.cookies[REFRESH_COOKIE_NAME];
+    const refreshToken = req.cookies[constants.REFRESH_COOKIE_NAME];
 
     if (!refreshToken) {
         throw new UnauthorizedError("Refresh token not found");
@@ -36,7 +36,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-    const refreshToken = req.cookies[REFRESH_COOKIE_NAME];
+    const refreshToken = req.cookies[constants.REFRESH_COOKIE_NAME];
 
     if (refreshToken) {
         await authService.logout(refreshToken);

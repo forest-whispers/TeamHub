@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 
+import { env } from "../config/env.js";
 import { router } from "./routes.js";
 import { NotFoundError } from "../shared/errors/index.js";
 
@@ -10,7 +11,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: env.CLIENT_URL,
         credentials: true,
     })
 );

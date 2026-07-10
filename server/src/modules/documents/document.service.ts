@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma.js";
 import { ensureWorkspaceMember } from "../../shared/authorization/workspace.js";
 import { ensureDocumentInWorkspace } from "../../shared/authorization/document.js";
-import { EMPTY_DOCUMENT } from "../../config/constants.js";
+import { constants } from "../../config/constants.js";
 import type { CreateDocumentDto, UpdateDocumentDto } from "./document.types.js";
 
 export const createDocument = async (requesterId: string, workspaceId: string, data: CreateDocumentDto) => {
@@ -10,8 +10,7 @@ export const createDocument = async (requesterId: string, workspaceId: string, d
     const document = await prisma.document.create({
         data: {
             title: data.title,
-            // icon: data.icon ?? null,
-            content: EMPTY_DOCUMENT,
+            content: constants.EMPTY_DOCUMENT,
             workspaceId,
             createdById: requesterId,
             ...(data.icon !== undefined && { icon: data.icon }),

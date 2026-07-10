@@ -1,4 +1,4 @@
-import { REFRESH_COOKIE_MAX_AGE } from "../../config/constants.js";
+import { constants } from "../../config/constants.js";
 
 export const getRefreshTokenExpiry = () =>
-    new Date(Date.now() + REFRESH_COOKIE_MAX_AGE);
+    new Date(Date.now() + constants.REFRESH_COOKIE_MAX_AGE);

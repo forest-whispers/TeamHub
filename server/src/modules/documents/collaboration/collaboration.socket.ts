@@ -2,9 +2,7 @@ import type { Server } from "socket.io";
 
 import type { AuthenticatedSocket } from "../../../infrastructure/websocket/types.js";
 import { joinDocument, updateDocument, updateAwareness, leaveDocument } from "./collaboration.service.js";
-import { unregisterAwarenessClient } from "./awareness.service.js";
 import type { JoinDocumentPayload, DocumentUpdatePayload, AwarenessUpdatePayload, LeaveDocumentPayload, SocketResponse } from "./collaboration.types.ts";
-import { yjsService } from "./yjs.service.js";
 
 export function registerDocumentSockets(io: Server) {
     io.on("connection", (socket) => {
