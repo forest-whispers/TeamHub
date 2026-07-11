@@ -3,6 +3,7 @@ import { ensureWorkspaceMember } from "../../shared/authorization/workspace.js";
 import { ensureDocumentInWorkspace } from "../../shared/authorization/document.js";
 import { constants } from "../../config/constants.js";
 import type { CreateDocumentDto, UpdateDocumentDto } from "./document.types.js";
+import { eventBus } from "../../infrastructure/events/event-bus.js";
 
 export const createDocument = async (requesterId: string, workspaceId: string, data: CreateDocumentDto) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
@@ -18,6 +19,13 @@ export const createDocument = async (requesterId: string, workspaceId: string, d
         select: {
             id: true,
         },
+    });
+
+    await eventBus.emit("document.created", {
+        workspaceId,
+        documentId: document.id,
+        actorId: requesterId,
+        title: data.title,
     });
 
     return document;
@@ -84,9 +92,9 @@ export const getDocument = async (requesterId: string, workspaceId: string, docu
 export const updateDocument = async ( requesterId: string, workspaceId: string, documentId: string, data: UpdateDocumentDto) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
 
-    await ensureDocumentInWorkspace(workspaceId, documentId);
+    const existingDocument = await ensureDocumentInWorkspace(workspaceId, documentId);
 
-    return prisma.document.update({
+    const updatedDocument = await prisma.document.update({
         where: { id: documentId },
         data,
         select: {
@@ -105,6 +113,18 @@ export const updateDocument = async ( requesterId: string, workspaceId: string, 
             updatedAt: true,
         },
     });
+
+    if ( data.title !== undefined && data.title !== existingDocument.title ) {
+        await eventBus.emit("document.renamed", {
+            workspaceId,
+            documentId,
+            actorId: requesterId,
+            oldTitle: existingDocument.title,
+            newTitle: updatedDocument.title,
+        });
+    }
+
+    return updateDocument;
 };
 
 export async function updateDocumentContent( requesterId: string, workspaceId: string, documentId: string, content: any) {
@@ -131,9 +151,16 @@ export async function updateDocumentContent( requesterId: string, workspaceId: s
 export const deleteDocument = async (requesterId: string, workspaceId: string, documentId: string) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
 
-    await ensureDocumentInWorkspace(workspaceId, documentId);
+    const existingDocument = await ensureDocumentInWorkspace(workspaceId, documentId);
 
     await prisma.document.delete({
         where: { id: documentId },
+    });
+
+    await eventBus.emit("document.deleted", {
+        workspaceId,
+        documentId,
+        actorId: requesterId,
+        title: existingDocument.title,
     });
 };

@@ -9,20 +9,30 @@ import { NotFoundError } from "../shared/errors/index.js";
 
 const app = express();
 
-const allowedOrigins = env.CLIENT_ORIGINS?.split(',') || ['http://localhost:3000'];
+const allowedOrigins = ['http://localhost:5173'];
+// const allowedOrigins = env.CLIENT_ORIGINS?.split(',') || ['http://localhost:5173'];
 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        credentials: true,
-    }
-));
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        const isAllowedExact = allowedOrigins.includes(origin);
+
+        const isAllowedVercel = origin.endsWith('.vercel.app') &&
+            !origin.endsWith('vercel.app'); // Prevents fake-vercel.app
+
+
+        if (isAllowedExact || isAllowedVercel) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+})
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
