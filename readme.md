@@ -92,9 +92,9 @@ Instead of distributing engineering knowledge across disconnected chat apps, doc
 
 ## Why TeamHub?
 
-Engineering teams often distribute technical specifications, project decisions, discussions, files, and shared knowledge across disconnected tools.
+Modern engineering work is fragmented across document editors, chat applications, project trackers, and file storage.
 
-TeamHub explores a different model: a persistent workspace where documents, conversations, collaboration history, and team context remain connected.
+TeamHub explores a workspace-first model where collaboration, documentation, communication, and shared context remain connected in one persistent environment.
 
 ```text
                               Workspace
@@ -115,88 +115,77 @@ TeamHub explores a different model: a persistent workspace where documents, conv
 
 ---
 
+🚧 TeamHub is currently under active development. The README describes the planned V1 feature set. Implemented features are marked in the checklist below.
+
 ## Core Features
 
 ### ⚡ Real-Time Collaborative Editing
 
-- [x] Multi-user simultaneous document editing.
-- [x] CRDT-based synchronization powered by **Yjs**.
-- [x] Conflict-free merging of concurrent document changes.
-- [x] Live collaborator carets and remote text selections.
-- [x] Real-time document awareness and collaborator visibility.
-- [x] Synchronization of document updates through **Socket.IO**.
-- [x] Persistent document state across collaborative sessions.
+- [x] Multi-user collaborative editing powered by **Yjs** CRDTs.
+- [x] Conflict-free synchronization of concurrent document changes.
+- [x] Live collaborator awareness, carets, and text selections.
+- [x] Real-time document synchronization via **Socket.IO**.
+- [x] Persistent collaborative document state.
 
 ### 🟢 Workspace Presence & Awareness
 
-- [x] Real-time online and offline workspace presence.
-- [x] Socket connection tracking for active workspace members.
+- [x] Real-time workspace member presence.
 - [x] Live presence synchronization across connected clients.
-- [x] Automatic cleanup when users leave, refresh, or disconnect.
-- [x] Document-level awareness independent of workspace-level presence.
-- [ ] Activity-aware presence states such as active and away.
+- [x] Automatic connection and disconnection lifecycle management.
+- [x] Independent workspace presence and document awareness models.
+- [ ] Activity-aware presence states (Active, Away, etc.).
 
 ### 💬 Real-Time Workspace Chat
 
 - [ ] Workspace-scoped team conversations.
-- [ ] Real-time message delivery through Socket.IO.
+- [ ] Real-time messaging with persistent history.
 - [ ] Message editing and deletion.
-- [ ] Persistent message history.
-- [ ] Unread message counts.
+- [ ] Unread message tracking.
 - [ ] Reconnection-aware synchronization.
 
 ### 💭 Contextual Comments & Discussions
 
-- [ ] Comments attached directly to collaborative document content.
-- [ ] Threaded discussions around document context.
-- [ ] Reply and resolution workflows.
+- [ ] Document-attached comments and threaded discussions.
+- [ ] Replies, resolutions, and author attribution.
 - [ ] Real-time comment synchronization.
-- [ ] Author attribution and timestamps.
 
 ### 🕘 Document Version History
 
 - [ ] Persistent document revisions.
-- [ ] Historical version browsing.
-- [ ] Restore previous document versions.
+- [ ] Browse, compare, and restore historical versions.
 - [ ] Version metadata and author attribution.
-- [ ] Compare document revisions where applicable.
 
 ### 🔔 Real-Time Notifications
 
 - [ ] Persistent in-app notification center.
-- [ ] Real-time notification delivery.
-- [ ] Read and unread notification states.
+- [ ] Real-time notification delivery and read states.
 - [ ] Workspace-scoped notification events.
-- [ ] Upstash Redis-backed infrastructure for selected real-time and ephemeral workflows.
+- [ ] Upstash Redis-backed notification infrastructure.
 
 ### 🔐 Workspace Isolation & Authorization
 
 - [x] Authenticated workspace access.
-- [x] Workspace membership validation at backend boundaries.
-- [x] Owner and member role differentiation.
-- [x] Protected workspace resources and operations.
-- [x] Workspace-scoped data isolation.
-- [x] Authorization checks across REST and WebSocket operations.
+- [x] Workspace-scoped authorization and data isolation.
+- [x] Role-based permissions for owners and members.
+- [x] Authorization across REST and WebSocket operations.
 
 ### 📁 Shared Workspace Files
 
 - [ ] Workspace-scoped file management.
-- [ ] Shared engineering resources within workspace context.
-- [ ] File metadata and organization.
-- [ ] Secure resource access based on workspace membership.
+- [ ] Shared resources with secure member access.
+- [ ] File organization and metadata.
 
 ### 📊 Activity & Workspace Context
 
-- [ ] Persistent activity feed for meaningful workspace events.
-- [ ] Document, member, comment, and communication activity.
-- [ ] Actor attribution and timestamps.
-- [ ] Chronological workspace history.
+- [ ] Persistent workspace activity feed.
+- [ ] Member, document, comment, and chat events.
+- [ ] Chronological history with actor attribution.
 
 ### 🛡️ API Protection & Rate Limiting
 
 - [ ] Distributed API rate limiting with **Upstash Rate Limit**.
-- [ ] Protection for authentication and sensitive API operations.
-- [ ] Serverless-compatible rate limiting backed by Upstash Redis.
+- [ ] Protection for authentication and sensitive endpoints.
+- [ ] Serverless-compatible Redis-backed infrastructure.
 
 ---
 
@@ -285,33 +274,39 @@ TeamHub separates persistent application data, server state, collaborative docum
 
 ## Engineering Highlights
 
+Rather than focusing only on features, TeamHub is designed around a set of architectural decisions that support real-time collaboration, workspace isolation, and scalable synchronization. The following highlights summarize some of the core engineering concepts behind the project.
+
 ### CRDT-Based Collaborative Editing
 
-TeamHub uses **Yjs** to synchronize concurrent document edits without relying on traditional last-write-wins behavior. Multiple users can modify the same document simultaneously while CRDT updates are merged into a consistent shared state.
+TeamHub uses **Yjs** CRDTs to merge concurrent document edits without relying on traditional last-write-wins conflict resolution. Multiple users can edit the same document simultaneously while maintaining a consistent shared state.
 
 ### Separate Presence and Document Awareness Models
 
-Workspace presence and collaborative document awareness solve different problems and are intentionally modeled independently:
+TeamHub models workspace presence and document awareness as separate systems because they solve different collaboration problems:
 
 - **Workspace presence** tracks which members are currently connected to a workspace.
 - **Document awareness** tracks ephemeral collaboration state such as active editors, remote carets, selections, and typing state.
 
-This separation prevents document-specific collaboration concerns from becoming tightly coupled to general workspace presence.
+Keeping these concerns separate simplifies lifecycle management and prevents document-specific collaboration from becoming tightly coupled to general workspace connectivity.
+
+### Server State and Real-Time Synchronization
+
+**TanStack Query** manages cached server state on the client, while **Socket.IO** delivers time-sensitive collaboration events. Separating these responsibilities allows cached API data and real-time updates to work together without making the WebSocket layer responsible for all application state.
 
 ### Real-Time Lifecycle Management
 
-Socket connections are tracked across workspace and document rooms with explicit handling for:
+TeamHub explicitly manages connection lifecycles across workspace and document rooms, including:
 
 - Joining collaborative sessions.
-- Navigating away from workspaces or documents.
-- Browser refreshes and tab closure.
+- Navigating between workspaces and documents.
+- Browser refreshes and tab closures.
 - Unexpected socket disconnections.
 - Removal of stale presence and awareness state.
 - Broadcasting updated collaborator state to remaining clients.
 
 ### Workspace-Scoped Authorization
 
-Backend operations validate workspace membership before exposing protected resources or accepting real-time updates. Authorization boundaries apply to both traditional REST operations and WebSocket events.
+Every protected operation validates workspace membership before exposing resources or accepting updates. Authorization boundaries are enforced consistently across both REST endpoints and WebSocket events.
 
 ### Server State and Real-Time Synchronization
 
@@ -319,11 +314,11 @@ Backend operations validate workspace membership before exposing protected resou
 
 ### Persistent Collaborative Documents
 
-Collaborative Yjs document state is maintained while users actively work on a document and persisted when appropriate, allowing real-time editing sessions to coexist with durable document storage.
+Collaborative **Yjs** document state remains synchronized while users actively edit and is persisted when appropriate, allowing real-time collaboration to coexist with durable document storage.
 
 ### Distributed Infrastructure with Upstash
 
-TeamHub uses **Upstash Redis** and **Upstash Rate Limit** for selected infrastructure concerns that benefit from globally accessible, serverless-compatible distributed state without requiring a permanently running self-hosted Redis instance.
+**Upstash Redis** and **Upstash Rate Limit** support distributed infrastructure such as notification workflows and API rate limiting, providing globally accessible state without requiring a self-managed Redis deployment.
 
 ---
 
@@ -430,16 +425,6 @@ client/
 server/
 └── .env
 ```
-
-Environment variables include configuration for:
-
-- Backend API URL
-- PostgreSQL database connection
-- Authentication secrets
-- Upstash Redis
-- Upstash Rate Limit
-- File storage provider
-- Other deployment-specific services
 
 Refer to the example environment files in the repository for the exact required variables.
 

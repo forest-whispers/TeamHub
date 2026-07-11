@@ -5,10 +5,18 @@ import { env } from "../../config/env.js";
 
 let io: Server;
 
+const allowedOrigins = env.CLIENT_ORIGINS?.split(',') || ['http://localhost:3000'];
+
 export function createSocket(httpServer: HttpServer) {
     io = new Server(httpServer, {
         cors: {
-            origin: env.CLIENT_URL,
+            origin: function (origin, callback) {
+                if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+                    callback(null, true);
+                } else {
+                    callback(new Error('Not allowed by CORS'));
+                }
+            },
             credentials: true,
         },
     });
