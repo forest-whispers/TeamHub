@@ -9,11 +9,11 @@ import { registerEventSubscribers } from "../infrastructure/events/register-even
 import { createSocket } from "../infrastructure/websocket/socket.js";
 import { initializeWebSocket } from "../infrastructure/websocket/index.js";
 
-registerEventSubscribers();
-
 const server = http.createServer(app);
 const io = createSocket(server);
 initializeWebSocket(io);
+
+registerEventSubscribers();
 
 const PORT = env.PORT
 

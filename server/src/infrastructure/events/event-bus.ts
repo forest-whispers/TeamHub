@@ -39,9 +39,16 @@ class EventBus {
         }
 
         await Promise.all(
-            Array.from(eventHandlers).map(handler =>
-                handler(payload)
-            )
+            Array.from(eventHandlers).map(async (handler) => {
+                try {
+                    await handler(payload);
+                } catch (error) {
+                    console.error(
+                        `[EVENT BUS] Subscriber failed for "${eventName}"`,
+                        error
+                    );
+                }
+            })
         );
     }
 }
