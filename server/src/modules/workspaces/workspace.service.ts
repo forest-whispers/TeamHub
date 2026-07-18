@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Prisma, type Workspace } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
+import { queryWorkspaceActivities } from "../activity/activity.service.js";
 import { ensureWorkspaceMember, ensureWorkspaceOwner } from "../../shared/authorization/workspace.js";
 import { AppError, BadRequestError, NotFoundError } from "../../shared/errors/index.js";
 import type { CreateWorkspaceDto, JoinWorkspaceDto, UpdateWorkspaceDto, WorkspaceResponse } from "./workspace.types.js";
@@ -126,6 +127,23 @@ export const getWorkspace = async (userId: string, workspaceId: string) => {
         })),
       };
 };
+
+export async function getWorkspaceHome( requesterId: string, workspaceId: string, ) {
+    await ensureWorkspaceMember( requesterId, workspaceId, );
+
+    const [
+        activityResult,
+    ] = await Promise.all([
+        queryWorkspaceActivities( workspaceId, { limit: 3, }, ),
+    ]);
+
+    return {
+        recentDocuments: [],
+
+        recentActivity:
+            activityResult,
+    };
+}
 
 export const updateWorkspace = async ( userId: string, workspaceId: string, data: UpdateWorkspaceDto ) => {
     await ensureWorkspaceOwner(userId, workspaceId);

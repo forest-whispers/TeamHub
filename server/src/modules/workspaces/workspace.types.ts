@@ -1,3 +1,6 @@
+import type { WorkspaceActivity } from "../activity/activity.types.js";
+import { getWorkspaceActivities } from "../activity/activity.service.js";
+
 export interface CreateWorkspaceDto {
     name: string;
     description?: string;
@@ -17,4 +20,11 @@ export interface JoinWorkspaceDto {
 export interface WorkspaceResponse {
     id: string;
     inviteCode: string;
+}
+
+export interface WorkspaceHomeData {
+    recentDocuments: [];
+
+    // recentActivity: WorkspaceActivity[];
+    recentActivity: Awaited< ReturnType<typeof getWorkspaceActivities> >["activities"];
 }

@@ -20,6 +20,17 @@ export const getWorkspace = asyncHandler(async (req: Request, res: Response) => 
     res.json(workspace);
 });
 
+export const getWorkspaceHome = asyncHandler(async (req: Request, res: Response) => {
+
+    const home =
+        await workspaceService.getWorkspaceHome(req.user!.id, req.params.workspaceId);
+
+    res.status(200).json({
+        success: true,
+        data: home,
+    });
+})
+
 export const updateWorkspace = asyncHandler(async (req: Request, res: Response) => {
     const workspace = await workspaceService.updateWorkspace(req.user!.id, req.params.workspaceId, req.body);
 

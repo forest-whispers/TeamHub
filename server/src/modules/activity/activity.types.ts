@@ -22,3 +22,19 @@ export interface GetActivitiesQuery {
     cursor?: string;
     limit?: number;
 }
+
+export interface WorkspaceActivity {
+    id: string;
+    type: string;
+    entityType: string;
+    entityId: string;
+    metadata: Record<string, unknown> | null;
+    workspaceId: string;
+    createdAt: string;
+
+    actor: {
+        id: string;
+        name: string;
+        avatar: string | null;
+    };
+}

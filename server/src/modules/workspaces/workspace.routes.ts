@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
-import { createWorkspace, deleteWorkspace, getWorkspace, getWorkspaces, joinWorkspace, regenerateInviteCode, updateWorkspace } from "./workspace.controller.js";
+import { createWorkspace, deleteWorkspace, getWorkspace, getWorkspaces, getWorkspaceHome, joinWorkspace, regenerateInviteCode, updateWorkspace } from "./workspace.controller.js";
 import { validate } from "../../middleware/validate.js";
 import * as validator from "./workspace.validator.js";
 
@@ -15,6 +15,8 @@ router.get("/", getWorkspaces);
 router.post("/join", validate(validator.joinWorkspaceSchema), joinWorkspace);
 
 router.get("/:workspaceId", getWorkspace);
+
+router.get("/:workspaceId/home", getWorkspaceHome);
 
 router.patch("/:workspaceId", validate(validator.updateWorkspaceSchema), updateWorkspace);
 
