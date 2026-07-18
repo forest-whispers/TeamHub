@@ -1,8 +1,8 @@
 import { ActivityItem } from "./ActivityItem"
-import type { WorkspaceActivityItem } from "../types"
+import type { FormattedActivity } from "../types/ui"
 
 interface ActivityTimelineProps {
-  activities: WorkspaceActivityItem[]
+  activities: FormattedActivity[]
 }
 
 export function ActivityTimeline({ activities }: ActivityTimelineProps) {

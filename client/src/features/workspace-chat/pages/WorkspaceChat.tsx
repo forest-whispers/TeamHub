@@ -216,7 +216,7 @@ export default function WorkspaceChat() {
 
           {/* Search Message Box */}
           <div className="flex items-center gap-2 flex-1 max-w-xs justify-end">
-            <div className="relative w-full max-w-[180px] sm:max-w-[200px]">
+            <div className="relative w-full max-w-45 sm:max-w-50">
               <Search className="absolute left-2.5 top-2 size-3.5 text-muted-foreground" />
               <Input
                 type="text"

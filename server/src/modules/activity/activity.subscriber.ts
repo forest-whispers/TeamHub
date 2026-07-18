@@ -1,6 +1,16 @@
 import { ActivityEntityType, ActivityType, } from "@prisma/client";
 import { eventBus } from "../../infrastructure/events/event-bus.js";
+import { getIO } from "../../infrastructure/websocket/socket.js";
+
 import { createActivity } from "./activity.service.js";
+
+function broadcastActivity( workspaceId: string, activity: unknown) {
+    getIO()
+        .to(`workspace:${workspaceId}`)
+        .emit("activity:new", {
+            activity,
+        });
+}
 
 export function registerActivitySubscribers() {
 
@@ -20,6 +30,10 @@ export function registerActivitySubscribers() {
         });
 
         console.log("[ACTIVITY] document.created", activity);
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+                activity,
+            });
     });
 
     eventBus.on("document.renamed", async (event) => {
@@ -39,6 +53,10 @@ export function registerActivitySubscribers() {
         });
 
         console.log("[ACTIVITY] document.renamed", activity);
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+                activity,
+            });
     });
 
     eventBus.on("document.deleted", async (event) => {
@@ -57,5 +75,9 @@ export function registerActivitySubscribers() {
         });
 
         console.log("[ACTIVITY] document.deleted", activity);
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+                activity,
+            });
     });
 }

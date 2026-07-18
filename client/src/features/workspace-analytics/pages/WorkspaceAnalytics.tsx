@@ -82,17 +82,17 @@ export default function WorkspaceAnalytics() {
           {/* Charts & Insights Skeletons */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <Card className="border border-border/50 bg-card/45 h-[270px] p-4 flex flex-col justify-between">
+              <Card className="border border-border/50 bg-card/45 h-67.5 p-4 flex flex-col justify-between">
                 <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-[180px] w-full" />
+                <Skeleton className="h-45 w-full" />
               </Card>
-              <Card className="border border-border/50 bg-card/45 h-[270px] p-4 flex flex-col justify-between">
+              <Card className="border border-border/50 bg-card/45 h-67.5 p-4 flex flex-col justify-between">
                 <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-[180px] w-full" />
+                <Skeleton className="h-45 w-full" />
               </Card>
             </div>
             <div>
-              <Card className="border border-border/50 bg-card/45 h-[564px] p-4 flex flex-col justify-between">
+              <Card className="border border-border/50 bg-card/45 h-141 p-4 flex flex-col justify-between">
                 <Skeleton className="h-4 w-32 mb-4" />
                 <div className="space-y-3 flex-1">
                   {Array.from({ length: 3 }).map((_, idx) => (
@@ -129,7 +129,7 @@ export default function WorkspaceAnalytics() {
 
       {/* Empty State */}
       {!isLoading && !error && isEmpty && (
-        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-[400px]">
+        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-100">
           <BarChart3 className="size-12 text-muted-foreground/60 mb-3" />
           <h3 className="text-sm font-bold text-foreground">No analytics data available</h3>
           <p className="text-xs text-muted-foreground max-w-xs mt-1 leading-relaxed">

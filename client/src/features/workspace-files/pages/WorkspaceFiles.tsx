@@ -121,7 +121,7 @@ export default function WorkspaceFiles() {
         <>
           {filteredFiles.length === 0 ? (
             /* Empty State layouts */
-            <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-[300px]">
+            <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-75">
               {files.length === 0 ? (
                 /* No files in workspace empty state */
                 <>

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
 import { useWorkspaceHome } from "../hooks/useWorkspaceHome"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { formatActivity } from "@/shared/lib/activityFormatter"
+import { formatActivityTime } from "@/shared/lib/activityTime"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { NewDocumentDialog } from "../components/NewDocumentDialog"
@@ -223,22 +225,26 @@ export default function WorkspaceHome() {
           {!loadingHome && !errorHome && activities && activities.length > 0 && (
             <Card className="border border-border/30 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-card/75">
               <CardContent className="p-4 divide-y divide-border/60">
-                {activities.map((item) => (
+                {activities.map((item) => {
+                  const formatted = formatActivity(item);
+                  return (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex gap-3 text-xs align-top text-left">
                     <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
                       <Activity className="size-3.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0 flex-1">
                       <p className="text-foreground leading-normal font-medium">
-                        <span className="font-semibold text-muted-foreground mr-1">{item.actor}</span>
-                        {item.action} <span className="font-semibold">{item.target}</span>
+                        <span className="font-semibold text-muted-foreground mr-1">{formatted.actor}</span>
+                        {formatted.action} <span className="font-semibold">{formatted.target}</span>
                       </p>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                        {item.timestamp}
+                          {formatActivityTime(
+                            formatted.timestamp
+                          )}
                       </p>
                     </div>
                   </div>
-                ))}
+                )})}
               </CardContent>
             </Card>
           )}

@@ -16,7 +16,25 @@ export async function createActivity(
             entityType: data.entityType,
             entityId: data.entityId ?? null,
 
-            metadata: data.metadata ?? Prisma.JsonNull,
+            metadata: data.metadata ?? Prisma.DbNull,
+        },
+
+        select: {
+            id: true,
+            type: true,
+            entityType: true,
+            entityId: true,
+            metadata: true,
+            workspaceId: true,
+            createdAt: true,
+
+            actor: {
+                select: {
+                    id: true,
+                    name: true,
+                    avatar: true,
+                },
+            },
         },
     });
 }

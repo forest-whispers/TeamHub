@@ -4,6 +4,7 @@ import { useTheme } from "@/shared/providers/ThemeProvider"
 import { useCommandPalette } from "@/shared/providers/CommandPaletteProvider"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
+import { useWorkspaceActivityRealtime } from "@/features/workspace-activity/hooks/useWorkspaceActivityRealtime"
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
 import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePresence"
@@ -45,6 +46,7 @@ export default function WorkspaceLayout() {
   const { setIsOpen } = useCommandPalette()
   const { data: authStatus } = useAuthStatus()
   const { data: activeWorkspace } = useWorkspace(workspaceId || "")
+  useWorkspaceActivityRealtime( workspaceId || "" );
   const logoutMutation = useLogout()
   const leaveWorkspaceMutation = useLeaveWorkspace()
   const { onlineUsers } = useWorkspacePresence({
@@ -109,13 +111,13 @@ export default function WorkspaceLayout() {
       .substring(0, 2)
   }
 
+  const messages: unknown = []
+
   // Mock collaboration data
 
-  const mockMessages = [
-    { id: 1, sender: "Alex Developer", time: "10:32 AM", text: "Welcome to the workspace chat room! Feel free to coordinate tasks here." },
-    { id: 2, sender: "Jamie Product", time: "10:34 AM", text: "Nice! This workspace shell feels very responsive." },
-    { id: 3, sender: "Taylor Support", time: "10:35 AM", text: "Indeed, the nested routing is working perfectly." },
-  ]
+  // const mockMessages = [
+  //   { id: 1, sender: "Alex Developer", time: "10:32 AM", text: "Welcome to the workspace chat room! Feel free to coordinate tasks here." },
+  // ]
 
   // Get active module name from route
   const getActiveModuleName = () => {
@@ -492,7 +494,7 @@ export default function WorkspaceLayout() {
                     <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 select-none">
                       Workspace Chat Room
                     </div>
-                    {mockMessages.map((msg) => (
+                    {messages.map((msg) => (
                       <div key={msg.id} className="space-y-1">
                         <div className="flex items-center justify-between text-xs select-none">
                           <span className="font-semibold text-foreground">{msg.sender}</span>

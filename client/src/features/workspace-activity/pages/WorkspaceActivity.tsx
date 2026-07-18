@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react"
 import { useParams } from "react-router-dom"
-import { useWorkspaceActivity } from "../hooks/useWorkspaceActivity"
+import { useWorkspaceActivities } from "../hooks/useWorkspaceActivities"
 import { ActivityTimeline } from "../components/ActivityTimeline"
+import { formatActivity } from "@/shared/lib/activityFormatter"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Skeleton } from "@/shared/components/ui/skeleton"
@@ -18,19 +19,24 @@ export default function WorkspaceActivity() {
     isLoading,
     error,
     refetch,
-  } = useWorkspaceActivity(workspaceId || "")
+  } = useWorkspaceActivities(workspaceId || "")
+
+  const formattedActivities = useMemo(
+    () => (activities ?? []).map(formatActivity),
+    [activities]
+  );
 
   // Unique activity types extracted from loaded activities list for filter choices
   const typeOptions = useMemo(() => {
     if (!activities) return []
-    const types = new Set(activities.map((a) => a.type))
+    const types = new Set(formattedActivities.map((a) => a.category))
     return Array.from(types).sort()
   }, [activities])
 
   // Client-side search and filtering maintaining original reverse-chronological ordering
   const filteredActivities = useMemo(() => {
     if (!activities) return []
-    return activities.filter((activity) => {
+    return formattedActivities.filter((activity) => {
       const actorText = activity.actor || ""
       const targetText = activity.target || ""
       const actionText = activity.action || ""
@@ -42,7 +48,7 @@ export default function WorkspaceActivity() {
 
       const matchesType =
         typeFilter === "all" ||
-        activity.type.toLowerCase() === typeFilter.toLowerCase()
+        activity.category.toLowerCase() === typeFilter.toLowerCase()
 
       return matchesSearch && matchesType
     })
@@ -141,7 +147,7 @@ export default function WorkspaceActivity() {
         <>
           {filteredActivities.length === 0 ? (
             /* Empty State layouts */
-            <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-[300px]">
+            <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-75">
               {activities.length === 0 ? (
                 <>
                   <Inbox className="size-12 text-muted-foreground/60 mb-3" />

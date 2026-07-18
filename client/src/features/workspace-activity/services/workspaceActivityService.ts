@@ -1,11 +1,29 @@
-import { getMockWorkspaceActivity } from "../mock/mockWorkspaceActivity"
-import type { WorkspaceActivityItem } from "../types"
+import api from "@/shared/lib/api";
+import type { WorkspaceActivity } from "../types/index"
 
-export const workspaceActivityService = {
-  getWorkspaceActivity: async (workspaceId: string): Promise<WorkspaceActivityItem[]> => {
-    // In production, this would make a network call:
-    // const response = await axios.get<WorkspaceActivityItem[]>(`/api/workspaces/${workspaceId}/activity`)
-    // return response.data
-    return getMockWorkspaceActivity(workspaceId)
-  },
+interface ActivityResponse {
+  success: boolean;
+  data: {
+    activities: WorkspaceActivity[];
+    nextCursor: string | null;
+    hasMore: boolean;
+  };
 }
+
+export const activityService = {
+  getActivities: async (
+    workspaceId: string,
+    limit = 5
+  ): Promise<WorkspaceActivity[]> => {
+    const { data } = await api.get<ActivityResponse>(
+      `/workspaces/${workspaceId}/activities`,
+      {
+        params: {
+          limit,
+        },
+      }
+    );
+
+    return data.data.activities;
+  },
+};
