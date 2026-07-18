@@ -2,9 +2,7 @@ import {
     FileText,
     MessageSquare,
     Settings,
-    UserPlus,
     Users,
-    Activity,
     Globe,
 } from "lucide-react";
 

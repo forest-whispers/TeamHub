@@ -111,7 +111,7 @@ export default function WorkspaceLayout() {
       .substring(0, 2)
   }
 
-  const messages: unknown = []
+  const messages: any[] = []
 
   // Mock collaboration data
 

@@ -13,17 +13,19 @@ interface ActivityResponse {
 export const activityService = {
   getActivities: async (
     workspaceId: string,
-    limit = 5
-  ): Promise<WorkspaceActivity[]> => {
+    limit = 5,
+    cursor?: string
+  ): Promise<{ activities: WorkspaceActivity[]; nextCursor: string | null; hasMore: boolean }> => {
     const { data } = await api.get<ActivityResponse>(
       `/workspaces/${workspaceId}/activities`,
       {
         params: {
           limit,
+          cursor,
         },
       }
     );
 
-    return data.data.activities;
+    return data.data;
   },
 };

@@ -102,12 +102,6 @@ export function useWorkspaceActivityRealtime(
                     "workspace-home",
                     workspaceId,
                 ],
-                // {
-                //     queryKey: [
-                //         "workspace-home",
-                //         workspaceId,
-                //     ],
-                // },
                 (current) => {
 
                     if (!current) return current;

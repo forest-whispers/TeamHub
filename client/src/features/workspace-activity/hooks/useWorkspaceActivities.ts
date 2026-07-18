@@ -4,15 +4,17 @@ import { activityService } from "../services/workspaceActivityService";
 
 export function useWorkspaceActivities(
   workspaceId: string,
-  limit = 5
+  limit = 5,
+  cursor?: string
 ) {
   return useQuery({
-    queryKey: ["workspace-activities", workspaceId, limit],
+    queryKey: ["workspace-activities", workspaceId, limit, cursor],
 
     queryFn: () =>
       activityService.getActivities(
         workspaceId,
-        limit
+        limit,
+        cursor
       ),
 
     enabled: !!workspaceId,
