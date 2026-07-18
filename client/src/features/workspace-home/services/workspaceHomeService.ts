@@ -1,19 +1,16 @@
-import type { WorkspaceHomeService } from "../types"
+import api from "@/shared/lib/api"
+import type { WorkspaceHomeData, WorkspaceHomeService } from "../types"
 
 export const workspaceHomeService: WorkspaceHomeService = {
-  getWorkspaceHome: async (_workspaceId) => {
+  getWorkspaceHome: async (workspaceId) => {
+    const { data } =
+      await api.get<{
+        success: boolean;
+        data: WorkspaceHomeData;
+      }>(
+        `/workspaces/${workspaceId}/home`
+      );
 
-    /*
-    const { data } = await api.get<WorkspaceHomeData>(`/workspaces/${workspaceId}/home`);
-
-    return data;
-    */
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    return {
-      recentDocuments: [],
-      recentActivity: [],
-    };
+    return data.data;
   },
 };

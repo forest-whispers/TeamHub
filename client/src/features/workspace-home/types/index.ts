@@ -1,6 +1,8 @@
+import type { WorkspaceActivity } from "../../workspace-activity/types";
+
 export interface WorkspaceHomeData {
   recentDocuments: RecentDocument[]
-  recentActivity: RecentActivity[]
+  recentActivity: WorkspaceActivity[]
 }
 
 export interface RecentDocument {
@@ -8,14 +10,6 @@ export interface RecentDocument {
   name: string
   lastEdited: string
   lastEditedBy: string
-}
-
-export interface RecentActivity {
-  id: string
-  actor: string
-  action: string
-  target: string
-  timestamp: string
 }
 
 export interface WorkspaceHomeService {
