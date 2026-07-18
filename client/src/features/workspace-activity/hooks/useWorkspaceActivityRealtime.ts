@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { socket } from "@/shared/lib/socket";
 
 import type { ActivityNewPayload, WorkspaceActivity, } from "../types/index";
+import type { WorkspaceHomeData } from "@/features/workspace-home/types";
 
 export function useWorkspaceActivityRealtime(
     workspaceId: string
@@ -49,29 +50,81 @@ export function useWorkspaceActivityRealtime(
             //     }
             // );
 
-            queryClient.setQueryData<WorkspaceActivity[]>(
-                [
-                    "workspace-activities",
-                    workspaceId,
-                    5,
-                ],
-                (current) => {
-                    if (!current) {
-                        return current;
-                    }
+            // queryClient.setQueryData<WorkspaceActivity[]>(
+            //     [
+            //         "workspace-activities",
+            //         workspaceId,
+            //         5,
+            //     ],
+            //     (current) => {
+            //         if (!current) {
+            //             return current;
+            //         }
 
-                    if (
-                        current.some(
-                            (item) => item.id === activity.id
-                        )
-                    ) {
+            //         if (
+            //             current.some(
+            //                 (item) => item.id === activity.id
+            //             )
+            //         ) {
+            //             return current;
+            //         }
+
+            //         return [
+            //             activity,
+            //             ...current,
+            //         ].slice(0, 5);
+            //     }
+            // );
+
+            queryClient.setQueriesData<WorkspaceActivity[]>(
+                {
+                    queryKey: [
+                        "workspace-activities",
+                        workspaceId,
+                    ],
+                },
+                (current) => {
+                    if (!current) return current;
+
+                    if (current.some(item => item.id === activity.id)) {
                         return current;
                     }
 
                     return [
                         activity,
                         ...current,
-                    ].slice(0, 5);
+                    ];
+                }
+            );
+
+            queryClient.setQueryData<WorkspaceHomeData>(
+                [
+                    "workspace-home",
+                    workspaceId,
+                ],
+                // {
+                //     queryKey: [
+                //         "workspace-home",
+                //         workspaceId,
+                //     ],
+                // },
+                (current) => {
+
+                    if (!current) return current;
+
+                    if (
+                        current.recentActivity.some( item => item.id === activity.id ) ) {
+                        return current;
+                    }
+
+                    return {
+                        ...current,
+                        recentActivity: [
+                            activity,
+                            ...current.recentActivity,
+                        ].slice(0, 3),
+                    };
+
                 }
             );
         }

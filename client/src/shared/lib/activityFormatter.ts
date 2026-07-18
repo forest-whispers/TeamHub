@@ -27,7 +27,8 @@ export function formatActivity(
             return {
                 id: activity.id,
                 actor: activity.actor?.name ?? "Unknown",
-                action: "renamed document to",
+                // action: `renamed document ${metadata.oldTitle} to`,
+                action: "renamed a document to",
                 target:
                     typeof metadata.newTitle === "string"
                         ? metadata.newTitle
