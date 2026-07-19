@@ -1,6 +1,6 @@
-import type { WorkspaceActivity } from "../../features/workspace-activity/types/index";
+import type { WorkspaceActivity } from "../types/index";
 
-import type { FormattedActivity } from "../../features/workspace-activity/types/ui";
+import type { FormattedActivity } from "../types/ui";
 
 export function formatActivity(
     activity: WorkspaceActivity

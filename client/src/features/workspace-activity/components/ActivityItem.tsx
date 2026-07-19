@@ -1,5 +1,5 @@
 import type { FormattedActivity } from "../types/ui";
-import { formatActivityTime } from "@/shared/lib/activityTime";
+import { formatActivityTime } from "@/features/workspace-activity/lib/activityTime";
 
 import { getActivityIcon } from "../lib/activityIcon"; // Activity icon mapping helper
 import { getActivityColor } from "../lib/activityColor"; // Activity background color mappings
