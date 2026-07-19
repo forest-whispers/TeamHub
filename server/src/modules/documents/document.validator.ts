@@ -10,6 +10,8 @@ export const updateDocumentSchema = z.object({
     icon: z.string().trim().max(10).nullable().optional(),
 });
 
-export const updateDocumentContentValidator = z.object({
+export const saveDocumentValidator = z.object({
     content: z.any(),
+    snapshot: z.array(z.number()),
+    // snapshot: z.array(z.number()).transform((val) => new Uint8Array(val)),
 });

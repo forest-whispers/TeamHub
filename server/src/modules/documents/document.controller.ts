@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { createDocument, getDocuments, getDocument, updateDocument, updateDocumentContent, deleteDocument } from "./document.service.js";
+import { createDocument, getDocuments, getDocument, updateDocument, saveDocument, deleteDocument } from "./document.service.js";
 
 export const createDocumentController = asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json(await createDocument(req.user!.id, req.params.workspaceId, req.body));
@@ -18,9 +18,9 @@ export const updateDocumentController = asyncHandler(async (req: Request, res: R
     res.json(await updateDocument(req.user!.id, req.params.workspaceId, req.params.documentId, req.body));
 });
 
-export async function updateDocumentContentController(req: Request, res: Response) {
+export async function saveDocumentController(req: Request, res: Response) {
 
-    const document = await updateDocumentContent( req.user!.id, req.params.workspaceId, req.params.documentId, req.body.content);
+    const document = await saveDocument( req.user!.id, req.params.workspaceId, req.params.documentId, req.body);
 
     res.json(document);
   }

@@ -2,7 +2,8 @@ import { prisma } from "../../lib/prisma.js";
 import { ensureWorkspaceMember } from "../../shared/authorization/workspace.js";
 import { ensureDocumentInWorkspace } from "../../shared/authorization/document.js";
 import { constants } from "../../config/constants.js";
-import type { CreateDocumentDto, UpdateDocumentDto } from "./document.types.js";
+import type { CreateDocumentDto, SaveDocumentDto, UpdateDocumentDto } from "./document.types.js";
+import { snapshotService } from "./snapshot/snapshot.service.js";
 import { eventBus } from "../../infrastructure/events/event-bus.js";
 
 export const createDocument = async (requesterId: string, workspaceId: string, data: CreateDocumentDto) => {
@@ -127,26 +128,48 @@ export const updateDocument = async ( requesterId: string, workspaceId: string, 
     return updateDocument;
 };
 
-export async function updateDocumentContent( requesterId: string, workspaceId: string, documentId: string, content: any) {
+export async function saveDocument( requesterId: string, workspaceId: string, documentId: string, input: SaveDocumentDto) {
     await ensureWorkspaceMember(requesterId, workspaceId);
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
 
+    const content = input.content
+
     console.log(content)
 
-    return prisma.document.update({
-        where: {
-            id: documentId,
-        },
-        data: {
-            content,
-        },
-        select: {
-            id: true,
-            updatedAt: true,
-        },
+    // const binaryState = Buffer.from(input.snapshot);
+
+    const snapshotState = Uint8Array.from(input.snapshot);
+
+    let document;
+
+    await prisma.$transaction(async (tx) => {
+
+        document = await tx.document.update({
+            where: {
+                id: documentId,
+            },
+            data: {
+                content,
+            },
+            select: {
+                id: true,
+                updatedAt: true,
+            },
+        });
+
+        await snapshotService.createSnapshot(
+            tx,
+            {
+                documentId,
+                createdById: requesterId,
+                state: snapshotState,
+            }
+        );
     });
-  }
+
+    return document;
+}
 
 export const deleteDocument = async (requesterId: string, workspaceId: string, documentId: string) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
