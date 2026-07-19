@@ -133,7 +133,7 @@ TeamHub explores a workspace-first model where collaboration, documentation, com
 - [x] Live presence synchronization across connected clients.
 - [x] Automatic connection and disconnection lifecycle management.
 - [x] Independent workspace presence and document awareness models.
-- [ ] Activity-aware presence states (Active, Away, etc.).
+- [x] Activity-aware presence states (Active, Away, etc.).
 
 ### 💬 Real-Time Workspace Chat
 
@@ -145,15 +145,15 @@ TeamHub explores a workspace-first model where collaboration, documentation, com
 
 ### 💭 Contextual Comments & Discussions
 
-- [ ] Document-attached comments and threaded discussions.
-- [ ] Replies, resolutions, and author attribution.
+- [x] Document-attached comments and threaded discussions.
+- [x] Replies, resolutions, and author attribution.
 - [ ] Real-time comment synchronization.
 
 ### 🕘 Document Version History
 
-- [ ] Persistent document revisions.
-- [ ] Browse, compare, and restore historical versions.
-- [ ] Version metadata and author attribution.
+- [x] Persistent document revisions.
+- [x] Browse, compare, and restore historical versions.
+- [x] Version metadata and author attribution.
 
 ### 🔔 Real-Time Notifications
 
