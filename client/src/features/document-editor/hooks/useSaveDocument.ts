@@ -2,18 +2,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { JSONContent } from "@tiptap/core"
 import { documentsService } from "@/features/workspace-documents/services/documentsService"
 
-interface UpdateContentPayload {
+interface SaveDocumentPayload {
   workspaceId: string
   documentId: string
-  content: JSONContent
+  content: JSONContent;
+  snapshot: number[];
 }
 
-export function useUpdateDocumentContent() {
+export function useSaveDocument() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ workspaceId, documentId, content }: UpdateContentPayload) =>
-      documentsService.updateDocumentContent(workspaceId, documentId, content),
+    mutationFn: ({ workspaceId, documentId, content, snapshot }: SaveDocumentPayload) =>
+      documentsService.saveDocument(workspaceId, documentId, content, snapshot),
     onSuccess: (_, variables) => {
       // Synchronously update the document detail query cache
       queryClient.setQueryData(

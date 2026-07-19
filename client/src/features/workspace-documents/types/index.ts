@@ -1,3 +1,5 @@
+import type { JSONContent } from "@tiptap/core"
+
 export interface WorkspaceDocument {
   id: string
   title: string
@@ -20,11 +22,16 @@ export interface UpdateDocumentData {
   icon?: string | null
 }
 
+// export interface SaveDocumentData {
+//   content: JSONContent;
+//   snapshot: number[];
+// }
+
 export interface DocumentsService {
   getDocuments(workspaceId: string): Promise<WorkspaceDocument[]>
   getDocument(workspaceId: string, documentId: string): Promise<any>
   createDocument(workspaceId: string, data: CreateDocumentData): Promise<{ id: string }>
   updateDocument( workspaceId: string, documentId: string, data: UpdateDocumentData): Promise<any>
   deleteDocument(workspaceId: string, documentId: string): Promise<void>
-  updateDocumentContent(workspaceId: string, documentId: string, content: any): Promise<any>
+  saveDocument(workspaceId: string, documentId: string, content: JSONContent, snapshot: number[]): Promise<any>
 }

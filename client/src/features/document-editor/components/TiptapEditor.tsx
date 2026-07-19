@@ -23,7 +23,7 @@ import type { Awareness } from "y-protocols/awareness.js";
 
 import type { WorkspaceDocument } from "../types"
 import type { AuthUser } from "@/features/auth/types";
-import { useUpdateDocumentContent } from "../hooks/useUpdateDocumentContent"
+import { useSaveDocument } from "../hooks/useSaveDocument"
 import { useUpdateDocument } from "../../workspace-documents/hooks/useWorkspaceDocuments"
 import { useDocumentTabs } from "../context/DocumentTabsContext"
 import { getUserColor } from "@/shared/lib/utils";
@@ -165,13 +165,16 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     workspaceIdRef.current = workspaceId
   }, [workspaceId])
 
-  const { mutate: saveContent, isPending: isSaving } = useUpdateDocumentContent()
+  const { mutate: saveContent, isPending: isSaving } = useSaveDocument()
 
   // Save on unmount if dirty
   useEffect(() => {
     return () => {
       if (isDirtyRef.current && editorRef.current) {
         const content = editorRef.current.getJSON()
+        const snapshot = Array.from(
+          Y.encodeStateAsUpdateV2(ydoc)
+      );
         const docId = documentIdRef.current
         // const wsId = workspaceIdRef.current
         
@@ -180,6 +183,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
           workspaceId: workspaceIdRef.current,
           documentId: documentIdRef.current,
           content,
+          snapshot
           },
           {
             onSuccess: () => { 
@@ -189,7 +193,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }
   }, [updateTabContent])
 
-  // const { mutate: saveContent, isPending: isSaving } = useUpdateDocumentContent()
+  // const { mutate: saveContent, isPending: isSaving } = useSaveDocument()
   const renameMutation = useUpdateDocument(workspaceId)
 
   const handleRename = async (newTitle: string) => {
@@ -208,6 +212,9 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
   const handleSave = useCallback(() => {
     if (!editor || isSaving) return
     const content = editor.getJSON()
+    const snapshot = Array.from(
+      Y.encodeStateAsUpdateV2(ydoc)
+  );
 
     if (!isDirtyRef) return
 
@@ -215,6 +222,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       workspaceId: workspaceIdRef.current,
       documentId: documentIdRef.current,
       content,
+      snapshot
       },
       {
         onSuccess: () => {

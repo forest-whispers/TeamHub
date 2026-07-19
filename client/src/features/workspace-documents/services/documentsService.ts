@@ -1,4 +1,5 @@
 import api from "@/shared/lib/api"
+import type { JSONContent } from "@tiptap/core"
 import type { DocumentsService, CreateDocumentData, UpdateDocumentData } from "../types"
 
 export const documentsService: DocumentsService = {
@@ -29,8 +30,8 @@ export const documentsService: DocumentsService = {
     return response.data
   },
 
-  updateDocumentContent: async (workspaceId: string, documentId: string, content: any): Promise<any> => {
-    const response = await api.patch(`/workspaces/${workspaceId}/documents/${documentId}/content`, { content })
+  saveDocument: async (workspaceId: string, documentId: string, content: JSONContent, snapshot: number[]): Promise<any> => {
+    const response = await api.patch(`/workspaces/${workspaceId}/documents/${documentId}/content`, { content, snapshot })
     return response.data
   },
 
