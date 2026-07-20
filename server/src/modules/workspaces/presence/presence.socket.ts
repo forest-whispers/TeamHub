@@ -10,6 +10,7 @@ import type { SocketResponse } from "../../documents/collaboration/collaboration
 export function workspacePresenceSockets(io: Server) {
     io.on("connection", (socket) => {
         const client = socket as AuthenticatedSocket;
+        const joinedWorkspaces = new Set<string>();
 
         client.on("workspace:join",
             async (
@@ -18,6 +19,7 @@ export function workspacePresenceSockets(io: Server) {
             ) => {
                 console.log("workspace:join requested")
                 try {
+                    joinedWorkspaces.add(payload.workspaceId);
 
                     const users = await joinWorkspace(
                             client,
@@ -92,10 +94,7 @@ export function workspacePresenceSockets(io: Server) {
                 try {
                     console.log("workspace:leave requested")
 
-                    // const users = await leaveWorkspace(
-                    //     client,
-                    //     payload.workspaceId
-                    // );
+                    joinedWorkspaces.delete(payload.workspaceId);
 
                     presenceService.removeConnection(
                         payload.workspaceId,
@@ -127,5 +126,15 @@ export function workspacePresenceSockets(io: Server) {
                 }
             }
         );
+
+        // client.on("disconnect", () => {
+        //     for (const wsId of joinedWorkspaces) {
+        //         presenceService.removeConnection(wsId, client.id);
+        //         const users = presenceService.getPresenceList(wsId);
+        //         io.to(`workspace:${wsId}`).emit("workspace:presence", {
+        //             users,
+        //         });
+        //     }
+        // });
     });
 }

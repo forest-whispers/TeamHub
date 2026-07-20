@@ -4,9 +4,10 @@ import { MessageItem } from "./MessageItem"
 
 interface MessageListProps {
   messages: Message[]
+  currentUserName?: string
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, currentUserName }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export function MessageList({ messages }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
       {messages.map((message) => (
-        <MessageItem key={message.id} message={message} />
+        <MessageItem key={message.id} message={message} currentUserName={currentUserName} />
       ))}
       <div ref={bottomRef} />
     </div>

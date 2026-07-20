@@ -108,6 +108,11 @@ export function useCollaboration({ workspaceId, documentId, ydoc, onInitialAware
 
             hasInitialSyncRef.current = true;
 
+            const xmlFragment = ydoc.getXmlFragment("default");
+            if (xmlFragment.length > 0 && update.length > 0) {
+                xmlFragment.delete(0, xmlFragment.length);
+            }
+
             Y.applyUpdate(ydoc, update, "initial");
         }
 

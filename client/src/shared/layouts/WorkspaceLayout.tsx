@@ -8,6 +8,9 @@ import { useWorkspaceActivityRealtime } from "@/features/workspace-activity/hook
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
 import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePresence"
+import { useWorkspaceChannels, useWorkspaceMessages, useSendMessage } from "@/features/workspace-chat/hooks/useWorkspaceChat"
+import { MessageList } from "@/features/workspace-chat/components/MessageList"
+import { MessageComposer } from "@/features/workspace-chat/components/MessageComposer"
 import type { AuthUser } from "@/features/auth/types"
 import { DocumentTabsProvider } from "@/features/document-editor/context/DocumentTabsContext"
 import { NotificationBell } from "@/features/workspace-notifications/components/NotificationBell"
@@ -88,6 +91,28 @@ export default function WorkspaceLayout() {
 
   // User details
   const userName = authStatus?.user?.name || "@developer"
+
+  // Sidebar Chat Hooks
+  const { data: sidebarChannels } = useWorkspaceChannels(workspaceId || "")
+  const sidebarChannelId = sidebarChannels?.[0]?.id || "ch-general"
+  const { data: sidebarMessages } = useWorkspaceMessages(workspaceId || "", sidebarChannelId)
+  const sidebarSendMessageMutation = useSendMessage(workspaceId || "")
+
+  const handleSidebarSendMessage = (content: string) => {
+    if (!sidebarChannelId) return
+    const userInitials = (authStatus?.user?.name || "User")
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase()
+    sidebarSendMessageMutation.mutate({
+      channelId: sidebarChannelId,
+      sender: authStatus?.user?.name || "User",
+      avatar: userInitials,
+      content,
+    })
+  }
 
   // Navigation items
   const navItems = [
@@ -488,34 +513,22 @@ export default function WorkspaceLayout() {
                   })}
                 </div>
                  ) : (
-                /* Chat Tab Placeholder */
+                /* Chat Tab View */
                 <div className="flex-1 flex flex-col justify-between overflow-hidden">
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
-                    <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 select-none">
-                      Workspace Chat Room
-                    </div>
-                    {messages.map((msg) => (
-                      <div key={msg.id} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs select-none">
-                          <span className="font-semibold text-foreground">{msg.sender}</span>
-                          <span className="text-[10px] text-muted-foreground">{msg.time}</span>
-                        </div>
-                        <div className="bg-muted/50 p-2.5 rounded-lg text-sm text-foreground leading-snug border border-border/30">
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground p-3 pb-0 select-none">
+                    # {sidebarChannels?.[0]?.name || "general"}
                   </div>
 
-                  {/* Disabled Chat Input Panel */}
-                  <div className="p-3 border-t border-border bg-card shrink-0">
-                    <input
-                      type="text"
-                      disabled
-                      placeholder="Chat is disabled in this shell..."
-                      className="flex-1 bg-muted/60 border border-input rounded-md px-3 py-1.5 text-xs text-muted-foreground cursor-not-allowed w-full outline-none select-none"
-                    />
-                  </div>
+                  <MessageList
+                    messages={sidebarMessages || []}
+                    currentUserName={authStatus?.user?.name || "User"}
+                  />
+
+                  {/* Sidebar Chat Input Panel */}
+                  <MessageComposer
+                    onSend={handleSidebarSendMessage}
+                    isSending={sidebarSendMessageMutation.isPending}
+                  />
                 </div>
               )}
             </div>

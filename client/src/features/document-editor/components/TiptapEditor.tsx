@@ -18,6 +18,7 @@ import { SlashCommand } from "../extensions/SlashCommand"
 import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
 import { BubbleMenuWrapper } from "./BubbleMenuWrapper"
+import { VersionHistorySheet } from "./VersionHistorySheet"
 import * as Y from "yjs";
 import type { Awareness } from "y-protocols/awareness.js";
 
@@ -40,11 +41,12 @@ interface TiptapEditorProps {
 export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUser }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
-  const initialSavedContent = currentTab?.savedContent ?? null
+  const initialSavedContent = currentTab?.savedContent ?? documentData.content ?? null
   const initialIsDirty = currentTab?.isDirty ?? false
 
   const [savedContent, setSavedContent] = useState(initialSavedContent)
   const [isDirty, setIsDirty] = useState(initialIsDirty)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   const savedContentRef = useRef(initialSavedContent)
 
@@ -172,28 +174,23 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     return () => {
       if (isDirtyRef.current && editorRef.current) {
         const content = editorRef.current.getJSON()
-        const snapshot = Array.from(
-          Y.encodeStateAsUpdateV2(ydoc)
-      );
         const docId = documentIdRef.current
-        // const wsId = workspaceIdRef.current
         
-        // Background fire-and-forget save
+        // Background fire-and-forget save (no snapshot created on unmount save)
         saveContent({
           workspaceId: workspaceIdRef.current,
           documentId: documentIdRef.current,
           content,
-          snapshot
-          },
-          {
-            onSuccess: () => { 
-              updateTabContent(docId, content, content, false) 
-            } })
+        },
+        {
+          onSuccess: () => { 
+            updateTabContent(docId, content, content, false) 
+          }
+        })
       }
     }
   }, [updateTabContent])
 
-  // const { mutate: saveContent, isPending: isSaving } = useSaveDocument()
   const renameMutation = useUpdateDocument(workspaceId)
 
   const handleRename = async (newTitle: string) => {
@@ -209,12 +206,10 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }
   }
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((isManual: boolean = true) => {
     if (!editor || isSaving) return
     const content = editor.getJSON()
-    const snapshot = Array.from(
-      Y.encodeStateAsUpdateV2(ydoc)
-  );
+    const snapshot = isManual ? Array.from(Y.encodeStateAsUpdateV2(ydoc)) : undefined
 
     if (!isDirtyRef) return
 
@@ -222,28 +217,32 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       workspaceId: workspaceIdRef.current,
       documentId: documentIdRef.current,
       content,
-      snapshot
+      ...(snapshot && { snapshot }),
       },
       {
         onSuccess: () => {
           setSavedContent(content)
           setIsDirty(false)
           updateTabContent(documentData.id, content, content, false)
-          toast.success("Document saved successfully!")
+          if (isManual) {
+            toast.success("Document saved successfully!")
+          }
         },
         onError: (err) => {
-          toast.error(err instanceof Error ? err.message : "Failed to save document")
+          if (isManual) {
+            toast.error(err instanceof Error ? err.message : "Failed to save document")
+          }
         },
       }
     )
-  }, [editor, saveContent, savedContent, isSaving, workspaceId, documentData.id, updateTabContent])
+  }, [editor, saveContent, savedContent, isSaving, workspaceId, documentData.id, updateTabContent, ydoc])
 
-  // Ctrl+S / Cmd+S handler
+  // Ctrl+S / Cmd+S handler (Manual save)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault()
-        handleSave()
+        handleSave(true)
       }
     }
     window.addEventListener("keydown", handleKeyDown)
@@ -252,7 +251,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }
   }, [handleSave])
 
-  // Autosave timeout effect
+  // Autosave timeout effect (Automatic save - no snapshot created)
   useEffect(() => {
     if (!isDirty) return
 
@@ -261,7 +260,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }
 
     autoSaveTimeout.current = setTimeout(() => {
-      handleSave()
+      handleSave(false)
     }, 5000)
 
     return () => {
@@ -284,6 +283,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         isSaving={isSaving}
         onRename={handleRename}
         isRenaming={renameMutation.isPending}
+        onOpenVersionHistory={() => setIsHistoryOpen(true)}
       />
 
       {/* Editor Toolbar */}
@@ -296,6 +296,14 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         </div>
         <BubbleMenuWrapper editor={editor} />
       </div>
+
+      {/* Version History Sheet */}
+      <VersionHistorySheet
+        workspaceId={workspaceId}
+        documentId={documentData.id}
+        open={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
+      />
     </div>
   )
 }

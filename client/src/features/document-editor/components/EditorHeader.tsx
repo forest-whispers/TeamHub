@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { intlFormatDistance } from "date-fns"
 import { Button } from "@/shared/components/ui/button"
-import { Share2, Download, CheckCircle2, AlertCircle, Save, Loader2 } from "lucide-react"
+import { Share2, Download, CheckCircle2, AlertCircle, Save, Loader2, History } from "lucide-react"
 
 interface EditorHeaderProps {
   title: string
@@ -13,6 +13,7 @@ interface EditorHeaderProps {
   isSaving?: boolean
   onRename?: (newTitle: string) => Promise<void>
   isRenaming?: boolean
+  onOpenVersionHistory?: () => void
 }
 
 export function EditorHeader({
@@ -25,6 +26,7 @@ export function EditorHeader({
   isSaving,
   onRename,
   isRenaming,
+  onOpenVersionHistory,
 }: EditorHeaderProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [tempTitle, setTempTitle] = useState(title)
@@ -123,6 +125,18 @@ export function EditorHeader({
 
       {/* Editor Actions */}
       <div className="flex items-center gap-1.5 shrink-0">
+        {onOpenVersionHistory && (
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={onOpenVersionHistory}
+            className="cursor-pointer h-6 font-normal text-muted-foreground hover:text-foreground text-xs"
+            title="View document version history"
+          >
+            <History className="size-3" />
+            Version History
+          </Button>
+        )}
         {onSave && (
           <Button
             variant="ghost"

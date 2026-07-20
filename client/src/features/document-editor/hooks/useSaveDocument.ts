@@ -6,7 +6,7 @@ interface SaveDocumentPayload {
   workspaceId: string
   documentId: string
   content: JSONContent;
-  snapshot: number[];
+  snapshot?: number[];
 }
 
 export function useSaveDocument() {

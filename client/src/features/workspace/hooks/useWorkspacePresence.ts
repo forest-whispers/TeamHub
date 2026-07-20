@@ -82,9 +82,12 @@ export function useWorkspacePresence({ workspaceId, authUser, }: Props) {
     }, [workspaceId, authUser]);
 
     useEffect(() => {
-
-        function handlePresenceUpdate( users: PresenceState[] ) {
-            setOnlineUsers(users);
+        function handlePresenceUpdate(data: PresenceState[] | { users: PresenceState[] }) {
+            if (Array.isArray(data)) {
+                setOnlineUsers(data);
+            } else if (data && Array.isArray(data.users)) {
+                setOnlineUsers(data.users);
+            }
         }
 
         socket.on("workspace:presence", handlePresenceUpdate);
@@ -92,7 +95,6 @@ export function useWorkspacePresence({ workspaceId, authUser, }: Props) {
         return () => {
             socket.off("workspace:presence", handlePresenceUpdate);
         };
-
     }, []);
 
     function updatePresence( presence: PresenceState ) {

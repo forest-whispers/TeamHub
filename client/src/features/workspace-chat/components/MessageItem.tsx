@@ -2,9 +2,12 @@ import type { Message } from "../types"
 
 interface MessageItemProps {
   message: Message
+  currentUserName?: string
 }
 
-export function MessageItem({ message }: MessageItemProps) {
+export function MessageItem({ message, currentUserName }: MessageItemProps) {
+  const isSelf = Boolean(currentUserName && message.sender.toLowerCase() === currentUserName.toLowerCase())
+
   const getAvatarBgColor = (name: string) => {
     const colors = [
       "bg-red-500/10 text-red-500 border-red-500/20",
@@ -32,11 +35,41 @@ export function MessageItem({ message }: MessageItemProps) {
     return colors[index]
   }
 
+  if (isSelf) {
+    return (
+      <div className="flex flex-row-reverse gap-2.5 text-right items-start py-1.5 select-text group justify-start">
+        {/* Avatar */}
+        <div
+          className={`size-7 rounded-full flex items-center justify-center font-bold text-[10px] border shrink-0 select-none ${getAvatarBgColor(
+            message.sender
+          )}`}
+        >
+          {message.avatar}
+        </div>
+
+        {/* Message Info and Content */}
+        <div className="min-w-0 max-w-[75%] space-y-1 flex flex-col items-end">
+          <div className="flex items-baseline gap-2 flex-row-reverse text-right">
+            <span className="font-semibold text-xs text-foreground truncate select-none">
+              {message.sender} (You)
+            </span>
+            <span className="text-[10px] text-muted-foreground select-none">
+              {message.timestamp}
+            </span>
+          </div>
+          <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-xs text-xs leading-relaxed whitespace-pre-wrap text-left shadow-xs">
+            {message.content}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex gap-3 text-left items-start py-2 select-text group">
+    <div className="flex gap-2.5 text-left items-start py-1.5 select-text group">
       {/* Avatar */}
       <div
-        className={`size-8 rounded-full flex items-center justify-center font-bold text-xs border shrink-0 select-none ${getAvatarBgColor(
+        className={`size-7 rounded-full flex items-center justify-center font-bold text-[10px] border shrink-0 select-none ${getAvatarBgColor(
           message.sender
         )}`}
       >
@@ -44,7 +77,7 @@ export function MessageItem({ message }: MessageItemProps) {
       </div>
 
       {/* Message Info and Content */}
-      <div className="min-w-0 flex-1 space-y-0.5">
+      <div className="min-w-0 max-w-[75%] space-y-1">
         <div className="flex items-baseline gap-2">
           <span className="font-semibold text-xs text-foreground truncate select-none">
             {message.sender}
@@ -53,9 +86,9 @@ export function MessageItem({ message }: MessageItemProps) {
             {message.timestamp}
           </span>
         </div>
-        <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+        <div className="bg-muted/60 text-foreground border border-border/40 p-3 rounded-2xl rounded-tl-xs text-xs leading-relaxed whitespace-pre-wrap">
           {message.content}
-        </p>
+        </div>
       </div>
     </div>
   )

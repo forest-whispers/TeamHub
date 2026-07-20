@@ -309,7 +309,7 @@ export default function WorkspaceChat() {
             </div>
           ) : (
             /* Messages list */
-            <MessageList messages={filteredMessages} />
+            <MessageList messages={filteredMessages} currentUserName={currentUserName} />
           )}
         </div>
 

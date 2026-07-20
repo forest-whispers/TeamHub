@@ -5,6 +5,8 @@ import { constants } from "../../config/constants.js";
 import type { CreateDocumentDto, SaveDocumentDto, UpdateDocumentDto } from "./document.types.js";
 import { snapshotService } from "./snapshot/snapshot.service.js";
 import { eventBus } from "../../infrastructure/events/event-bus.js";
+import { yjsService } from "./collaboration/yjs.service.js";
+import * as Y from "yjs";
 
 export const createDocument = async (requesterId: string, workspaceId: string, data: CreateDocumentDto) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
@@ -139,7 +141,7 @@ export async function saveDocument( requesterId: string, workspaceId: string, do
 
     // const binaryState = Buffer.from(input.snapshot);
 
-    const snapshotState = Uint8Array.from(input.snapshot);
+    const snapshotState = input.snapshot && input.snapshot.length > 0 ? Uint8Array.from(input.snapshot) : new Uint8Array();
 
     let document;
 
@@ -158,15 +160,32 @@ export async function saveDocument( requesterId: string, workspaceId: string, do
             },
         });
 
-        await snapshotService.createSnapshot(
-            tx,
-            {
-                documentId,
-                createdById: requesterId,
-                state: snapshotState,
-            }
-        );
+        if (input.snapshot && input.snapshot.length > 0) {
+            await snapshotService.createSnapshot(
+                tx,
+                {
+                    documentId,
+                    createdById: requesterId,
+                    state: snapshotState,
+                }
+            );
+        }
     });
+
+    if (yjsService.hasDocument(documentId)) {
+        const activeDoc = yjsService.getDocument(documentId);
+        if (activeDoc && snapshotState.length > 0) {
+            try {
+                const xmlFragment = activeDoc.ydoc.getXmlFragment("default");
+                if (xmlFragment.length > 0) {
+                    xmlFragment.delete(0, xmlFragment.length);
+                }
+                Y.applyUpdateV2(activeDoc.ydoc, snapshotState, "save");
+            } catch (err) {
+                console.error("Failed to sync active Y.Doc state on save:", err);
+            }
+        }
+    }
 
     return document;
 }
