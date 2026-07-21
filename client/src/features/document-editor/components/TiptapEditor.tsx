@@ -217,7 +217,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       workspaceId: workspaceIdRef.current,
       documentId: documentIdRef.current,
       content,
-      ...(snapshot && { snapshot }),
+      ...(snapshot && { snapshot, description: "Manual save" }),
       },
       {
         onSuccess: () => {
@@ -303,6 +303,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         documentId={documentData.id}
         open={isHistoryOpen}
         onOpenChange={setIsHistoryOpen}
+        ydoc={ydoc}
       />
     </div>
   )

@@ -7,18 +7,30 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/shared/components/ui/sheet"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/components/ui/dialog"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { useSnapshots, useSnapshotDetail } from "../hooks/useSnapshots"
+import { useSaveDocument } from "../hooks/useSaveDocument"
 import { SnapshotReadOnlyEditor } from "./SnapshotReadOnlyEditor"
-import { Clock, RotateCcw, AlertCircle, User as UserIcon, History } from "lucide-react"
+import { Clock, RotateCcw, AlertCircle, User as UserIcon, History, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import * as Y from "yjs"
+import { TiptapTransformer } from "@hocuspocus/transformer"
 
 interface VersionHistorySheetProps {
   workspaceId: string
   documentId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  ydoc?: Y.Doc
 }
 
 export function VersionHistorySheet({
@@ -26,8 +38,12 @@ export function VersionHistorySheet({
   documentId,
   open,
   onOpenChange,
+  ydoc,
 }: VersionHistorySheetProps) {
   const [selectedSnapshotId, setSelectedSnapshotId] = useState<string | null>(null)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+
+  const { mutate: saveDocument, isPending: isRestoring } = useSaveDocument()
 
   const {
     data: snapshots,
@@ -47,6 +63,7 @@ export function VersionHistorySheet({
   useEffect(() => {
     if (!open) {
       setSelectedSnapshotId(null)
+      setIsConfirmOpen(false)
     }
   }, [open, documentId])
 
@@ -78,7 +95,55 @@ export function VersionHistorySheet({
   }
 
   const handleRestoreClick = () => {
-    toast.info("Restore feature UI placeholder (Restore backend API not called)")
+    if (!snapshotDetail) return
+    setIsConfirmOpen(true)
+  }
+
+  const handleConfirmRestore = () => {
+    if (!snapshotDetail || !snapshotDetail.state) return
+
+    try {
+      // 1. Reconstruct an isolated temporary Y.Doc from snapshot state
+      const tempYdoc = new Y.Doc()
+      const snapshotBytes = new Uint8Array(snapshotDetail.state)
+      Y.applyUpdateV2(tempYdoc, snapshotBytes)
+
+      // 2. Convert reconstructed Y.Doc to Tiptap JSON
+      const restoredContent = TiptapTransformer.fromYdoc(tempYdoc, "default")
+      tempYdoc.destroy()
+
+      // 3. Update the live collaborative Y.Doc if available
+      if (ydoc) {
+        const xmlFragment = ydoc.getXmlFragment("default")
+        if (xmlFragment.length > 0) {
+          xmlFragment.delete(0, xmlFragment.length)
+        }
+        Y.applyUpdateV2(ydoc, snapshotBytes)
+      }
+
+      // 4. Perform save document mutation using restored JSON content and snapshot state
+      saveDocument(
+        {
+          workspaceId,
+          documentId,
+          content: restoredContent,
+          snapshot: snapshotDetail.state,
+          description: "Version restored",
+        },
+        {
+          onSuccess: () => {
+            setIsConfirmOpen(false)
+            onOpenChange(false)
+            toast.success("Document restored successfully!")
+          },
+          onError: (err) => {
+            toast.error(err instanceof Error ? err.message : "Failed to restore document")
+          },
+        }
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to process snapshot for restore")
+    }
   }
 
   return (
@@ -273,9 +338,14 @@ export function VersionHistorySheet({
                     variant="outline"
                     size="xs"
                     onClick={handleRestoreClick}
+                    disabled={isRestoring}
                     className="cursor-pointer shrink-0 font-medium hover:bg-muted"
                   >
-                    <RotateCcw className="size-3.5 mr-1.5" />
+                    {isRestoring ? (
+                      <Loader2 className="size-3.5 mr-1.5 animate-spin" />
+                    ) : (
+                      <RotateCcw className="size-3.5 mr-1.5" />
+                    )}
                     Restore
                   </Button>
                 </div>
@@ -291,6 +361,42 @@ export function VersionHistorySheet({
             ) : null}
           </div>
         </div>
+
+        {/* Confirmation Dialog for Restore */}
+        <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <RotateCcw className="size-4 text-primary" />
+                Restore Document Version
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground pt-1.5 leading-relaxed">
+                Are you sure you want to restore this version? This will replace the current document contents with the selected snapshot version while preserving version history.
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="mt-4 flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsConfirmOpen(false)}
+                disabled={isRestoring}
+                className="cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleConfirmRestore}
+                disabled={isRestoring}
+                className="cursor-pointer"
+              >
+                {isRestoring && <Loader2 className="size-3.5 mr-1.5 animate-spin" />}
+                Restore Version
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SheetContent>
     </Sheet>
   )

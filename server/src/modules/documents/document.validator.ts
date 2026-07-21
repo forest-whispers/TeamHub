@@ -13,4 +13,5 @@ export const updateDocumentSchema = z.object({
 export const saveDocumentValidator = z.object({
     content: z.any(),
     snapshot: z.array(z.number()).optional(),
+    description: z.string().trim().max(255).optional(),
 });

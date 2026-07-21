@@ -11,7 +11,7 @@ export interface UpdateDocumentDto {
 }
 
 export interface SaveDocumentDto {
-    // content: JSON,
-    content: Prisma.InputJsonValue,
-    snapshot: number[]
+    content: Prisma.InputJsonValue;
+    snapshot?: number[];
+    description?: string;
 }

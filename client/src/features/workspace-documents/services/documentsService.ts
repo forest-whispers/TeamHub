@@ -30,10 +30,13 @@ export const documentsService: DocumentsService = {
     return response.data
   },
 
-  saveDocument: async (workspaceId: string, documentId: string, content: JSONContent, snapshot?: number[]): Promise<any> => {
+  saveDocument: async (workspaceId: string, documentId: string, content: JSONContent, snapshot?: number[], description?: string): Promise<any> => {
     const payload: Record<string, any> = { content }
     if (snapshot && snapshot.length > 0) {
       payload.snapshot = snapshot
+    }
+    if (description) {
+      payload.description = description
     }
     const response = await api.patch(`/workspaces/${workspaceId}/documents/${documentId}/content`, payload)
     return response.data

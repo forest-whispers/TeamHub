@@ -27,12 +27,13 @@ export function workspacePresenceSockets(io: Server) {
                             payload.presence
                         );
 
+                    console.log("workspace:join >> broadcasted");
+
                     io.to(`workspace:${payload.workspaceId}`).emit("workspace:presence",
                         {
                             users,
                         });
 
-                    console.log("workspace:join >> broadcasted");
                     callback({
                         success: true,
                         data: {
@@ -56,7 +57,6 @@ export function workspacePresenceSockets(io: Server) {
                 payload: UpdatePresencePayload,
                 callback: (response: SocketResponse) => void
             ) => {
-                console.log("workspace:update received")
                 try {
 
                     const users = await updateWorkspace(
@@ -65,12 +65,13 @@ export function workspacePresenceSockets(io: Server) {
                         payload.presence
                     );
 
+                    console.log("workspace:update >> broadcasted");
+
                     io.to(`workspace:${payload.workspaceId}`).emit("workspace:presence",
                         {
                             users,
                         });
 
-                    console.log("workspace:update >> broadcasted");
                     callback({
                         success: true,
                     });

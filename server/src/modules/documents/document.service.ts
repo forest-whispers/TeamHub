@@ -5,8 +5,6 @@ import { constants } from "../../config/constants.js";
 import type { CreateDocumentDto, SaveDocumentDto, UpdateDocumentDto } from "./document.types.js";
 import { snapshotService } from "./snapshot/snapshot.service.js";
 import { eventBus } from "../../infrastructure/events/event-bus.js";
-import { yjsService } from "./collaboration/yjs.service.js";
-import { TiptapTransformer } from "@hocuspocus/transformer";
 
 export const createDocument = async (requesterId: string, workspaceId: string, data: CreateDocumentDto) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
@@ -167,6 +165,7 @@ export async function saveDocument( requesterId: string, workspaceId: string, do
                     documentId,
                     createdById: requesterId,
                     state: snapshotState,
+                    description: input.description,
                 }
             );
         }

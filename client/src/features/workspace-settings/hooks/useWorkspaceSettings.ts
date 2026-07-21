@@ -35,8 +35,16 @@ export function useUpdateWorkspaceSettings(workspaceId: string) {
   return useMutation({
     mutationFn: (settings: WorkspaceSettings) =>
       workspaceSettingsService.updateWorkspaceSettings(workspaceId, settings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspace", workspaceId] })
+    onSuccess: (updatedSettings) => {
+      queryClient.setQueryData(["workspace", workspaceId], (oldData: any) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          name: updatedSettings.name,
+          description: updatedSettings.description,
+          color: updatedSettings.accentColor,
+        }
+      })
       queryClient.invalidateQueries({ queryKey: ["workspaces"] })
     },
   })
@@ -56,8 +64,14 @@ export function useRegenerateInviteCode(workspaceId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => workspaceSettingsService.regenerateInviteCode(workspaceId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspace", workspaceId] })
+    onSuccess: (data) => {
+      queryClient.setQueryData(["workspace", workspaceId], (oldData: any) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          inviteCode: data.inviteCode,
+        }
+      })
     },
   })
 }

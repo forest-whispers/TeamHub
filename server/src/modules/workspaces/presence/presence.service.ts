@@ -69,6 +69,8 @@ class PresenceService {
 
         workspace.users.delete(socketId);
 
+        console.log("workspace map:", Array.from(workspace.users.keys()));
+
         if (workspace.users.size === 0) {
             this.workspaces.delete( workspaceId );
         }

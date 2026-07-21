@@ -7,14 +7,15 @@ interface SaveDocumentPayload {
   documentId: string
   content: JSONContent;
   snapshot?: number[];
+  description?: string;
 }
 
 export function useSaveDocument() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ workspaceId, documentId, content, snapshot }: SaveDocumentPayload) =>
-      documentsService.saveDocument(workspaceId, documentId, content, snapshot),
+    mutationFn: ({ workspaceId, documentId, content, snapshot, description }: SaveDocumentPayload) =>
+      documentsService.saveDocument(workspaceId, documentId, content, snapshot, description),
     onSuccess: (_, variables) => {
       // Synchronously update the document detail query cache
       queryClient.setQueryData(
@@ -28,6 +29,11 @@ export function useSaveDocument() {
           }
         }
       )
+      if (variables.snapshot && variables.snapshot.length > 0) {
+        queryClient.invalidateQueries({
+          queryKey: ["document-snapshots", variables.workspaceId, variables.documentId],
+        })
+      }
     },
   })
 }
