@@ -42,6 +42,13 @@ interface TiptapEditorProps {
   authUser?: AuthUser;
 }
 
+const EDITOR_PROPS = {
+  attributes: {
+    class:
+      "focus:outline-none min-h-[400px] p-4 text-left text-sm space-y-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1",
+  },
+}
+
 export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUser }: TiptapEditorProps) {
   const { openTabs, updateTabContent, updateTabName } = useDocumentTabs()
   const currentTab = openTabs.find((t) => t.id === documentData.id)
@@ -195,15 +202,13 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     [ydoc, provider, caretUser, caretRender, caretSelectionRender]
   )
 
-  const editor = useEditor({
-    extensions,
-    editorProps: {
-      attributes: {
-        class:
-          "focus:outline-none min-h-[400px] p-4 text-left text-sm space-y-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1",
-      },
-    },
-    onUpdate: ({ editor, transaction }) => {
+  const updateTabContentRef = useRef(updateTabContent)
+  useEffect(() => {
+    updateTabContentRef.current = updateTabContent
+  }, [updateTabContent])
+
+  const handleUpdate = useCallback(
+    ({ editor, transaction }: { editor: any; transaction: any }) => {
       const isRemote = transaction.getMeta("y-sync$") !== undefined
       if (isRemote) return
 
@@ -211,31 +216,55 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       const dirty = savedContentRef.current === null || JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current)
 
       setIsDirty(dirty)
-      updateTabContent(documentData.id, currentJSON, savedContentRef.current, dirty)
+      updateTabContentRef.current(documentData.id, currentJSON, savedContentRef.current, dirty)
     },
-  }, [extensions])
+    [documentData.id]
+  )
 
-  // Update discussion decoration options safely without modifying editor view state
+  const editor = useEditor(
+    {
+      extensions,
+      editorProps: EDITOR_PROPS,
+      onUpdate: handleUpdate,
+    },
+    [extensions]
+  )
+
+  const prevDiscStateRef = useRef({
+    discussions,
+    activeDiscussionId,
+    highlightedDiscussionId,
+    composerState,
+  })
+
+  // Update discussion decoration options safely without dispatching view transactions on unrelated re-renders
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
-      editor.view.dispatch(
-        editor.state.tr.setMeta(DiscussionDecorationKey, {
+      const ext = editor.extensionManager.extensions.find((e) => e.name === "discussionDecoration")
+      if (ext) {
+        ext.options.discussions = discussions
+        ext.options.activeDiscussionId = activeDiscussionId
+        ext.options.highlightedDiscussionId = highlightedDiscussionId
+        ext.options.composerState = composerState
+        ext.options.onSelectDiscussion = handleSelectDiscussion
+      }
+
+      const prev = prevDiscStateRef.current
+      const hasChanged =
+        prev.discussions !== discussions ||
+        prev.activeDiscussionId !== activeDiscussionId ||
+        prev.highlightedDiscussionId !== highlightedDiscussionId ||
+        prev.composerState !== composerState
+
+      if (hasChanged) {
+        prevDiscStateRef.current = {
           discussions,
           activeDiscussionId,
           highlightedDiscussionId,
           composerState,
-          onSelectDiscussion: handleSelectDiscussion,
-        })
-      )
-      // const ext = editor.extensionManager.extensions.find((e) => e.name === "discussionDecoration")
-      // if (ext) {
-      //   ext.options.discussions = discussions
-      //   ext.options.activeDiscussionId = activeDiscussionId
-      //   ext.options.highlightedDiscussionId = highlightedDiscussionId
-      //   ext.options.composerState = composerState
-      //   ext.options.onSelectDiscussion = handleSelectDiscussion
-      //   // editor.view.updateState(editor.state)
-      // }
+        }
+        editor.view.dispatch(editor.state.tr.setMeta(DiscussionDecorationKey, true))
+      }
     }
   }, [editor, discussions, activeDiscussionId, highlightedDiscussionId, composerState, handleSelectDiscussion])
 

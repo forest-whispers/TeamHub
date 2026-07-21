@@ -26,7 +26,7 @@ export function DiscussionThread({
   documentId,
   discussion,
   authUser,
-  anchorRect,
+  anchorRect: _anchorRect,
   onClose,
 }: DiscussionThreadProps) {
   const [replyMessage, setReplyMessage] = useState("")

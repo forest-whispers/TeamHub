@@ -134,7 +134,7 @@ function buildDecorations(doc: any, options: DiscussionDecorationOptions): Decor
   return DecorationSet.create(doc, decorations)
 }
 
-function findTextRangeInDoc(doc: any, searchStr: string, hintPos: number): { from: number; to: number } | null {
+function findTextRangeInDoc(doc: any, searchStr: string, _hintPos: number): { from: number; to: number } | null {
   if (!searchStr) return null
   let result: { from: number; to: number } | null = null
 

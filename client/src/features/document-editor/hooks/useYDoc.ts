@@ -19,12 +19,12 @@ export function useYDoc(documentId: string) {
 
     useEffect(() => {
         return () => {
-            if (ydocRef.current) {
+            if (ydocRef.current && previousId.current !== documentId) {
                 ydocRef.current.destroy();
                 ydocRef.current = null;
             }
         };
-    }, []);
+    }, [documentId]);
 
     return {
         ydoc: ydocRef.current,

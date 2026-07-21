@@ -33,5 +33,5 @@ export interface DocumentsService {
   createDocument(workspaceId: string, data: CreateDocumentData): Promise<{ id: string }>
   updateDocument( workspaceId: string, documentId: string, data: UpdateDocumentData): Promise<any>
   deleteDocument(workspaceId: string, documentId: string): Promise<void>
-  saveDocument(workspaceId: string, documentId: string, content: JSONContent, snapshot?: number[]): Promise<any>
+  saveDocument(workspaceId: string, documentId: string, content: JSONContent, snapshot?: number[], description?: string): Promise<any>
 }

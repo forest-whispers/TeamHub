@@ -43,8 +43,8 @@ export function CollaborativeEditor({
 
     return (
         <TiptapEditor
-            // key={documentData.id}
-            key={documentData.id + ydoc.clientID}
+            key={documentData.id}
+            // key={documentData.id + ydoc.clientID}
             documentData={documentData}
             workspaceId={workspaceId}
             ydoc={ydoc}
