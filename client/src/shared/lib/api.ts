@@ -1,4 +1,5 @@
 import axios from "axios";
+import { socket } from "./socket";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
@@ -7,6 +8,18 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+api.interceptors.request.use(
+  (config) => {
+    if (socket?.id) {
+      config.headers["x-socket-id"] = socket.id;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 let isRefreshing = false;
 

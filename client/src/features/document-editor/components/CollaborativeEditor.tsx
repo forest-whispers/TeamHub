@@ -3,6 +3,7 @@ import { useYDoc } from "../hooks/useYDoc";
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus";
 import { useCollaboration } from "../hooks/useCollaboration";
 import { useAwareness } from "../hooks/useAwareness";
+import { useDiscussionsRealtime } from "../hooks/useDiscussionsRealtime";
 import { TiptapEditor } from "./TiptapEditor";
 import type { WorkspaceDocument } from "../types";
 import type { AuthUser } from "@/features/auth/types";
@@ -39,6 +40,11 @@ export function CollaborativeEditor({
         ydoc,
         onInitialAwareness: applyInitialAwareness,
         publishLocalState
+    });
+
+    useDiscussionsRealtime({
+        workspaceId,
+        documentId: documentData.id,
     });
 
     return (

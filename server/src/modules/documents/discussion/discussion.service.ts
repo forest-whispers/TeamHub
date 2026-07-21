@@ -42,7 +42,7 @@ export async function getDiscussions( requesterId: string, workspaceId: string, 
     });
 }
 
-export async function createDiscussion( requesterId: string, workspaceId: string, documentId: string, input: CreateDiscussionDto ) {
+export async function createDiscussion( requesterId: string, workspaceId: string, documentId: string, input: CreateDiscussionDto, socketId?: string ) {
     await ensureWorkspaceMember(requesterId, workspaceId);
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
@@ -85,12 +85,13 @@ export async function createDiscussion( requesterId: string, workspaceId: string
     await eventBus.emit("discussion.created", {
         documentId,
         discussion,
+        socketId,
     });
 
     return discussion;
 }
 
-export async function replyDiscussion( requesterId: string, discussionId: string, input: ReplyDiscussionDto ) {
+export async function replyDiscussion( requesterId: string, discussionId: string, input: ReplyDiscussionDto, socketId?: string ) {
     const reply = await prisma.documentDiscussionReply.create({
         data: {
             discussionId,
@@ -112,12 +113,13 @@ export async function replyDiscussion( requesterId: string, discussionId: string
         documentId: input.documentId,
         discussionId,
         reply,
+        socketId,
     });
 
     return reply;
 }
 
-export async function resolveDiscussion( requesterId: string, discussionId: string, resolved: boolean ) {
+export async function resolveDiscussion( requesterId: string, discussionId: string, resolved: boolean, socketId?: string ) {
     const discussion = await prisma.documentDiscussion.findUniqueOrThrow({
         where: {
             id: discussionId,
@@ -145,13 +147,14 @@ export async function resolveDiscussion( requesterId: string, discussionId: stri
 
     await eventBus.emit("discussion.updated", {
         documentId: discussion.documentId,
-        discussion: resolvedDiscussion
+        discussion: resolvedDiscussion,
+        socketId,
     });
 
     return resolvedDiscussion;
 }
 
-export async function deleteDiscussion( requesterId: string, discussionId: string ) {
+export async function deleteDiscussion( requesterId: string, discussionId: string, socketId?: string ) {
     const discussion = await prisma.documentDiscussion.findUniqueOrThrow({
         where: {
             id: discussionId,
@@ -175,10 +178,11 @@ export async function deleteDiscussion( requesterId: string, discussionId: strin
     await eventBus.emit("discussion.deleted", {
         documentId: discussion.documentId,
         discussionId,
+        socketId,
     });
 }
 
-export async function deleteReply( requesterId: string, replyId: string ) {
+export async function deleteReply( requesterId: string, replyId: string, socketId?: string ) {
     const reply = await prisma.documentDiscussionReply.findUniqueOrThrow({
         where: {
             id: replyId,
@@ -209,6 +213,7 @@ export async function deleteReply( requesterId: string, replyId: string ) {
         documentId: deletedDiscussion.discussion.documentId,
         discussionId: reply.discussionId,
         replyId,
+        socketId,
     });
 
     return deletedDiscussion;

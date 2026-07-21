@@ -29,6 +29,7 @@ export type DiscussionCreatedPayload = Awaited<
 export interface DiscussionCreatedEvent {
     documentId: string;
     discussion: DiscussionCreatedPayload;
+    socketId?: string | undefined;
 }
 
 export type DiscussionReplyCreatedPayload = Awaited<
@@ -39,6 +40,7 @@ export interface DiscussionReplyCreatedEvent {
     documentId: string;
     discussionId: string;
     reply: DiscussionReplyCreatedPayload;
+    socketId?: string | undefined;
 }
 
 export type DiscussionUpdatedPayload = Awaited<
@@ -48,17 +50,20 @@ export type DiscussionUpdatedPayload = Awaited<
 export interface DiscussionUpdatedEvent {
     documentId: string;
     discussion: DiscussionUpdatedPayload;
+    socketId?: string | undefined;
 }
 
 export interface DiscussionDeletedEvent {
     documentId: string;
     discussionId: string;
+    socketId?: string | undefined;
 }
 
 export interface DiscussionReplyDeletedEvent {
     documentId: string;
     discussionId: string;
     replyId: string;
+    socketId?: string | undefined;
 }
 
 export interface DomainEventMap {

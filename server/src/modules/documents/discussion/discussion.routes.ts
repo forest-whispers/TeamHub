@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { getDiscussionsController, createDiscussionController, replyDiscussionController, resolveDiscussionController, deleteDiscussionController, deleteReplyController } from "./discussion.controller.ts";
+import { getDiscussionsController, createDiscussionController, replyDiscussionController, resolveDiscussionController, deleteDiscussionController, deleteReplyController } from "./discussion.controller.js";
 
 const router = Router({ mergeParams: true });
 

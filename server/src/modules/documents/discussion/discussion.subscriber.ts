@@ -6,14 +6,22 @@ export function registerDocDiscussionSubscriber() {
     const io = getIO()
 
     eventBus.on("discussion.created", async (event) => {
-        io.to(`document:${event.documentId}`).emit(
+        let broadcast = io.to(`document:${event.documentId}`);
+        if (event.socketId) {
+            broadcast = broadcast.except(event.socketId);
+        }
+        broadcast.emit(
             "document:discussion:created",
             event.discussion
-          );
+        );
     });
 
     eventBus.on("discussion.reply.created", async (event) => {
-        io.to(`document:${event.documentId}`).emit(
+        let broadcast = io.to(`document:${event.documentId}`);
+        if (event.socketId) {
+            broadcast = broadcast.except(event.socketId);
+        }
+        broadcast.emit(
             "document:reply:created",
             {
                 discussionId: event.discussionId,
@@ -23,14 +31,22 @@ export function registerDocDiscussionSubscriber() {
     });
 
     eventBus.on("discussion.updated", async (event) => {
-        io.to(`document:${event.documentId}`).emit(
+        let broadcast = io.to(`document:${event.documentId}`);
+        if (event.socketId) {
+            broadcast = broadcast.except(event.socketId);
+        }
+        broadcast.emit(
             "document:discussion:updated",
             event.discussion
         );
     });
 
     eventBus.on("discussion.deleted", async (event) => {
-        io.to(`document:${event.documentId}`).emit(
+        let broadcast = io.to(`document:${event.documentId}`);
+        if (event.socketId) {
+            broadcast = broadcast.except(event.socketId);
+        }
+        broadcast.emit(
             "document:discussion:deleted",
             {
                 discussionId: event.discussionId,
@@ -39,7 +55,11 @@ export function registerDocDiscussionSubscriber() {
     });
 
     eventBus.on("discussion.reply.deleted", async (event) => {
-        io.to(`document:${event.documentId}`).emit(
+        let broadcast = io.to(`document:${event.documentId}`);
+        if (event.socketId) {
+            broadcast = broadcast.except(event.socketId);
+        }
+        broadcast.emit(
             "document:reply:deleted",
             {
                 discussionId: event.discussionId,
