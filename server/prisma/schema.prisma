@@ -32,9 +32,14 @@ model User {
 
   activities Activity[]
 
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
   documentSnapshots DocumentSnapshot[]
+
+  discussionsCreated  DocumentDiscussion[]      @relation("DiscussionAuthor")
+  discussionsResolved DocumentDiscussion[]      @relation("DiscussionResolver")
+  discussionReplies   DocumentDiscussionReply[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Session {
@@ -118,8 +123,9 @@ model Document {
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  documentDiscussions DocumentDiscussion[]
 
   @@index([workspaceId])
   @@index([createdById])
@@ -174,4 +180,60 @@ model DocumentSnapshot {
   createdAt DateTime @default(now())
 
   @@index([documentId, createdAt(sort: Desc)])
+}
+
+model DocumentDiscussion {
+  id String @id @default(cuid())
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation("DiscussionAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+
+  /**
+   * Serialized anchor describing where the discussion
+   * is attached/belongs inside the collaborative document.
+   * Initially this can simply store whatever structure
+   * the frontend uses.
+   */
+  anchor Json
+
+  /**
+   * Snapshot of the selected text when the discussion
+   * was originally created.
+   */
+  quotedText String?
+
+  resolved Boolean @default(false)
+
+  resolvedAt DateTime?
+
+  resolvedById String?
+  resolvedBy   User?   @relation("DiscussionResolver", fields: [resolvedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies DocumentDiscussionReply[]
+
+  @@index([documentId])
+  @@index([documentId, resolved])
+}
+
+model DocumentDiscussionReply {
+  id String @id @default(cuid())
+
+  discussionId String
+  discussion   DocumentDiscussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  message String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([discussionId])
 }

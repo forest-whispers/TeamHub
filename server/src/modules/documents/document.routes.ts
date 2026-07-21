@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
 import snapshotRoutes from "./snapshot/snapshot.routes.js";
+import discussionRoutes from "./discussion/discussion.routes.js";
 import { createDocumentController, getDocumentsController, getDocumentController, updateDocumentController, saveDocumentController, deleteDocumentController } from "./document.controller.js";
 import { validate } from "../../middleware/validate.js";
 import * as validator from "./document.validator.js";
@@ -20,6 +21,8 @@ router.patch("/:documentId", validate(validator.updateDocumentSchema), updateDoc
 router.patch("/:documentId/content", validate(validator.saveDocumentValidator), saveDocumentController);
 
 router.use("/:documentId/history", snapshotRoutes);
+
+router.use("/:documentId/discussions", discussionRoutes);
 
 router.delete("/:documentId", deleteDocumentController);
 
