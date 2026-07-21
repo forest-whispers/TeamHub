@@ -16,50 +16,135 @@
 
 .collaboration-caret {
   position: relative;
-  border-left: 2px solid var(--caret-color);
-  margin-left: -1px;
-  margin-right: -1px;
+  border-left: none;
+  margin: 0;
   pointer-events: none;
+  display: inline;
 }
 
-.collaboration-caret-label {
+.collaboration-caret-pointer {
   position: absolute;
-  top: -24px;
-  left: 0;
-  background-color: var(--caret-color);
-  color: #ffffff;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  white-space: nowrap;
-  user-select: none;
-  box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.16), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  line-height: 1.2;
-  pointer-events: none;
-  animation: caret-label-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  top: -16px;
+  left: -7px;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 30;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.collaboration-caret-label-content {
-  display: inline-flex;
+.collaboration-caret-pointer:hover {
+  transform: scale(1.15);
+}
+
+/* Rich Expanded Metadata Hover Card */
+.collaboration-caret-card {
+  position: absolute;
+  top: 4px;
+  left: -4px;
+  width: 190px;
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 10px 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.95);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+/* Reveal Metadata Card on Hovering Caret Pointer Arrow or Card */
+.collaboration-caret-pointer:hover + .collaboration-caret-card,
+.collaboration-caret-card:hover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.collaboration-caret-card-header {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
 }
 
-.collaboration-caret-label-text {
-  display: inline-block;
+.collaboration-caret-avatar-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background-color: color-mix(in srgb, var(--caret-color) 15%, transparent);
+  color: var(--caret-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  border: 2px solid var(--caret-color);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.collaboration-caret-label::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 8px;
-  border-width: 3px 3px 0;
-  border-style: solid;
-  border-color: var(--caret-color) transparent;
+.collaboration-caret-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9999px;
+}
+
+.collaboration-caret-avatar-initials {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.collaboration-caret-card-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.collaboration-caret-card-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.collaboration-caret-card-role {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.collaboration-caret-card-footer {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.collaboration-caret-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  flex-shrink: 0;
 }
 
 .collaboration-selection {

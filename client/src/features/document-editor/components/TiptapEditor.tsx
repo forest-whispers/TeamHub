@@ -97,25 +97,52 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
           name: authUser!.name,
           color: getUserColor(authUser!.id),
           avatar: authUser!.avatar,
+          role: (authUser as any)?.role || "Team Member",
         },
-        render: (user) => {
+        render: (user: any) => {
           const cursor = document.createElement("span");
           cursor.classList.add("collaboration-caret");
           cursor.style.setProperty("--caret-color", user.color);
 
-          const label = document.createElement("span");
-          label.classList.add("collaboration-caret-label");
+          // Location Pin SVG Icon
+          const pointer = document.createElement("span");
+          pointer.classList.add("collaboration-caret-pointer");
+          pointer.innerHTML = `<svg width="14" height="18" viewBox="0 0 24 24" fill="${user.color}" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>`;
 
-          const content = document.createElement("span");
-          content.classList.add("collaboration-caret-label-content");
+          // Rich Metadata Hover Card
+          const card = document.createElement("div");
+          card.classList.add("collaboration-caret-card");
 
-          const text = document.createElement("span");
-          text.classList.add("collaboration-caret-label-text");
-          text.textContent = user.name;
+          const getInitials = (name: string) =>
+            (name || "U")
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .toUpperCase()
+              .substring(0, 2);
 
-          content.appendChild(text);
-          label.appendChild(content);
-          cursor.appendChild(label);
+          const avatarHTML = user.avatar
+            ? `<img src="${user.avatar}" class="collaboration-caret-avatar-img" />`
+            : `<span class="collaboration-caret-avatar-initials">${getInitials(user.name)}</span>`;
+
+          card.innerHTML = `
+            <div class="collaboration-caret-card-header">
+              <div class="collaboration-caret-avatar-wrap" style="--caret-color: ${user.color}">
+                ${avatarHTML}
+              </div>
+              <div class="collaboration-caret-card-info">
+                <div class="collaboration-caret-card-name">${user.name}</div>
+                <div class="collaboration-caret-card-role">${user.role || "Team Member"}</div>
+              </div>
+            </div>
+            <div class="collaboration-caret-card-footer">
+              <span class="collaboration-caret-pulse"></span>
+              <span>Active in Document</span>
+            </div>
+          `;
+
+          cursor.appendChild(pointer);
+          cursor.appendChild(card);
           return cursor;
         },
         selectionRender: (user) => {
