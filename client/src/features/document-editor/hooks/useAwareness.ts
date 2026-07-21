@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import * as awarenessProtocol from "y-protocols/awareness";
 import { Awareness } from "y-protocols/awareness";
 import * as Y from "yjs";
@@ -97,7 +97,7 @@ export function useAwareness({ workspaceId, documentId, ydoc, authUser }: Props)
         };
     }, [awareness, workspaceId, documentId]);
 
-    function publishLocalState() {
+    const publishLocalState = useCallback(() => {
         if (!authUser) return;
 
         awareness.setLocalState({
@@ -109,13 +109,13 @@ export function useAwareness({ workspaceId, documentId, ydoc, authUser }: Props)
             },
             typing: false,
         });
-    }
+    }, [awareness, authUser]);
 
     useEffect(() => {
         publishLocalState();
-    }, [awareness, authUser]);
+    }, [publishLocalState]);
 
-    function applyInitialAwareness(rawUpdate: any) {
+    const applyInitialAwareness = useCallback((rawUpdate: any) => {
         const update = normalizeUpdate(rawUpdate);
 
         awarenessProtocol.applyAwarenessUpdate(
@@ -123,7 +123,7 @@ export function useAwareness({ workspaceId, documentId, ydoc, authUser }: Props)
             update,
             "initial"
         );
-    }
+    }, [awareness]);
 
     useEffect(() => {
         function handleAwarenessUpdate(rawUpdate: any) {

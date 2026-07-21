@@ -172,23 +172,6 @@ export async function saveDocument( requesterId: string, workspaceId: string, do
         }
     });
 
-    if (yjsService.hasDocument(documentId)) {
-        const activeDoc = yjsService.getDocument(documentId);
-        if (activeDoc) {
-            try {
-                const freshYdoc = TiptapTransformer.toYdoc(
-                    content,
-                    "default",
-                    TiptapTransformer.defaultExtensions
-                );
-                activeDoc.ydoc.destroy();
-                activeDoc.ydoc = freshYdoc;
-            } catch (err) {
-                console.error("Failed to sync active Y.Doc state on save:", err);
-            }
-        }
-    }
-
     return document;
 }
 

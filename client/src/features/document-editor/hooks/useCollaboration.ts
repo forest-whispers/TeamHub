@@ -98,72 +98,63 @@ export function useCollaboration({ workspaceId, documentId, ydoc, onInitialAware
         };
     }, [ydoc]);
 
+    const callbacksRef = useRef({ onInitialAwareness, publishLocalState });
+
+    useEffect(() => {
+        callbacksRef.current = { onInitialAwareness, publishLocalState };
+    }, [onInitialAwareness, publishLocalState]);
+
     useEffect(() => {
         hasInitialSyncRef.current = false;
-        function applyInitialState(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
 
-            const update = normalizeUpdate(rawUpdate)
+        function applyInitialState(rawUpdate: Uint8Array | ArrayBuffer | number[] | any) {
+            const update = normalizeUpdate(rawUpdate);
 
             if (hasInitialSyncRef.current) return;
 
-            hasInitialSyncRef.current = true;
-
-            const xmlFragment = ydoc.getXmlFragment("default");
-            if (xmlFragment.length > 0 && update.length > 0) {
-                xmlFragment.delete(0, xmlFragment.length);
-            }
-
             Y.applyUpdate(ydoc, update, "initial");
+            hasInitialSyncRef.current = true;
         }
 
-        socket.emit("document:join",
-            {
-                workspaceId,
-                documentId,
-            },
-            (response: {
-                success: boolean;
-                message?: string;
-                data?: {
-                    initialState?: any;
-                    awarenessState?: any;
-                };
-            }) => {
-                if (!response.success) {
-                    console.error(response.message);
-                    return;
-                }
-
-                if (response.data?.initialState) {
-                    applyInitialState(response.data.initialState);
-
-                    if (response.data.awarenessState && onInitialAwareness) {
-                        onInitialAwareness(normalizeUpdate(response.data.awarenessState));
-                        publishLocalState();
+        function joinRoom() {
+            socket.emit("document:join",
+                {
+                    workspaceId,
+                    documentId,
+                },
+                (response: {
+                    success: boolean;
+                    message?: string;
+                    data?: {
+                        initialState?: any;
+                        awarenessState?: any;
+                    };
+                }) => {
+                    if (!response.success) {
+                        console.error(response.message);
+                        return;
                     }
 
-                    // const localUpdate = Y.encodeStateAsUpdate(ydoc);
-                    // socket.emit("document:update",
-                    //     {
-                    //         workspaceId,
-                    //         documentId,
-                    //         update: localUpdate
-                    //     },
-                    //     (response: {
-                    //         success: boolean;
-                    //         message?: string;
-                    //     }) => {
-                    //         if (!response.success) {
-                    //             console.error(response.message);
-                    //         }
-                    //     }
-                    // );
+                    if (response.data?.initialState) {
+                        applyInitialState(response.data.initialState);
+
+                        if (response.data.awarenessState && callbacksRef.current.onInitialAwareness) {
+                            callbacksRef.current.onInitialAwareness(normalizeUpdate(response.data.awarenessState));
+                            callbacksRef.current.publishLocalState();
+                        }
+                    } else {
+                        hasInitialSyncRef.current = true;
+                    }
                 }
-                hasInitialSyncRef.current = true;
-            }
-        );
+            );
+        }
+
+        joinRoom();
+
+        socket.on("connect", joinRoom);
 
         return () => {
+            socket.off("connect", joinRoom);
             hasInitialSyncRef.current = false;
 
             socket.emit("document:leave",

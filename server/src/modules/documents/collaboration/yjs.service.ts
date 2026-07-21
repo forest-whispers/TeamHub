@@ -7,6 +7,7 @@ import type { ActiveDocument } from "./yjs.types.js";
 
 class YjsService {
     private documents = new Map<string, ActiveDocument>();
+    private loadingPromises = new Map<string, Promise<ActiveDocument>>();
 
     getDocument(documentId: string) {
         return this.documents.get(documentId);
@@ -33,33 +34,46 @@ class YjsService {
         return this.documents.has(documentId);
     }
 
-    async getOrCreateDocument(documentId: string) {
+    async getOrCreateDocument(documentId: string): Promise<ActiveDocument> {
         let document = this.documents.get(documentId);
 
         if (document) {
             return document;
         }
 
-        const json = await persistenceService.loadDocument(documentId);
+        let loadingPromise = this.loadingPromises.get(documentId);
 
-        const ydoc = TiptapTransformer.toYdoc(
-            json,
-            "default",
-            TiptapTransformer.defaultExtensions
-        );
+        if (!loadingPromise) {
+            loadingPromise = (async () => {
+                try {
+                    const json = await persistenceService.loadDocument(documentId);
 
-        document = {
-            ydoc,
-            users: new Set(),
-            awareness: new Awareness(ydoc),
-            awarenessClients: new Map(),
-        };
+                    const ydoc = TiptapTransformer.toYdoc(
+                        json,
+                        "default",
+                        TiptapTransformer.defaultExtensions
+                    );
 
-        document.awareness.states.delete(ydoc.clientID);
+                    const newDoc: ActiveDocument = {
+                        ydoc,
+                        users: new Set(),
+                        awareness: new Awareness(ydoc),
+                        awarenessClients: new Map(),
+                    };
 
-        this.documents.set(documentId, document);
+                    newDoc.awareness.states.delete(ydoc.clientID);
 
-        return document;
+                    this.documents.set(documentId, newDoc);
+                    return newDoc;
+                } finally {
+                    this.loadingPromises.delete(documentId);
+                }
+            })();
+
+            this.loadingPromises.set(documentId, loadingPromise);
+        }
+
+        return loadingPromise;
     }
 
     async addUser(documentId: string, socketId: string) {

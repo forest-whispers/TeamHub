@@ -4,7 +4,6 @@ import { ensureWorkspaceMember } from "../../../shared/authorization/workspace.j
 import { applyAwarenessUpdate, encodeAwarenessUpdate, registerAwarenessClient, unregisterAwarenessClient } from "./awareness.service.js";
 import { yjsService } from "./yjs.service.js";
 import * as Y from "yjs";
-import { TiptapTransformer } from "@hocuspocus/transformer";
 
 export async function joinDocument(
     socket: AuthenticatedSocket,
@@ -17,18 +16,9 @@ export async function joinDocument(
 
     const document = await yjsService.addUser(documentId, socket.id);
 
-    console.log("join document",
-        (TiptapTransformer.fromYdoc(
-            document.ydoc,
-            "default"
-        )).content[0]
-    );
-
     const state = Y.encodeStateAsUpdate(document.ydoc);
 
     const awarenessState = encodeAwarenessUpdate(documentId);
-
-    console.log("join document", state);
 
     socket.join(`document:${documentId}`);
 
@@ -46,18 +36,7 @@ export async function updateDocument(
     documentId: string,
     update: Uint8Array
 ) {
-    await ensureWorkspaceMember( socket.data.user.id, workspaceId,);
-
-    await ensureDocumentInWorkspace( workspaceId, documentId,);
-
     const document = await yjsService.getOrCreateDocument(documentId);
-
-    console.log("update document",
-        (TiptapTransformer.fromYdoc(
-            document.ydoc,
-            "default"
-        )).content[0]
-    );
 
     Y.applyUpdate(
         document.ydoc,
@@ -65,16 +44,9 @@ export async function updateDocument(
         socket.id
     );
 
-    console.log("updated document",
-        (TiptapTransformer.fromYdoc(
-            document.ydoc,
-            "default"
-        )).content[0]
-    );
+    console.log("document:update >> broadcasted");
 
     socket.to(`document:${documentId}`).emit("document:update", update );
-
-    console.log("update document >> broadcasted");
 }
 
 export async function updateAwareness(
@@ -84,34 +56,21 @@ export async function updateAwareness(
     clientId: number,
     update: Uint8Array
 ) {
-    await ensureWorkspaceMember( socket.data.user.id, workspaceId );
-
-    await ensureDocumentInWorkspace( workspaceId, documentId );
-
     applyAwarenessUpdate(
         documentId,
         update,
         socket.id
     );
 
-    const document = yjsService.getDocument(documentId)
-
     registerAwarenessClient(
         documentId,
         socket.id,
         clientId
     );
-    
-    for (const [id, state] of document!.awareness.getStates()) {
-        console.log("clientId:", id);
-        console.log("state:", state);
-    }
-
-    console.log("total users active at document:", document?.users.size)
-
-    socket.to(`document:${documentId}`).emit("awareness:update", update );
 
     console.log("awareness update >> broadcasted");
+
+    socket.to(`document:${documentId}`).emit("awareness:update", update );
 }
 
 export async function leaveDocument(
