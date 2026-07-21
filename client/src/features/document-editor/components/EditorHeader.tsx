@@ -100,22 +100,24 @@ export function EditorHeader({
         )}
 
         {!isRenaming && (
-          isSaving ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 uppercase tracking-wider shrink-0">
-              <Loader2 className="size-3 animate-spin shrink-0" />
-              Saving...
-            </span>
-          ) : isDirty ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider shrink-0">
-              <AlertCircle className="size-3 shrink-0" />
-              Unsaved Changes
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider shrink-0">
-              <CheckCircle2 className="size-3 shrink-0" />
-              Saved
-            </span>
-          )
+          <div className="inline-flex items-center shrink-0">
+            {isSaving ? (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 uppercase tracking-wider shrink-0">
+                <Loader2 className="size-3 animate-spin shrink-0" />
+                Saving...
+              </span>
+            ) : isDirty ? (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider shrink-0">
+                <AlertCircle className="size-3 shrink-0" />
+                Unsaved Changes
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider shrink-0">
+                <CheckCircle2 className="size-3 shrink-0" />
+                Saved
+              </span>
+            )}
+          </div>
         )}
 
         <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider hidden sm:inline-block shrink-0">

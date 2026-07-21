@@ -33,24 +33,9 @@ export const DiscussionDecorationExtension = Extension.create<DiscussionDecorati
     return [
       new Plugin({
         key: DiscussionDecorationKey,
-        state: {
-          init(_, { doc }) {
-            return buildDecorations(doc, extensionThis.options)
-          },
-          apply(tr, _oldDecorationSet, _oldState, newState) {
-            // Check meta first
-            const meta = tr.getMeta(DiscussionDecorationKey)
-            if (meta) {
-              return buildDecorations(newState.doc, meta)
-            }
-            // Always re-evaluate decorations against new document state to ensure
-            // range stays strictly bound to quotedText and doesn't expand on typing
-            return buildDecorations(newState.doc, extensionThis.options)
-          },
-        },
         props: {
           decorations(state) {
-            return this.getState(state)
+            return buildDecorations(state.doc, extensionThis.options)
           },
           handleClick(_view, _pos, event) {
             const target = event.target as HTMLElement | null

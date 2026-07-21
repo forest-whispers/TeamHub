@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
@@ -79,8 +79,78 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }, 50)
   }, [])
 
-  const editor = useEditor({
-    extensions: [
+  const caretRender = useCallback((user: any) => {
+    const cursor = document.createElement("span")
+    cursor.classList.add("collaboration-caret")
+    cursor.style.setProperty("--caret-color", user.color)
+
+    // Location Pin SVG Icon
+    const pointer = document.createElement("span")
+    pointer.classList.add("collaboration-caret-pointer")
+    pointer.innerHTML = `<svg width="14" height="18" viewBox="0 0 24 24" fill="${user.color}" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>`
+
+    // Rich Metadata Hover Card
+    const card = document.createElement("div")
+    card.classList.add("collaboration-caret-card")
+
+    const getInitials = (name: string) =>
+      (name || "U")
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .substring(0, 2)
+
+    const avatarHTML = user.avatar
+      ? `<img src="${user.avatar}" class="collaboration-caret-avatar-img" />`
+      : `<span class="collaboration-caret-avatar-initials">${getInitials(user.name)}</span>`
+
+    card.innerHTML = `
+      <div class="collaboration-caret-card-header">
+        <div class="collaboration-caret-avatar-wrap" style="--caret-color: ${user.color}">
+          ${avatarHTML}
+        </div>
+        <div class="collaboration-caret-card-info">
+          <div class="collaboration-caret-card-name">${user.name}</div>
+          <div class="collaboration-caret-card-role">${user.role || "Team Member"}</div>
+        </div>
+      </div>
+      <div class="collaboration-caret-card-footer">
+        <span class="collaboration-caret-pulse"></span>
+        <span>Active in Document</span>
+      </div>
+    `
+
+    cursor.appendChild(pointer)
+    cursor.appendChild(card)
+    return cursor
+  }, [])
+
+  const caretSelectionRender = useCallback((user: any) => {
+    return {
+      class: "collaboration-selection",
+      style: `--selection-color: ${user.color}`,
+    }
+  }, [])
+
+  const authUserId = authUser?.id
+  const authUserName = authUser?.name
+  const authUserAvatar = authUser?.avatar
+  const authUserRole = (authUser as any)?.role
+
+  const caretUser = useMemo(
+    () => ({
+      id: authUserId || "",
+      name: authUserName || "",
+      color: authUserId ? getUserColor(authUserId) : "#3b82f6",
+      avatar: authUserAvatar,
+      role: authUserRole || "Team Member",
+    }),
+    [authUserId, authUserName, authUserAvatar, authUserRole]
+  )
+
+  const extensions = useMemo(
+    () => [
       StarterKit.configure({
         undoRedo: false,
         link: false,
@@ -92,65 +162,9 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       }),
       CollaborationCaret.configure({
         provider,
-        user: {
-          id: authUser!.id,
-          name: authUser!.name,
-          color: getUserColor(authUser!.id),
-          avatar: authUser!.avatar,
-          role: (authUser as any)?.role || "Team Member",
-        },
-        render: (user: any) => {
-          const cursor = document.createElement("span");
-          cursor.classList.add("collaboration-caret");
-          cursor.style.setProperty("--caret-color", user.color);
-
-          // Location Pin SVG Icon
-          const pointer = document.createElement("span");
-          pointer.classList.add("collaboration-caret-pointer");
-          pointer.innerHTML = `<svg width="14" height="18" viewBox="0 0 24 24" fill="${user.color}" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>`;
-
-          // Rich Metadata Hover Card
-          const card = document.createElement("div");
-          card.classList.add("collaboration-caret-card");
-
-          const getInitials = (name: string) =>
-            (name || "U")
-              .split(" ")
-              .map((n: string) => n[0])
-              .join("")
-              .toUpperCase()
-              .substring(0, 2);
-
-          const avatarHTML = user.avatar
-            ? `<img src="${user.avatar}" class="collaboration-caret-avatar-img" />`
-            : `<span class="collaboration-caret-avatar-initials">${getInitials(user.name)}</span>`;
-
-          card.innerHTML = `
-            <div class="collaboration-caret-card-header">
-              <div class="collaboration-caret-avatar-wrap" style="--caret-color: ${user.color}">
-                ${avatarHTML}
-              </div>
-              <div class="collaboration-caret-card-info">
-                <div class="collaboration-caret-card-name">${user.name}</div>
-                <div class="collaboration-caret-card-role">${user.role || "Team Member"}</div>
-              </div>
-            </div>
-            <div class="collaboration-caret-card-footer">
-              <span class="collaboration-caret-pulse"></span>
-              <span>Active in Document</span>
-            </div>
-          `;
-
-          cursor.appendChild(pointer);
-          cursor.appendChild(card);
-          return cursor;
-        },
-        selectionRender: (user) => {
-          return {
-            class: "collaboration-selection",
-            style: `--selection-color: ${user.color}`,
-          };
-        },
+        user: caretUser,
+        render: caretRender,
+        selectionRender: caretSelectionRender,
       }),
       Underline,
       Highlight.configure({ multicolor: true }),
@@ -176,13 +190,13 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         alignments: ["left", "center"],
       }),
       SlashCommand,
-      DiscussionDecorationExtension.configure({
-        discussions: [],
-        activeDiscussionId: null,
-        highlightedDiscussionId: null,
-        onSelectDiscussion: handleSelectDiscussion,
-      }),
+      DiscussionDecorationExtension,
     ],
+    [ydoc, provider, caretUser, caretRender, caretSelectionRender]
+  )
+
+  const editor = useEditor({
+    extensions,
     editorProps: {
       attributes: {
         class:
@@ -190,17 +204,18 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       },
     },
     onUpdate: ({ editor, transaction }) => {
-      const isRemote = transaction.getMeta("y-sync$") !== undefined;
-      if (isRemote) return;
+      const isRemote = transaction.getMeta("y-sync$") !== undefined
+      if (isRemote) return
 
       const currentJSON = editor.getJSON()
-      const dirty = savedContentRef.current === null || JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current);
+      const dirty = savedContentRef.current === null || JSON.stringify(currentJSON) !== JSON.stringify(savedContentRef.current)
+
       setIsDirty(dirty)
       updateTabContent(documentData.id, currentJSON, savedContentRef.current, dirty)
     },
-  }, [ydoc, handleSelectDiscussion])
+  }, [extensions])
 
-  // Update decorations when discussions or active selection changes
+  // Update discussion decoration options safely without modifying editor view state
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
       editor.view.dispatch(
@@ -212,6 +227,15 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
           onSelectDiscussion: handleSelectDiscussion,
         })
       )
+      // const ext = editor.extensionManager.extensions.find((e) => e.name === "discussionDecoration")
+      // if (ext) {
+      //   ext.options.discussions = discussions
+      //   ext.options.activeDiscussionId = activeDiscussionId
+      //   ext.options.highlightedDiscussionId = highlightedDiscussionId
+      //   ext.options.composerState = composerState
+      //   ext.options.onSelectDiscussion = handleSelectDiscussion
+      //   // editor.view.updateState(editor.state)
+      // }
     }
   }, [editor, discussions, activeDiscussionId, highlightedDiscussionId, composerState, handleSelectDiscussion])
 

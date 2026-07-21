@@ -50,10 +50,14 @@ export function DocumentTabsProvider({ children }: { children: React.ReactNode }
     )
   }, [])
 
-  const updateTabContent = useCallback((id: string, content: any, savedContent: any, isDirty: boolean) => {
-    setOpenTabs((prev) =>
-      prev.map((tab) => (tab.id === id ? { ...tab, content, savedContent, isDirty } : tab))
-    )
+  const updateTabContent = useCallback((id: string, _content: any, _savedContent: any, isDirty: boolean) => {
+    setOpenTabs((prev) => {
+      const existing = prev.find((tab) => tab.id === id)
+      if (existing && existing.isDirty === isDirty) {
+        return prev
+      }
+      return prev.map((tab) => (tab.id === id ? { ...tab, isDirty } : tab))
+    })
   }, [])
 
   const closeTab = useCallback((id: string) => {
