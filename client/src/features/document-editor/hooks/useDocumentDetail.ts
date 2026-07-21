@@ -7,5 +7,6 @@ export function useDocumentDetail(workspaceId: string, documentId: string) {
     queryFn: () => documentsService.getDocument(workspaceId, documentId),
     enabled: !!workspaceId && !!documentId,
     staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   })
 }

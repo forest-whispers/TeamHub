@@ -1,6 +1,8 @@
+import { Extension } from "@tiptap/core"
+import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
-import Collaboration from "@tiptap/extension-collaboration";
+import Collaboration, { isChangeOrigin } from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
@@ -34,6 +36,43 @@ import { useDocumentTabs } from "../context/DocumentTabsContext"
 import { getUserColor } from "@/shared/lib/utils";
 import { toast } from "sonner"
 
+const SafeCollaborationSelectionExtension = Extension.create({
+  name: "safeCollaborationSelection",
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("safeCollaborationSelection"),
+        appendTransaction(transactions, oldState, newState) {
+          const isRemoteSync = transactions.some((tr) => isChangeOrigin(tr) || Boolean(tr.getMeta("y-sync")) || Boolean(tr.getMeta("y-sync$")))
+          if (!isRemoteSync) return null
+
+          const oldSelection = oldState.selection
+          const newDoc = newState.doc
+
+          if (!oldSelection) return null
+
+          const combinedMapping = transactions[0].mapping
+          for (let i = 1; i < transactions.length; i++) {
+            combinedMapping.appendMapping(transactions[i].mapping)
+          }
+
+          const mappedSelection = oldSelection.map(newDoc, combinedMapping)
+          const currentSelection = newState.selection
+
+          if (mappedSelection && !currentSelection.eq(mappedSelection)) {
+            const tr = newState.tr
+            tr.setSelection(mappedSelection)
+            return tr
+          }
+
+          return null
+        },
+      }),
+    ]
+  },
+})
+
 interface TiptapEditorProps {
   documentData: WorkspaceDocument
   workspaceId: string
@@ -46,6 +85,27 @@ const EDITOR_PROPS = {
   attributes: {
     class:
       "focus:outline-none min-h-[400px] p-4 text-left text-sm space-y-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1",
+  },
+  handleDOMEvents: {
+    mousedown: (view: any, event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      // If click was on the editor container background (whitespace below/around text)
+      if (target === view.dom || target.classList.contains("ProseMirror")) {
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })
+        // If click did not land directly on a specific text node
+        if (!pos || !pos.pos) {
+          const { selection } = view.state
+          if (selection) {
+            event.preventDefault()
+            view.focus()
+            const tr = view.state.tr.setSelection(selection)
+            view.dispatch(tr)
+            return true
+          }
+        }
+      }
+      return false
+    },
   },
 }
 
@@ -173,6 +233,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         render: caretRender,
         selectionRender: caretSelectionRender,
       }),
+      SafeCollaborationSelectionExtension,
       Underline,
       Highlight.configure({ multicolor: true }),
       Placeholder.configure({
@@ -209,7 +270,8 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
 
   const handleUpdate = useCallback(
     ({ editor, transaction }: { editor: any; transaction: any }) => {
-      const isRemote = transaction.getMeta("y-sync$") !== undefined
+      if (!transaction || !transaction.docChanged) return
+      const isRemote = isChangeOrigin(transaction)
       if (isRemote) return
 
       const currentJSON = editor.getJSON()
@@ -301,6 +363,41 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       window.removeEventListener("select-document-discussion" as any, handleSelectFromSidebar)
     }
   }, [])
+
+  const lastSelectionRef = useRef<any>(null)
+
+  // Continuously track mapped cursor selection
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+
+    const handleTransaction = () => {
+      if (editor.state?.selection) {
+        lastSelectionRef.current = editor.state.selection
+      }
+    }
+
+    editor.on("transaction", handleTransaction)
+    return () => {
+      editor.off("transaction", handleTransaction)
+    }
+  }, [editor])
+
+  // Restore cursor position when switching back to browser window (window focus)
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      if (editor && !editor.isDestroyed) {
+        const sel = lastSelectionRef.current || editor.state.selection
+        if (sel && sel.from <= editor.state.doc.content.size) {
+          editor.commands.focus(sel.from)
+        }
+      }
+    }
+
+    window.addEventListener("focus", handleWindowFocus)
+    return () => {
+      window.removeEventListener("focus", handleWindowFocus)
+    }
+  }, [editor])
 
   // Maintain refs of variables to access them in the unmount cleanup correctly
   const editorRef = useRef(editor)
