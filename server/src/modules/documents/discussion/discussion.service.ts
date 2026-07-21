@@ -1,4 +1,5 @@
 import { prisma } from "../../../lib/prisma.js";
+import { eventBus } from "../../../infrastructure/events/event-bus.js";
 import { ensureWorkspaceMember } from "../../../shared/authorization/workspace.js";
 import { ensureDocumentInWorkspace } from "../../../shared/authorization/document.js";
 import type { CreateDiscussionDto, ReplyDiscussionDto, } from "./discussion.types.ts";
@@ -46,7 +47,7 @@ export async function createDiscussion( requesterId: string, workspaceId: string
 
     await ensureDocumentInWorkspace(workspaceId, documentId);
 
-    return prisma.documentDiscussion.create({
+    const discussion = await prisma.documentDiscussion.create({
         data: {
             documentId,
             createdById: requesterId,
@@ -80,10 +81,17 @@ export async function createDiscussion( requesterId: string, workspaceId: string
             },
         },
     });
+
+    await eventBus.emit("discussion.created", {
+        documentId,
+        discussion,
+    });
+
+    return discussion;
 }
 
 export async function replyDiscussion( requesterId: string, discussionId: string, input: ReplyDiscussionDto ) {
-    return prisma.documentDiscussionReply.create({
+    const reply = await prisma.documentDiscussionReply.create({
         data: {
             discussionId,
             createdById: requesterId,
@@ -99,6 +107,14 @@ export async function replyDiscussion( requesterId: string, discussionId: string
             },
         },
     });
+
+    await eventBus.emit("discussion.reply.created", {
+        documentId: input.documentId,
+        discussionId,
+        reply,
+    });
+
+    return reply;
 }
 
 export async function resolveDiscussion( requesterId: string, discussionId: string, resolved: boolean ) {
@@ -107,6 +123,7 @@ export async function resolveDiscussion( requesterId: string, discussionId: stri
             id: discussionId,
         },
         select: {
+           documentId: true, 
             createdById: true,
         },
     });
@@ -115,7 +132,7 @@ export async function resolveDiscussion( requesterId: string, discussionId: stri
         throw new Error("Only the discussion creator can resolve it.");
     }
 
-    return prisma.documentDiscussion.update({
+    const resolvedDiscussion = await prisma.documentDiscussion.update({
         where: {
             id: discussionId,
         },
@@ -125,6 +142,13 @@ export async function resolveDiscussion( requesterId: string, discussionId: stri
             resolvedById: resolved ? requesterId : null,
         },
     });
+
+    await eventBus.emit("discussion.updated", {
+        documentId: discussion.documentId,
+        discussion: resolvedDiscussion
+    });
+
+    return resolvedDiscussion;
 }
 
 export async function deleteDiscussion( requesterId: string, discussionId: string ) {
@@ -133,6 +157,7 @@ export async function deleteDiscussion( requesterId: string, discussionId: strin
             id: discussionId,
         },
         select: {
+            documentId: true,
             createdById: true,
         },
     });
@@ -146,6 +171,11 @@ export async function deleteDiscussion( requesterId: string, discussionId: strin
             id: discussionId,
         },
     });
+
+    await eventBus.emit("discussion.deleted", {
+        documentId: discussion.documentId,
+        discussionId,
+    });
 }
 
 export async function deleteReply( requesterId: string, replyId: string ) {
@@ -154,6 +184,7 @@ export async function deleteReply( requesterId: string, replyId: string ) {
             id: replyId,
         },
         select: {
+            discussionId: true,
             createdById: true,
         },
     });
@@ -162,9 +193,23 @@ export async function deleteReply( requesterId: string, replyId: string ) {
         throw new Error("Only the reply author can delete it.");
     }
 
-    await prisma.documentDiscussionReply.delete({
+    const deletedDiscussion = await prisma.documentDiscussionReply.delete({
         where: {
             id: replyId,
         },
+        select : {
+            discussion: {
+            select: {
+                documentId: true,
+            },
+        },
+    }});
+
+    await eventBus.emit("discussion.reply.deleted", {
+        documentId: deletedDiscussion.discussion.documentId,
+        discussionId: reply.discussionId,
+        replyId,
     });
+
+    return deletedDiscussion;
 }

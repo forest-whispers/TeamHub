@@ -97,48 +97,6 @@ export async function getWorkspaceActivities(
 
     const limit = Math.min( Math.max(query.limit ?? 20, 1), 50 );
 
-    // const activities = await prisma.activity.findMany({
-    //     where: {
-    //         workspaceId,
-    //     },
-
-    //     orderBy: [
-    //         {
-    //             createdAt: "desc",
-    //         },
-    //         {
-    //             id: "desc",
-    //         },
-    //     ],
-
-    //     take: limit + 1,
-
-    //     ...(query.cursor && {
-    //         cursor: {
-    //             id: query.cursor,
-    //         },
-    //         skip: 1,
-    //     }),
-
-    //     select: {
-    //         id: true,
-    //         type: true,
-    //         entityType: true,
-    //         entityId: true,
-    //         metadata: true,
-    //         workspaceId: true,
-    //         createdAt: true,
-
-    //         actor: {
-    //             select: {
-    //                 id: true,
-    //                 name: true,
-    //                 avatar: true,
-    //             },
-    //         },
-    //     },
-    // });
-
     const activities = await queryWorkspaceActivities(workspaceId, query);
 
     const hasMore = activities.length > limit;

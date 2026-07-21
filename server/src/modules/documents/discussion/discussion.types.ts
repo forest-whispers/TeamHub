@@ -8,6 +8,7 @@ export const createDiscussionSchema = z.object({
 
 export const replyDiscussionSchema = z.object({
     message: z.string().trim().min(1).max(5000),
+    documentId: z.string().uuid().or(z.string().trim().min(1)),
 });
 
 export const resolveDiscussionSchema = z.object({

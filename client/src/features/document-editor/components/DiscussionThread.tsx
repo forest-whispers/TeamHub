@@ -60,7 +60,7 @@ export function DiscussionThread({
     replyMutation.mutate(
       {
         discussionId: discussion.id,
-        payload: { message: trimmed },
+        payload: { message: trimmed, documentId },
       },
       {
         onSuccess: () => {

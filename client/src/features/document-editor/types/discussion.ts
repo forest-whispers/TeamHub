@@ -41,6 +41,7 @@ export interface CreateDiscussionPayload {
 
 export interface ReplyDiscussionPayload {
     message: string;
+    documentId: string;
 }
 
 export interface ResolveDiscussionPayload {
