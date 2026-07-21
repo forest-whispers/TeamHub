@@ -19,6 +19,7 @@ import { AssistantPanel } from "@/features/workspace-ai/components/AssistantPane
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/shared/components/ui/dialog"
 import { Button } from "@/shared/components/ui/button"
 import { toast } from "sonner"
+import { DiscussionList } from "@/features/document-editor/components/DiscussionList"
 import {
   Home,
   FileText,
@@ -33,6 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
+  MessageSquarePlus,
   Users,
   Menu,
   X,
@@ -74,6 +76,10 @@ export default function WorkspaceLayout() {
   // Layout states
   const [isCollapsed, setIsCollapsed] = useState(false)
   
+  // Extract documentId if viewing a document detail page
+  const documentIdMatch = location.pathname.match(/\/documents\/([^/]+)/)
+  const currentDocumentId = documentIdMatch ? documentIdMatch[1] : null
+
   // Route change listener to collapse/expand right sidebar by default
   useEffect(() => {
     const parts = location.pathname.split("/")
@@ -81,10 +87,20 @@ export default function WorkspaceLayout() {
     const isHome = !lastPart || lastPart === workspaceId || lastPart === "home"
     setIsCollapsed(!isHome)
   }, [location.pathname, workspaceId])
-  const [activeTab, setActiveTab] = useState<"members" | "chat">("members")
+
+  const [activeTab, setActiveTab] = useState<"members" | "discussions" | "chat">("members")
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false)
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
+
+  const handleSelectDiscussionFromSidebar = (discussionId: string) => {
+    setIsCollapsed(true)
+    window.dispatchEvent(
+      new CustomEvent("select-document-discussion", {
+        detail: { discussionId },
+      })
+    )
+  }
 
   // Find active workspace details
   const workspaceName = activeWorkspace?.name || "@my-workspace"
@@ -409,6 +425,21 @@ export default function WorkspaceLayout() {
                   <Users className="size-4" />
                 </button>
 
+                {isDocumentDetailPage && (
+                  <button
+                    onClick={() => {
+                      setActiveTab("discussions")
+                      setIsCollapsed(false)
+                    }}
+                    className={`p-2 rounded-md transition-colors cursor-pointer relative ${
+                      activeTab === "discussions" ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                    title="Show Discussions"
+                  >
+                    <MessageSquarePlus className="size-4" />
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     setActiveTab("chat")
@@ -431,7 +462,7 @@ export default function WorkspaceLayout() {
                 <div className="flex bg-muted/65 p-0.5 rounded-lg border border-border/40 gap-0.5">
                   <button
                     onClick={() => setActiveTab("members")}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                       activeTab === "members"
                         ? "bg-card text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -440,9 +471,24 @@ export default function WorkspaceLayout() {
                     <Users className="size-3.5" />
                     <span>Members</span>
                   </button>
+
+                  {isDocumentDetailPage && (
+                    <button
+                      onClick={() => setActiveTab("discussions")}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                        activeTab === "discussions"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <MessageSquarePlus className="size-3.5" />
+                      <span>Discussions</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={() => setActiveTab("chat")}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                       activeTab === "chat"
                         ? "bg-card text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -472,11 +518,6 @@ export default function WorkspaceLayout() {
                   </div>
                   {activeWorkspace?.members.map((member) => {
                     const presence = onlineUsersMap.get(member.id);
-                    // let presence: any
-                    // if(Array.isArray(onlineUsers) && onlineUsers.length > 0)
-                    // {
-                    //   presence = onlineUsersMap.get(member.id);
-                    // }
                     return (<div key={member.id} className="flex items-center gap-3 text-sm">
                       <div className="relative select-none">
                         <div className={`size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs border border-primary/20`}>
@@ -485,11 +526,6 @@ export default function WorkspaceLayout() {
                         <span
                           className={`absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-card ${
                             presence ? "bg-emerald-500" : "bg-muted-foreground/45"
-                            // member.status === "online"
-                            //   ? "bg-emerald-500"
-                            //   : member.status === "away"
-                            //   ? "bg-amber-500"
-                            //   : "bg-muted-foreground/45"
                           }`}
                         />
                       </div>
@@ -512,7 +548,14 @@ export default function WorkspaceLayout() {
                     </div>)
                   })}
                 </div>
-                 ) : (
+              ) : activeTab === "discussions" && isDocumentDetailPage && currentDocumentId ? (
+                /* Discussions Tab View */
+                <DiscussionList
+                  workspaceId={workspaceId!}
+                  documentId={currentDocumentId}
+                  onSelectDiscussion={handleSelectDiscussionFromSidebar}
+                />
+              ) : (
                 /* Chat Tab View */
                 <div className="flex-1 flex flex-col justify-between overflow-hidden">
                   <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground p-3 pb-0 select-none">

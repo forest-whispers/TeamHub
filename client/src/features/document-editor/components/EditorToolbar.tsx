@@ -20,20 +20,40 @@ import {
   ArrowRight,
   Trash,
   Trash2,
+  MessageSquarePlus,
 } from "lucide-react"
 import { LinkDialog } from "./LinkDialog"
 import { InsertDropdown } from "./InsertDropdown"
+import type { ComposerAnchorState } from "./DiscussionComposer"
 
 interface EditorToolbarProps {
   editor: Editor | null
+  onStartComposer?: (state: ComposerAnchorState) => void
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onStartComposer }: EditorToolbarProps) {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
 
   if (!editor) return null
 
+  const handleAddDiscussion = () => {
+    if (!onStartComposer || !editor) return
+    const { from, to } = editor.state.selection
+    const quotedText = editor.state.doc.textBetween(from, to, " ")
+    if (!quotedText || !quotedText.trim()) return
+
+    const coords = editor.view.coordsAtPos(from)
+    onStartComposer({
+      from,
+      to,
+      quotedText,
+      top: coords.top,
+      left: coords.left,
+    })
+  }
+
   const isTableActive = editor.isActive("table")
+  const hasSelection = !editor.state.selection.empty && Boolean(editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, " ").trim())
 
   // Context-aware Table calculations to disable delete when not applicable
   let canDeleteRow = true
@@ -125,6 +145,22 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         >
           <Link className="size-3.5" />
         </button>
+
+        {onStartComposer && (
+          <button
+            type="button"
+            onClick={handleAddDiscussion}
+            disabled={!hasSelection}
+            className={`p-1.5 rounded transition-colors ${
+              hasSelection
+                ? "text-primary hover:bg-primary/10 cursor-pointer"
+                : "text-muted-foreground/40 cursor-not-allowed"
+            }`}
+            title={hasSelection ? "Add Discussion to selected text" : "Select text to add a discussion"}
+          >
+            <MessageSquarePlus className="size-3.5" />
+          </button>
+        )}
       </div>
 
       <div className="w-px h-4 bg-border mx-0.5" />

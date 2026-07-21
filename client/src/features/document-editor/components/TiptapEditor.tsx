@@ -15,10 +15,14 @@ import { TableCell } from "@tiptap/extension-table-cell"
 import Link from "@tiptap/extension-link"
 import TextAlign from "@tiptap/extension-text-align"
 import { SlashCommand } from "../extensions/SlashCommand"
+import { DiscussionDecorationExtension, DiscussionDecorationKey } from "../extensions/DiscussionDecorationExtension"
 import { EditorHeader } from "./EditorHeader"
 import { EditorToolbar } from "./EditorToolbar"
 import { BubbleMenuWrapper } from "./BubbleMenuWrapper"
 import { VersionHistorySheet } from "./VersionHistorySheet"
+import { DiscussionComposer, type ComposerAnchorState } from "./DiscussionComposer"
+import { DiscussionThread } from "./DiscussionThread"
+import { useDiscussions } from "../hooks/useDiscussions"
 import * as Y from "yjs";
 import type { Awareness } from "y-protocols/awareness.js";
 
@@ -48,9 +52,32 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
   const [isDirty, setIsDirty] = useState(initialIsDirty)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
-  const savedContentRef = useRef(initialSavedContent)
+  // Discussion overlay states
+  const [activeDiscussionId, setActiveDiscussionId] = useState<string | null>(null)
+  const [highlightedDiscussionId, setHighlightedDiscussionId] = useState<string | null>(null)
+  const [composerState, setComposerState] = useState<ComposerAnchorState | null>(null)
+  const [anchorRect, setAnchorRect] = useState<{ top: number; left: number } | null>(null)
 
+  const { data: discussions = [] } = useDiscussions(workspaceId, documentData.id)
+
+  const activeDiscussion = discussions.find((d: any) => d.id === activeDiscussionId)
+
+  const savedContentRef = useRef(initialSavedContent)
   const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleSelectDiscussion = useCallback((id: string) => {
+    setComposerState(null)
+    setActiveDiscussionId(id)
+    setTimeout(() => {
+      const el = document.querySelector(`[data-discussion-id="${id}"]`)
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        setAnchorRect({ top: rect.top, left: rect.left })
+      } else {
+        setAnchorRect(null)
+      }
+    }, 50)
+  }, [])
 
   const editor = useEditor({
     extensions: [
@@ -122,6 +149,12 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         alignments: ["left", "center"],
       }),
       SlashCommand,
+      DiscussionDecorationExtension.configure({
+        discussions: [],
+        activeDiscussionId: null,
+        highlightedDiscussionId: null,
+        onSelectDiscussion: handleSelectDiscussion,
+      }),
     ],
     editorProps: {
       attributes: {
@@ -130,7 +163,6 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       },
     },
     onUpdate: ({ editor, transaction }) => {
-      // Ignore remote/sync updates from Yjs
       const isRemote = transaction.getMeta("y-sync$") !== undefined;
       if (isRemote) return;
 
@@ -139,7 +171,56 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       setIsDirty(dirty)
       updateTabContent(documentData.id, currentJSON, savedContentRef.current, dirty)
     },
-  }, [ydoc])
+  }, [ydoc, handleSelectDiscussion])
+
+  // Update decorations when discussions or active selection changes
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      editor.view.dispatch(
+        editor.state.tr.setMeta(DiscussionDecorationKey, {
+          discussions,
+          activeDiscussionId,
+          highlightedDiscussionId,
+          composerState,
+          onSelectDiscussion: handleSelectDiscussion,
+        })
+      )
+    }
+  }, [editor, discussions, activeDiscussionId, highlightedDiscussionId, composerState, handleSelectDiscussion])
+
+  // Listen for selection from sidebar
+  useEffect(() => {
+    const handleSelectFromSidebar = (e: CustomEvent<{ discussionId: string }>) => {
+      const discussionId = e.detail?.discussionId
+      if (!discussionId) return
+
+      setComposerState(null)
+      setActiveDiscussionId(discussionId)
+      setHighlightedDiscussionId(discussionId)
+
+      // Fade out temporary highlight after 2.5 seconds
+      setTimeout(() => {
+        setHighlightedDiscussionId((prev) => (prev === discussionId ? null : prev))
+      }, 2500)
+
+      // Find element in editor and scroll smoothly into view
+      setTimeout(() => {
+        const el = document.querySelector(`[data-discussion-id="${discussionId}"]`)
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" })
+          const rect = el.getBoundingClientRect()
+          setAnchorRect({ top: rect.top, left: rect.left })
+        } else {
+          setAnchorRect(null)
+        }
+      }, 100)
+    }
+
+    window.addEventListener("select-document-discussion" as any, handleSelectFromSidebar)
+    return () => {
+      window.removeEventListener("select-document-discussion" as any, handleSelectFromSidebar)
+    }
+  }, [])
 
   // Maintain refs of variables to access them in the unmount cleanup correctly
   const editorRef = useRef(editor)
@@ -176,7 +257,6 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
         const content = editorRef.current.getJSON()
         const docId = documentIdRef.current
         
-        // Background fire-and-forget save (no snapshot created on unmount save)
         saveContent({
           workspaceId: workspaceIdRef.current,
           documentId: documentIdRef.current,
@@ -251,7 +331,7 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }
   }, [handleSave])
 
-  // Autosave timeout effect (Automatic save - no snapshot created)
+  // Autosave timeout effect
   useEffect(() => {
     if (!isDirty) return
 
@@ -270,8 +350,25 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
     }
   }, [isDirty, handleSave])
 
+  const handleStartComposer = (state: ComposerAnchorState) => {
+    setActiveDiscussionId(null)
+    setComposerState(state)
+    // Collapse text selection to end of quoted text so typing doesn't overwrite selected text
+    if (editor && !editor.isDestroyed) {
+      editor.commands.setTextSelection(state.to)
+    }
+  }
+
+  const handleCreatedSuccess = (newDiscussionId: string) => {
+    if (composerState && editor && !editor.isDestroyed) {
+      editor.commands.setTextSelection(composerState.to)
+    }
+    setComposerState(null)
+    setActiveDiscussionId(newDiscussionId)
+  }
+
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-background">
+    <div className="flex-1 flex flex-col overflow-hidden bg-background relative">
       {/* Editor Header */}
       <EditorHeader
         title={documentData.title}
@@ -287,14 +384,38 @@ export function TiptapEditor({ documentData, workspaceId, ydoc, provider, authUs
       />
 
       {/* Editor Toolbar */}
-      <EditorToolbar editor={editor} />
+      <EditorToolbar editor={editor} onStartComposer={handleStartComposer} />
 
       {/* Editor Body */}
       <div className="flex-1 overflow-y-auto bg-background/50 p-2 sm:p-3 relative">
         <div className="max-w-4xl mx-auto border border-border/50 rounded-lg min-h-full bg-background shadow-sm overflow-hidden">
           <EditorContent editor={editor} />
         </div>
-        <BubbleMenuWrapper editor={editor} />
+
+        {/* Floating Composer Overlay */}
+        {composerState && (
+          <DiscussionComposer
+            workspaceId={workspaceId}
+            documentId={documentData.id}
+            composerState={composerState}
+            onClose={() => setComposerState(null)}
+            onSuccess={handleCreatedSuccess}
+          />
+        )}
+
+        {/* Floating Discussion Thread Overlay */}
+        {activeDiscussion && !composerState && (
+          <DiscussionThread
+            workspaceId={workspaceId}
+            documentId={documentData.id}
+            discussion={activeDiscussion}
+            authUser={authUser}
+            anchorRect={anchorRect}
+            onClose={() => setActiveDiscussionId(null)}
+          />
+        )}
+
+        <BubbleMenuWrapper editor={editor} onStartComposer={handleStartComposer} />
       </div>
 
       {/* Version History Sheet */}

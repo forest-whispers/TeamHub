@@ -100,20 +100,14 @@ export function useAwareness({ workspaceId, documentId, ydoc, authUser }: Props)
     const publishLocalState = useCallback(() => {
         if (!authUser) return;
 
-        // awareness.setLocalState({
-        //     user: {
-        //         id: authUser.id,
-        //         name: authUser.name,
-        //         avatar: authUser.avatar,
-        //         color: getUserColor(authUser.id),
-        //     },
-        //     typing: false,
-        // });
-        awareness.setLocalStateField("user", {
-            id: authUser.id,
-            name: authUser.name,
-            avatar: authUser.avatar,
-            color: getUserColor(authUser.id),
+        awareness.setLocalState({
+            user: {
+                id: authUser.id,
+                name: authUser.name,
+                avatar: authUser.avatar,
+                color: getUserColor(authUser.id),
+            },
+            typing: false,
         });
     }, [awareness, authUser]);
 
