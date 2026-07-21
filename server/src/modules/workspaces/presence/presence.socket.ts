@@ -126,15 +126,5 @@ export function workspacePresenceSockets(io: Server) {
                 }
             }
         );
-
-        // client.on("disconnect", () => {
-        //     for (const wsId of joinedWorkspaces) {
-        //         presenceService.removeConnection(wsId, client.id);
-        //         const users = presenceService.getPresenceList(wsId);
-        //         io.to(`workspace:${wsId}`).emit("workspace:presence", {
-        //             users,
-        //         });
-        //     }
-        // });
     });
 }

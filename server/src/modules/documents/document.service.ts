@@ -6,7 +6,7 @@ import type { CreateDocumentDto, SaveDocumentDto, UpdateDocumentDto } from "./do
 import { snapshotService } from "./snapshot/snapshot.service.js";
 import { eventBus } from "../../infrastructure/events/event-bus.js";
 import { yjsService } from "./collaboration/yjs.service.js";
-import * as Y from "yjs";
+import { TiptapTransformer } from "@hocuspocus/transformer";
 
 export const createDocument = async (requesterId: string, workspaceId: string, data: CreateDocumentDto) => {
     await ensureWorkspaceMember(requesterId, workspaceId);
@@ -174,13 +174,15 @@ export async function saveDocument( requesterId: string, workspaceId: string, do
 
     if (yjsService.hasDocument(documentId)) {
         const activeDoc = yjsService.getDocument(documentId);
-        if (activeDoc && snapshotState.length > 0) {
+        if (activeDoc) {
             try {
-                const xmlFragment = activeDoc.ydoc.getXmlFragment("default");
-                if (xmlFragment.length > 0) {
-                    xmlFragment.delete(0, xmlFragment.length);
-                }
-                Y.applyUpdateV2(activeDoc.ydoc, snapshotState, "save");
+                const freshYdoc = TiptapTransformer.toYdoc(
+                    content,
+                    "default",
+                    TiptapTransformer.defaultExtensions
+                );
+                activeDoc.ydoc.destroy();
+                activeDoc.ydoc = freshYdoc;
             } catch (err) {
                 console.error("Failed to sync active Y.Doc state on save:", err);
             }
