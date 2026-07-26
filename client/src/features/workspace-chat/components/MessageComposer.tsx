@@ -47,7 +47,7 @@ export function MessageComposer({ onSend, isSending }: MessageComposerProps) {
           onKeyDown={handleKeyDown}
           onInput={handleInput}
           placeholder="Type a message... (Press Enter to send, Shift+Enter for new line)"
-          className="w-full resize-none bg-transparent outline-none px-3 py-2.5 text-xs text-foreground min-h-[40px] max-h-[160px] leading-relaxed overflow-y-auto block"
+          className="w-full resize-none bg-transparent outline-none px-3 py-2.5 text-xs text-foreground min-h-10 max-h-40 leading-relaxed overflow-y-auto block"
         />
 
         {/* Toolbar */}
