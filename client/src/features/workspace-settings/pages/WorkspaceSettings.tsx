@@ -7,7 +7,9 @@ import {
   useDeleteWorkspace,
   useRegenerateInviteCode,
 } from "../hooks/useWorkspaceSettings"
-import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
+import { useLeaveWorkspace, useUpdateMemberRole } from "@/features/workspace/hooks/useWorkspaceMutations"
+import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
+import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { GeneralSettingsSection } from "../components/GeneralSettingsSection"
 import { MembersSettingsSection } from "../components/MembersSettingsSection"
 import { PreferencesSettingsSection } from "../components/PreferencesSettingsSection"
@@ -28,6 +30,23 @@ export default function WorkspaceSettings() {
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   const leaveWorkspaceMutation = useLeaveWorkspace()
+  const { data: authStatus } = useAuthStatus()
+  const { data: workspace } = useWorkspace(workspaceId || "")
+  const updateRoleMutation = useUpdateMemberRole(workspaceId || "")
+
+  const handleUpdateRole = (userId: string, role: string) => {
+    updateRoleMutation.mutate(
+      { userId, role },
+      {
+        onSuccess: () => {
+          toast.success("Member role updated successfully")
+        },
+        onError: (err: any) => {
+          toast.error(err?.response?.data?.message || "Failed to update member role")
+        },
+      }
+    )
+  }
 
   // Fetch Settings
   const {
@@ -225,7 +244,10 @@ export default function WorkspaceSettings() {
             inviteCode={formState.inviteCode}
             isRegenerating={regenerateInviteMutation.isPending}
             onRegenerateInviteCode={handleRegenerateInviteCode}
-            onManageMembers={() => toast.info("Manage members option triggered (placeholder)")}
+            members={workspace?.members || []}
+            currentUserId={authStatus?.user?.id || ""}
+            onUpdateRole={handleUpdateRole}
+            isUpdatingRole={updateRoleMutation.isPending}
           />
 
           {/* Preferences Section */}

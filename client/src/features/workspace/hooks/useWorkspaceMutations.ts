@@ -42,3 +42,16 @@ export function useLeaveWorkspace() {
     },
   })
 }
+
+export function useUpdateMemberRole(workspaceId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      workspaceService.updateMemberRole(workspaceId, userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspace", workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
+    },
+  })
+}

@@ -41,4 +41,5 @@ export interface WorkspaceService {
   joinWorkspace(joinCode: string): Promise<JoinWorkspaceResponse>
   getWorkspace(workspaceId: string): Promise<Workspace>
   leaveWorkspace(workspaceId: string): Promise<void>
+  updateMemberRole(workspaceId: string, userId: string, role: string): Promise<any>
 }

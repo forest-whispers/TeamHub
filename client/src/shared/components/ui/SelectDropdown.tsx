@@ -13,6 +13,7 @@ interface SelectDropdownProps {
   icon?: React.ReactNode
   className?: string
   align?: "left" | "right"
+  disabled?: boolean
 }
 
 export function SelectDropdown({
@@ -22,6 +23,7 @@ export function SelectDropdown({
   icon,
   className = "w-full sm:w-48",
   align = "left",
+  disabled = false,
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -43,8 +45,9 @@ export function SelectDropdown({
       {/* Trigger Button */}
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background pl-9 pr-3 py-1.5 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring cursor-pointer hover:bg-muted/40 transition-all duration-200"
+        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background pl-9 pr-3 py-1.5 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring cursor-pointer hover:bg-muted/40 disabled:hover:bg-background disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200"
       >
         <span className="absolute left-3 top-2.5 size-3.5 flex items-center justify-center text-muted-foreground">
           {icon}

@@ -47,6 +47,15 @@ export const updateMember = async ( requesterId: string, workspaceId: string, ta
         },
     });
 
+    eventBus.emit("workspace.member.role_changed", {
+        workspaceId,
+        actorId: requesterId,
+        memberId: targetUserId,
+        memberName: updated.user.name,
+        oldRole: member.role,
+        newRole: updated.role,
+    });
+
     return {
         id: updated.user.id,
         name: updated.user.name,

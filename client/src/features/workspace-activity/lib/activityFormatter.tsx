@@ -31,6 +31,16 @@ export function formatActivity(
                 
             };
 
+        case "MEMBER_ROLE":
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: `changed ${metadata.memberName}'s role from ${metadata.oldRole} to`,
+                target: typeof metadata.newRole === "string" ? metadata.newRole : "MEMBER",
+                timestamp: activity.createdAt,
+                category: "workspace",
+            };
+
         case "DOCUMENT_CREATED":
             return {
                 id: activity.id,

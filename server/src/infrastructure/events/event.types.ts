@@ -20,6 +20,15 @@ export interface WorkspaceMemberLeftEvent {
     memberName: string;
 }
 
+export interface WorkspaceMemberRoleChangedEvent {
+    workspaceId: string;
+    actorId: string;
+    memberId: string;
+    memberName: string;
+    oldRole: string;
+    newRole: string;
+}
+
 export interface DocumentCreatedEvent {
     workspaceId: string;
     documentId: string;
@@ -188,6 +197,7 @@ export interface FileDeletedEvent {
 export interface DomainEventMap {
     "workspace.member.joined": WorkspaceMemberJoinedEvent;
     "workspace.member.left": WorkspaceMemberLeftEvent;
+    "workspace.member.role_changed": WorkspaceMemberRoleChangedEvent;
     
     "document.created": DocumentCreatedEvent;
     "document.renamed": DocumentRenamedEvent;

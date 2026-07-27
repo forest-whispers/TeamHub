@@ -1,6 +1,7 @@
 export type ActivityType =
   | "WORKSPACE_MEMBER_JOINED"
   | "WORKSPACE_MEMBER_LEFT"
+  | "MEMBER_ROLE"
   | "DOCUMENT_CREATED"
   | "DOCUMENT_RENAMED"
   | "DOCUMENT_DELETED"
@@ -10,6 +11,7 @@ export type ActivityType =
 
 export type ActivityEntityType =
   | "USER"
+  | "MEMBER"
   | "DOCUMENT"
   | "FILE";
 

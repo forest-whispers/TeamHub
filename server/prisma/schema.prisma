@@ -150,6 +150,7 @@ model Document {
 enum ActivityType {
   WORKSPACE_MEMBER_JOINED
   WORKSPACE_MEMBER_LEFT
+  MEMBER_ROLE
   DOCUMENT_CREATED
   DOCUMENT_RENAMED
   DOCUMENT_DELETED
@@ -160,6 +161,7 @@ enum ActivityType {
 
 enum ActivityEntityType {
   USER
+  MEMBER
   DOCUMENT
   FILE
 }

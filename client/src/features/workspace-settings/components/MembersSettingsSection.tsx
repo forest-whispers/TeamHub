@@ -5,6 +5,8 @@ import { SettingsField } from "./SettingsField"
 import { Input } from "@/shared/components/ui/input"
 import { Users, Shield, Clipboard, Check, RotateCw } from "lucide-react"
 import { toast } from "sonner"
+import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
+import type { WorkspaceMember } from "@/features/workspace/types"
 
 interface MembersSettingsSectionProps {
   totalMembers: number
@@ -12,7 +14,10 @@ interface MembersSettingsSectionProps {
   inviteCode?: string
   isRegenerating?: boolean
   onRegenerateInviteCode?: () => void
-  onManageMembers: () => void
+  members: WorkspaceMember[]
+  currentUserId: string
+  onUpdateRole: (userId: string, role: string) => void
+  isUpdatingRole: boolean
 }
 
 export function MembersSettingsSection({
@@ -21,7 +26,10 @@ export function MembersSettingsSection({
   inviteCode,
   isRegenerating = false,
   onRegenerateInviteCode,
-  onManageMembers,
+  members,
+  currentUserId,
+  onUpdateRole,
+  isUpdatingRole,
 }: MembersSettingsSectionProps) {
   const [copied, setCopied] = useState(false)
 
@@ -36,6 +44,11 @@ export function MembersSettingsSection({
       toast.error("Failed to copy invite code")
     }
   }
+
+  // Determine current user role & administrative rights
+  const currentUserMember = members.find((m) => m.id === currentUserId)
+  const currentUserRole = currentUserMember?.role
+  const isRequesterAdmin = currentUserRole === "OWNER" || currentUserRole === "ADMIN"
 
   return (
     <SettingsSection
@@ -115,17 +128,62 @@ export function MembersSettingsSection({
           </SettingsField>
         )}
 
-        <div className="pt-2 flex justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onManageMembers}
-            className="cursor-pointer text-xs"
-          >
-            Manage Members
-          </Button>
-        </div>
+        {/* Workspace Members list and role modifier */}
+        <SettingsField
+          label="Workspace Members"
+          description="View and manage roles of users in this workspace."
+        >
+          <div className="border border-border/50 rounded-lg overflow-hidden bg-background/5 mt-3">
+            <div className="max-h-75 overflow-y-auto divide-y divide-border/40 scrollbar-thin">
+              {members.map((member) => {
+                const isOwner = member.role === "OWNER"
+                const options = isOwner
+                  ? [{ value: "OWNER", label: "Owner" }]
+                  : [
+                      { value: "ADMIN", label: "Admin" },
+                      { value: "MEMBER", label: "Member" },
+                    ]
+                const isDisabled = !isRequesterAdmin || isOwner || isUpdatingRole
+
+                // Avatar initials helper
+                const initials = member.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .substring(0, 2)
+
+                return (
+                  <div key={member.id} className="flex items-center justify-between p-3 gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                        {initials}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-semibold text-foreground block truncate">
+                          {member.name} {member.id === currentUserId && "(You)"}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground block truncate">
+                          {member.email}
+                        </span>
+                      </div>
+                    </div>
+
+                    <SelectDropdown
+                      value={member.role}
+                      onChange={(newRole) => onUpdateRole(member.id, newRole)}
+                      options={options}
+                      disabled={isDisabled}
+                      className="w-28 shrink-0"
+                      align="right"
+                      icon={<Shield className="size-3 text-muted-foreground" />}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </SettingsField>
       </div>
     </SettingsSection>
   )

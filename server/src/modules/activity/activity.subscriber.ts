@@ -58,6 +58,30 @@ export function registerActivitySubscribers() {
         });
     });
 
+    eventBus.on("workspace.member.role_changed", async (event) => {
+        const activity = await createActivity({
+            workspaceId: event.workspaceId,
+            actorId: event.actorId,
+
+            type: ActivityType.MEMBER_ROLE,
+
+            entityType: ActivityEntityType.MEMBER,
+            entityId: event.memberId,
+
+            metadata: {
+                memberName: event.memberName,
+                oldRole: event.oldRole,
+                newRole: event.newRole,
+            },
+        });
+
+        console.log("[ACTIVITY] workspace.member.role_changed", activity);
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+            activity,
+        });
+    });
+
     eventBus.on("document.created", async (event) => {
         const activity = await createActivity({
             workspaceId: event.workspaceId,

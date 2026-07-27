@@ -34,4 +34,9 @@ export const workspaceService: WorkspaceService = {
   async leaveWorkspace(workspaceId: string): Promise<void> {
     await api.post(`/workspaces/${workspaceId}/members/leave`)
   },
+
+  async updateMemberRole(workspaceId: string, userId: string, role: string): Promise<any> {
+    const { data } = await api.patch(`/workspaces/${workspaceId}/members/${userId}`, { role })
+    return data
+  },
 }
