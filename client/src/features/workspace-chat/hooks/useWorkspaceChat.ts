@@ -38,6 +38,7 @@ export function useWorkspaceMessages(workspaceId: string, documentId: string) {
       }
     },
     enabled: !!workspaceId && !!documentId,
+    staleTime: 0,
   })
 }
 

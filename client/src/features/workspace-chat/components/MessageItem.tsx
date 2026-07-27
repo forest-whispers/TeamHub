@@ -129,7 +129,7 @@ export function MessageItem({
   const renderToolbar = () => (
     <div
       className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-card border border-border shadow-md rounded-md p-1 z-10 absolute -top-3.5 ${
-        isSelf ? "left-2" : "right-2"
+        isSelf ? "right-4" : "left-12"
       }`}
     >
       {/* Emoji Trigger */}

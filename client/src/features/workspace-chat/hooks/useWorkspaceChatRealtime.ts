@@ -51,6 +51,10 @@ export function useWorkspaceChatRealtime({
     useEffect(() => {
         if (!workspaceId || !documentId) return;
 
+        queryClient.invalidateQueries({
+            queryKey,
+        });
+
         socket.emit(
             "chat:join",
             {
