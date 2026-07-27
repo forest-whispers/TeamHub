@@ -14,7 +14,6 @@ import {
   useToggleReaction,
   useLoadMoreMessages,
 } from "../hooks/useWorkspaceChat"
-import { useWorkspaceChatRealtime } from "../hooks/useWorkspaceChatRealtime"
 import { ChannelList } from "../components/ChannelList"
 import { MessageList } from "../components/MessageList"
 import { MessageComposer } from "../components/MessageComposer"
@@ -30,15 +29,20 @@ import {
   MessageSquareOff,
   X,
   Menu,
+  Pin,
 } from "lucide-react"
 
 export default function WorkspaceChat() {
   const { workspaceId, channelId } = useParams<{ workspaceId: string; channelId?: string }>()
   const queryClient = useQueryClient()
-  const { selectedChannelId, setSelectedChannelId } = useOutletContext<{
+  const { selectedChannelId, setSelectedChannelId, typingUsers, setTyping } = useOutletContext<{
     selectedChannelId: string | null
     setSelectedChannelId: (id: string | null) => void
+    typingUsers: any[]
+    setTyping: (isTyping: boolean) => void
   }>()
+
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
 
   const navigate = useNavigate()
 
@@ -89,11 +93,21 @@ export default function WorkspaceChat() {
   const toggleReactionMutation = useToggleReaction(workspaceId || "")
   const loadMoreMutation = useLoadMoreMessages(workspaceId || "", selectedChannelId || "")
 
-  // Integrate Realtime events
-  const { typingUsers, setTyping } = useWorkspaceChatRealtime({
-    workspaceId: workspaceId || "",
-    documentId: selectedChannelId || "",
-  })
+  // Integrate Pinned message calculations
+  const pinnedMessages = useMemo(() => {
+    return (messages || []).filter((m) => m.isPinned)
+  }, [messages])
+  const activePinnedMessage = pinnedMessages[pinnedMessages.length - 1]
+
+  const handleScrollToMessage = (messageId: string) => {
+    setHighlightedMessageId(messageId)
+    setTimeout(() => {
+      const element = document.getElementById(`chat-message-${messageId}`)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+    }, 100)
+  }
 
   // Auto-select first channel on load
   useEffect(() => {
@@ -356,6 +370,21 @@ export default function WorkspaceChat() {
 
         {/* Message Area viewport */}
         <div className="flex-1 flex flex-col min-h-0 relative">
+          {activePinnedMessage && (
+            <div
+              onClick={() => handleScrollToMessage(activePinnedMessage.id)}
+              className="bg-card/90 border-b border-border/60 hover:bg-muted/50 transition-colors px-4 py-2.5 flex items-center justify-between gap-3 text-xs z-10 cursor-pointer shadow-xs select-none backdrop-blur-xs shrink-0"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <Pin className="size-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                <span className="font-semibold text-foreground/90 shrink-0">Pinned Message:</span>
+                <span className="text-muted-foreground truncate italic">"{activePinnedMessage.content}"</span>
+              </div>
+              <span className="text-[10px] text-primary hover:underline font-semibold shrink-0">
+                View message
+              </span>
+            </div>
+          )}
           {isChannelsLoading || isMessagesLoading ? (
             renderMessagesSkeleton()
           ) : channelsError || messagesError ? (
@@ -430,6 +459,8 @@ export default function WorkspaceChat() {
               onPin={handlePinMessage}
               onUnpin={handleUnpinMessage}
               onToggleReaction={handleToggleReaction}
+              highlightedMessageId={highlightedMessageId}
+              onClearHighlight={() => setHighlightedMessageId(null)}
             />
           )}
         </div>

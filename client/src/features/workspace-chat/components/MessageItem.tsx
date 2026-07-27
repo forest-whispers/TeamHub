@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Message } from "../types"
 import { Smile, Reply, Pin, PinOff, Edit2, Trash2 } from "lucide-react"
 
@@ -12,6 +12,8 @@ interface MessageItemProps {
   onPin?: (messageId: string) => void
   onUnpin?: (messageId: string) => void
   onToggleReaction?: (messageId: string, emoji: string) => void
+  highlightedMessageId?: string | null
+  onClearHighlight?: () => void
 }
 
 export function MessageItem({
@@ -24,6 +26,8 @@ export function MessageItem({
   onPin,
   onUnpin,
   onToggleReaction,
+  highlightedMessageId,
+  onClearHighlight,
 }: MessageItemProps) {
   const isSelf = Boolean(currentUserId && message.sender.id === currentUserId)
   const [isEditing, setIsEditing] = useState(false)
@@ -102,6 +106,37 @@ export function MessageItem({
       setIsEditing(false);
       setEditText(message.content);
     }
+  };
+
+  useEffect(() => {
+    if (highlightedMessageId === message.id) {
+      const timer = setTimeout(() => {
+        onClearHighlight?.();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedMessageId, message.id, onClearHighlight]);
+
+  const renderMessageContent = (content: string) => {
+    const regex = /(@[a-zA-Z0-9_.-]+)/g;
+    const parts = content.split(regex);
+    return parts.map((part, index) => {
+      if (part.match(regex)) {
+        return (
+          <span
+            key={index}
+            className={`font-semibold underline ${
+              isSelf
+                ? "text-sky-200 hover:text-sky-100"
+                : "text-primary hover:text-primary/80"
+            }`}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
   const renderAvatar = () => {
@@ -255,8 +290,14 @@ export function MessageItem({
   }
 
   if (isSelf) {
+    const isHighlighted = highlightedMessageId === message.id;
     return (
-      <div className="flex flex-row-reverse gap-2.5 text-right items-start py-2 select-text group justify-start relative">
+      <div
+        id={`chat-message-${message.id}`}
+        className={`flex flex-row-reverse gap-2.5 text-right items-start py-2 select-text group justify-start relative transition-all duration-500 px-2 rounded-lg ${
+          isHighlighted ? "ring-2 ring-primary bg-primary/5 shadow-md scale-[1.01]" : ""
+        }`}
+      >
         {/* Avatar */}
         {renderAvatar()}
 
@@ -297,7 +338,7 @@ export function MessageItem({
             </div>
           ) : (
             <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-xs text-xs leading-relaxed whitespace-pre-wrap text-left shadow-xs">
-              {message.content}
+              {renderMessageContent(message.content)}
             </div>
           )}
 
@@ -319,8 +360,14 @@ export function MessageItem({
     )
   }
 
+  const isHighlighted = highlightedMessageId === message.id;
   return (
-    <div className="flex gap-2.5 text-left items-start py-2 select-text group relative">
+    <div
+      id={`chat-message-${message.id}`}
+      className={`flex gap-2.5 text-left items-start py-2 select-text group relative transition-all duration-500 px-2 rounded-lg ${
+        isHighlighted ? "ring-2 ring-primary bg-primary/5 shadow-md scale-[1.01]" : ""
+      }`}
+    >
       {/* Avatar */}
       {renderAvatar()}
 
@@ -345,7 +392,7 @@ export function MessageItem({
 
         {/* Message bubble */}
         <div className="bg-muted/60 text-foreground border border-border/40 p-3 rounded-2xl rounded-tl-xs text-xs leading-relaxed whitespace-pre-wrap">
-          {message.content}
+          {renderMessageContent(message.content)}
         </div>
 
         {/* Pinned badge */}

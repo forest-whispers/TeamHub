@@ -11,6 +11,7 @@ import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePre
 import { useWorkspaceChannels, useWorkspaceMessages, useSendMessage, useEditMessage, useDeleteMessage, usePinMessage, useUnpinMessage, useToggleReaction } from "@/features/workspace-chat/hooks/useWorkspaceChat"
 import { MessageList } from "@/features/workspace-chat/components/MessageList"
 import { MessageComposer } from "@/features/workspace-chat/components/MessageComposer"
+import { useWorkspaceChatRealtime } from "@/features/workspace-chat/hooks/useWorkspaceChatRealtime"
 import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
 import { Hash } from "lucide-react"
 import type { AuthUser } from "@/features/auth/types"
@@ -141,6 +142,10 @@ export default function WorkspaceLayout() {
   const currentDocument = sidebarChannels?.find((ch) => ch.id === sidebarChannelId)
   const sidebarChannelName = currentDocument?.name || "Untitled Document"
   const { data: sidebarMessages } = useWorkspaceMessages(workspaceId || "", sidebarChannelId || "")
+  const { typingUsers: sidebarTypingUsers, setTyping: sidebarSetTyping } = useWorkspaceChatRealtime({
+    workspaceId: workspaceId || "",
+    documentId: sidebarChannelId || "",
+  })
   const sidebarSendMessageMutation = useSendMessage(workspaceId || "")
   const sidebarEditMessageMutation = useEditMessage(workspaceId || "")
   const sidebarDeleteMessageMutation = useDeleteMessage(workspaceId || "")
@@ -475,7 +480,12 @@ export default function WorkspaceLayout() {
                 <Spinner className="size-6" />
               </div>
             }>
-              <Outlet context={{ selectedChannelId: selectedSidebarChannelId, setSelectedChannelId: setSelectedSidebarChannelId }} />
+              <Outlet context={{
+                selectedChannelId: selectedSidebarChannelId,
+                setSelectedChannelId: setSelectedSidebarChannelId,
+                typingUsers: sidebarTypingUsers,
+                setTyping: sidebarSetTyping
+              }} />
             </Suspense>
           </div>
         </main>

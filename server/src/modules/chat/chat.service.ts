@@ -117,6 +117,42 @@ export async function sendMessage(requesterId: string, workspaceId: string, docu
             isEdited: true,
             createdAt: true,
             updatedAt: true,
+            replyTo: {
+                select: {
+                    id: true,
+                    content: true,
+                    sender: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatar: true,
+                        }
+                    }
+                }
+            },
+            isPinned: true,
+            pinnedById: true,
+            pinnedAt: true,
+            pinnedBy: {
+                select: {
+                    id: true,
+                    name: true,
+                    avatar: true,
+                }
+            },
+            reactions: {
+                select: {
+                    id: true,
+                    emoji: true,
+                    userId: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                        }
+                    }
+                }
+            },
             sender: {
                 select: {
                     id: true,

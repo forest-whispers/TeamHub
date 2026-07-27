@@ -15,6 +15,8 @@ interface MessageListProps {
   onPin?: (messageId: string) => void
   onUnpin?: (messageId: string) => void
   onToggleReaction?: (messageId: string, emoji: string) => void
+  highlightedMessageId?: string | null
+  onClearHighlight?: () => void
 }
 
 export function MessageList({
@@ -30,6 +32,8 @@ export function MessageList({
   onPin,
   onUnpin,
   onToggleReaction,
+  highlightedMessageId,
+  onClearHighlight,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const lastMessageIdRef = useRef<string | null>(null)
@@ -72,6 +76,8 @@ export function MessageList({
           onPin={onPin}
           onUnpin={onUnpin}
           onToggleReaction={onToggleReaction}
+          highlightedMessageId={highlightedMessageId}
+          onClearHighlight={onClearHighlight}
         />
       ))}
       <div ref={bottomRef} />
