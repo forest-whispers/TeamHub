@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react"
-import { useParams, useOutletContext } from "react-router-dom"
+import { useParams, useOutletContext, useNavigate } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
@@ -33,12 +33,22 @@ import {
 } from "lucide-react"
 
 export default function WorkspaceChat() {
-  const { workspaceId } = useParams<{ workspaceId: string }>()
+  const { workspaceId, channelId } = useParams<{ workspaceId: string; channelId?: string }>()
   const queryClient = useQueryClient()
   const { selectedChannelId, setSelectedChannelId } = useOutletContext<{
     selectedChannelId: string | null
     setSelectedChannelId: (id: string | null) => void
   }>()
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (selectedChannelId && workspaceId) {
+      if (channelId !== selectedChannelId) {
+        navigate(`/workspace/${workspaceId}/chat/${selectedChannelId}`, { replace: true })
+      }
+    }
+  }, [selectedChannelId, channelId, navigate, workspaceId])
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false)
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)

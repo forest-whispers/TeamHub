@@ -109,7 +109,7 @@ export async function sendMessage(requesterId: string, workspaceId: string, docu
             workspaceId,
             documentId,
             content: input.content,
-            ...(input.replyToId !== undefined && { replyTo: input.replyToId }),
+            ...(input.replyToId !== undefined && { replyToId: input.replyToId }),
         },
         select: {
             id: true,
@@ -187,9 +187,11 @@ export async function editMessage(requesterId: string, workspaceId: string, docu
 
     input.content = input.content.trim();
 
+    const { content } = input;
+
     const updatedMessage = await prisma?.chatMessage.update({
         where: { id: messageId, },
-        data: { ...input, isEdited: true },
+        data: { content, isEdited: true },
         select: {
             id: true,
             content: true,

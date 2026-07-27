@@ -15,6 +15,7 @@ interface MessageComposerProps {
   replyingTo: Message | null
   onCancelReply?: () => void
   members?: Member[]
+  placeholder?: string
 }
 
 export function MessageComposer({
@@ -24,8 +25,10 @@ export function MessageComposer({
   replyingTo,
   onCancelReply,
   members = [],
+  placeholder = "Type a message... (Use @ to mention. Enter to send, Shift+Enter for new line)",
 }: MessageComposerProps) {
   const [content, setContent] = useState("")
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [mentionSearch, setMentionSearch] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -186,7 +189,7 @@ export function MessageComposer({
           onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onInput={handleInput}
-          placeholder="Type a message... (Use @ to mention. Enter to send, Shift+Enter for new line)"
+          placeholder={placeholder}
           className="w-full resize-none bg-transparent outline-none px-3 py-2.5 text-xs text-foreground min-h-10 max-h-40 leading-relaxed overflow-y-auto block"
         />
 
@@ -202,14 +205,44 @@ export function MessageComposer({
               <Paperclip className="size-4" />
             </button>
 
-            {/* Emoji placeholder button */}
-            <button
-              type="button"
-              className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer"
-              title="Insert emoji (placeholder)"
-            >
-              <Smile className="size-4" />
-            </button>
+            {/* Emoji button with functional picker popover */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className={`p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer ${
+                  showEmojiPicker ? "bg-muted text-foreground" : ""
+                }`}
+                title="Insert emoji"
+              >
+                <Smile className="size-4" />
+              </button>
+
+              {showEmojiPicker && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setShowEmojiPicker(false)}
+                  />
+                  <div className="absolute bottom-8 left-0 bg-card border border-border shadow-lg rounded-lg p-2 grid grid-cols-6 gap-1 z-40 w-44 animate-in fade-in slide-in-from-bottom-1 duration-150">
+                    {["👍", "❤️", "😂", "😮", "😢", "🎉", "😊", "🔥", "🚀", "💡", "👏", "✅"].map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setContent((prev) => prev + emoji)
+                          setShowEmojiPicker(false)
+                          textareaRef.current?.focus()
+                        }}
+                        className="hover:bg-muted rounded p-1 transition-colors cursor-pointer text-sm text-center"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Send button */}

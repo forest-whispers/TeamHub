@@ -78,10 +78,31 @@ export function MessageItem({
   }
 
   const handleSaveEdit = () => {
-    if (!editText.trim()) return
-    onEdit?.(message.id, editText.trim())
-    setIsEditing(false)
-  }
+    const trimmed = editText.trim();
+    if (!trimmed) {
+      setIsEditing(false);
+      setEditText(message.content);
+      return;
+    }
+    if (trimmed !== message.content) {
+      onEdit?.(message.id, trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const handleBlur = () => {
+    handleSaveEdit();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSaveEdit();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+      setEditText(message.content);
+    }
+  };
 
   const renderAvatar = () => {
     if (message.sender.avatar) {
@@ -260,27 +281,18 @@ export function MessageItem({
 
           {/* Message bubble */}
           {isEditing ? (
-            <div className="w-full space-y-1.5 mt-1 text-left bg-muted/65 p-2 rounded-lg border border-border">
+            <div className="w-full mt-1 text-left relative">
               <textarea
+                autoFocus
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="w-full p-2 text-xs border border-input rounded bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none leading-relaxed"
-                rows={2}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className="w-full pl-3 pr-3 pt-3 pb-5.5 text-xs border border-primary/20 rounded-2xl bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/45 resize-none leading-relaxed shadow-sm focus:shadow-md transition-all duration-200"
+                rows={2.5}
               />
-              <div className="flex justify-end gap-1.5">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-2 py-0.5 text-[10px] border border-border hover:bg-muted rounded font-medium text-muted-foreground cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  disabled={!editText.trim()}
-                  className="px-2 py-0.5 text-[10px] bg-primary text-primary-foreground hover:bg-primary/90 rounded font-medium cursor-pointer disabled:opacity-50"
-                >
-                  Save
-                </button>
+              <div className="absolute right-3.5 bottom-2 text-[8px] text-muted-foreground/60 select-none pointer-events-none">
+                Esc to cancel • Enter to save
               </div>
             </div>
           ) : (

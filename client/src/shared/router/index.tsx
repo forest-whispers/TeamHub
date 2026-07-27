@@ -94,6 +94,10 @@ export const router = createBrowserRouter([
                 element: <WorkspaceChat />,
               },
               {
+                path: "chat/:channelId",
+                element: <WorkspaceChat />,
+              },
+              {
                 path: "settings",
                 element: <WorkspaceSettings />,
               },

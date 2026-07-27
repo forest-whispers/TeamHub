@@ -8,7 +8,7 @@ import { useWorkspaceActivityRealtime } from "@/features/workspace-activity/hook
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
 import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePresence"
-import { useWorkspaceChannels, useWorkspaceMessages, useSendMessage } from "@/features/workspace-chat/hooks/useWorkspaceChat"
+import { useWorkspaceChannels, useWorkspaceMessages, useSendMessage, useEditMessage, useDeleteMessage, usePinMessage, useUnpinMessage, useToggleReaction } from "@/features/workspace-chat/hooks/useWorkspaceChat"
 import { MessageList } from "@/features/workspace-chat/components/MessageList"
 import { MessageComposer } from "@/features/workspace-chat/components/MessageComposer"
 import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
@@ -45,7 +45,7 @@ import {
 } from "lucide-react"
 
 export default function WorkspaceLayout() {
-  const { workspaceId } = useParams<{ workspaceId: string }>()
+  const { workspaceId, channelId } = useParams<{ workspaceId: string; channelId?: string }>()
   const location = useLocation()
   const isDocumentDetailPage = /^\/workspace\/[^/]+\/documents\/[^/]+$/.test(location.pathname)
   const navigate = useNavigate()
@@ -118,6 +118,13 @@ export default function WorkspaceLayout() {
     setSelectedSidebarChannelId(null)
   }, [workspaceId])
 
+  // Sync route channel parameter to sidebar channel selection state
+  useEffect(() => {
+    if (channelId) {
+      setSelectedSidebarChannelId(channelId)
+    }
+  }, [channelId])
+
   const { data: sidebarChannels } = useWorkspaceChannels(workspaceId || "")
 
   // Auto-select first channel on load when not on document detail page
@@ -135,14 +142,83 @@ export default function WorkspaceLayout() {
   const sidebarChannelName = currentDocument?.name || "Untitled Document"
   const { data: sidebarMessages } = useWorkspaceMessages(workspaceId || "", sidebarChannelId || "")
   const sidebarSendMessageMutation = useSendMessage(workspaceId || "")
+  const sidebarEditMessageMutation = useEditMessage(workspaceId || "")
+  const sidebarDeleteMessageMutation = useDeleteMessage(workspaceId || "")
+  const sidebarPinMessageMutation = usePinMessage(workspaceId || "")
+  const sidebarUnpinMessageMutation = useUnpinMessage(workspaceId || "")
+  const sidebarToggleReactionMutation = useToggleReaction(workspaceId || "")
 
-  const handleSidebarSendMessage = (content: string) => {
+  const currentUserId = authStatus?.user?.id
+  const currentMember = activeWorkspace?.members.find((m) => m.id === currentUserId)
+  const isAdmin =
+    currentMember?.role === "ADMIN" ||
+    currentMember?.role === "OWNER" ||
+    activeWorkspace?.ownerId === currentUserId
+
+  const [sidebarReplyingTo, setSidebarReplyingTo] = useState<any | null>(null)
+
+  useEffect(() => {
+    setSidebarReplyingTo(null)
+  }, [sidebarChannelId])
+
+  const handleSidebarSendMessage = (content: string, replyToId?: string, mentionedUserIds?: string[]) => {
     if (!sidebarChannelId) return
     sidebarSendMessageMutation.mutate({
       documentId: sidebarChannelId,
       payload: {
         content,
+        replyToId,
+        mentionedUserIds,
       },
+    })
+  }
+
+  const handleSidebarEditMessage = (messageId: string, content: string) => {
+    if (!sidebarChannelId) return
+    const mentionedUserIds: string[] = []
+    activeWorkspace?.members.forEach((member) => {
+      const regex = new RegExp(`@${member.name}\\b`, "gi")
+      if (regex.test(content)) {
+        mentionedUserIds.push(member.id)
+      }
+    })
+    sidebarEditMessageMutation.mutate({
+      documentId: sidebarChannelId,
+      messageId,
+      payload: { content, mentionedUserIds },
+    })
+  }
+
+  const handleSidebarDeleteMessage = (messageId: string) => {
+    if (!sidebarChannelId) return
+    sidebarDeleteMessageMutation.mutate({
+      documentId: sidebarChannelId,
+      messageId,
+    })
+  }
+
+  const handleSidebarPinMessage = (messageId: string) => {
+    if (!sidebarChannelId) return
+    sidebarPinMessageMutation.mutate({
+      documentId: sidebarChannelId,
+      messageId,
+    })
+  }
+
+  const handleSidebarUnpinMessage = (messageId: string) => {
+    if (!sidebarChannelId) return
+    sidebarUnpinMessageMutation.mutate({
+      documentId: sidebarChannelId,
+      messageId,
+    })
+  }
+
+  const handleSidebarToggleReaction = (messageId: string, emoji: string) => {
+    if (!sidebarChannelId) return
+    sidebarToggleReactionMutation.mutate({
+      documentId: sidebarChannelId,
+      messageId,
+      emoji,
     })
   }
 
@@ -593,16 +669,26 @@ export default function WorkspaceLayout() {
                     )
                   )}
 
-                  <MessageList
+                   <MessageList
                     messages={sidebarMessages || []}
-                    currentUserId={authStatus?.user?.id}
+                    currentUserId={currentUserId}
+                    isAdmin={isAdmin}
+                    onReply={setSidebarReplyingTo}
+                    onEdit={handleSidebarEditMessage}
+                    onDelete={handleSidebarDeleteMessage}
+                    onPin={handleSidebarPinMessage}
+                    onUnpin={handleSidebarUnpinMessage}
+                    onToggleReaction={handleSidebarToggleReaction}
                   />
 
                   {/* Sidebar Chat Input Panel */}
                   <MessageComposer
                     onSend={handleSidebarSendMessage}
                     isSending={sidebarSendMessageMutation.isPending}
-                    replyingTo={null}
+                    replyingTo={sidebarReplyingTo}
+                    onCancelReply={() => setSidebarReplyingTo(null)}
+                    members={activeWorkspace?.members.map((m) => ({ id: m.id, name: m.name })) || []}
+                    placeholder="Type a message..."
                   />
                 </div>
               )}
