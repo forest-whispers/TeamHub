@@ -80,4 +80,70 @@ export function registerActivitySubscribers() {
                 activity,
             });
     });
+
+    eventBus.on("file.created", async (event) => {
+
+        const activity = await createActivity({
+            workspaceId: event.workspaceId,
+            actorId: event.actorId,
+
+            type: ActivityType.FILE_CREATED,
+
+            entityType: ActivityEntityType.FILE,
+            entityId: event.fileId,
+
+            metadata: {
+                displayName: event.displayName,
+                originalName: event.originalName,
+                size: event.size,
+            },
+        });
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+                activity,
+            });
+    });
+
+    eventBus.on("file.renamed", async (event) => {
+
+        const activity = await createActivity({
+            workspaceId: event.workspaceId,
+            actorId: event.actorId,
+
+            type: ActivityType.FILE_RENAMED,
+
+            entityType: ActivityEntityType.FILE,
+            entityId: event.fileId,
+
+            metadata: {
+                oldDisplayName: event.oldDisplayName,
+                newDisplayName: event.newDisplayName,
+            },
+        });
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+                activity,
+            });
+    });
+
+    eventBus.on("file.deleted", async (event) => {
+
+        const activity = await createActivity({
+            workspaceId: event.workspaceId,
+            actorId: event.actorId,
+
+            type: ActivityType.FILE_DELETED,
+
+            entityType: ActivityEntityType.FILE,
+            entityId: event.fileId,
+
+            metadata: {
+                displayName: event.displayName,
+            },
+        });
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+                activity,
+            });
+    });
 }

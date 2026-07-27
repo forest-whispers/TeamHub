@@ -1,6 +1,9 @@
 import type { createDiscussion, replyDiscussion, resolveDiscussion } from "../../modules/documents/discussion/discussion.service.js";
 
 import { sendMessage, editMessage, pinMessage, unpinMessage } from "../../modules/chat/chat.service.js";
+
+import { renameFile, uploadFile } from "../../modules/files/file.service.js";
+
 export interface DocumentCreatedEvent {
     workspaceId: string;
     documentId: string;
@@ -114,13 +117,6 @@ export interface MessageUnpinnedEvent {
     socketId?: string | undefined;
 }
 
-export interface MessageSeenEvent {
-    workspaceId: string;
-    documentId: string;
-    messageId: string;
-    userId: string;
-}
-
 export interface ChatMessageReaction {
     id: string;
     emoji: string;
@@ -133,6 +129,44 @@ export interface ChatMessageReactionUpdatedEvent {
     messageId: string;
     reactions: ChatMessageReaction[];
     socketId?: string;
+}
+
+export type FileCreatedPayload = Awaited<
+    ReturnType<typeof uploadFile>
+>;
+
+export type FileRenamedPayload = Awaited<
+    ReturnType<typeof renameFile>
+>;
+
+export interface FileCreatedEvent {
+    workspaceId: string;
+    actorId: string;
+    fileId: string;
+
+    originalName: string;
+    displayName: string;
+
+    size: number;
+}
+
+export interface FileRenamedEvent {
+    workspaceId: string;
+    actorId: string;
+
+    fileId: string;
+
+    oldDisplayName: string;
+    newDisplayName: string;
+}
+
+export interface FileDeletedEvent {
+    workspaceId: string;
+    actorId: string;
+
+    fileId: string;
+
+    displayName: string;
 }
 
 export interface DomainEventMap {
@@ -153,7 +187,9 @@ export interface DomainEventMap {
     "chat.message.unpinned": MessageUnpinnedEvent;
     "chat.message.reaction.updated": ChatMessageReactionUpdatedEvent;
 
-    "chat.message.seen": MessageSeenEvent;
+    "file.created": FileCreatedEvent;
+    "file.renamed": FileRenamedEvent;
+    "file.deleted": FileDeletedEvent;
 }
 
 export type DomainEventName = keyof DomainEventMap;

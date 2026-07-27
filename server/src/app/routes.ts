@@ -6,6 +6,7 @@ import memberRouter from "../modules/members/member.routes.js";
 import documentRouter from "../modules/documents/document.routes.js";
 import activitiesRouter from "../modules/activity/activity.routes.js";
 import messagesRouter from "../modules/chat/chat.routes.js";
+import fileRouter from "../modules/files/file.routes.js";
 
 export const router = Router();
 
@@ -26,5 +27,7 @@ router.use("/workspaces/:workspaceId/documents", documentRouter);
 router.use("/workspaces/:workspaceId/documents/:documentId/chat", messagesRouter);
 
 router.use("/workspaces/:workspaceId/activities", activitiesRouter);
+
+router.use("/workspaces/:workspaceId/files", fileRouter);
 
 router.use("/workspaces", workspaceRouter);
