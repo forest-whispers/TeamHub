@@ -26,11 +26,12 @@ export async function uploadFileToCloudinary(
 
 export async function deleteFileFromCloudinary(
     publicId: string,
+    resourceType: "image" | "video" | "raw" = "raw",
 ) {
     return cloudinary.uploader.destroy(
         publicId,
         {
-            resource_type: "auto",
+            resource_type: resourceType,
         },
     );
 }

@@ -1,17 +1,15 @@
 import type { Request, Response } from "express";
 
-import { getFiles, uploadFile, renameFile, deleteFile } from "./file.service.js";
+import asyncHandler from "../../shared/utils/asyncHandler.js";
 
+import { getFiles, uploadFile, renameFile, deleteFile } from "./file.service.js";
 import {
     renameFileSchema,
     getFilesQuerySchema,
 } from "./file.validation.js";
 import { BadRequestError } from "../../shared/errors/index.js";
 
-export async function uploadFileHandler(
-    req: Request,
-    res: Response,
-) {
+export const uploadFileHandler = asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
         throw new BadRequestError("File is required.");
     }
@@ -23,13 +21,9 @@ export async function uploadFileHandler(
     );
 
     res.status(201).json(file);
-}
+});
 
-export async function getFilesHandler(
-    req: Request,
-    res: Response,
-) {
-
+export const getFilesHandler = asyncHandler(async (req: Request, res: Response) => {
     const query = getFilesQuerySchema.parse(
         req.query,
     );
@@ -41,13 +35,9 @@ export async function getFilesHandler(
     );
 
     res.json(result);
-}
+});
 
-export async function renameFileHandler(
-    req: Request,
-    res: Response,
-) {
-
+export const renameFileHandler = asyncHandler(async (req: Request, res: Response) => {
     const { fileId } = req.params;
 
     const body = renameFileSchema.parse(
@@ -62,13 +52,9 @@ export async function renameFileHandler(
     );
 
     res.json(file);
-}
+});
 
-export async function deleteFileHandler(
-    req: Request,
-    res: Response,
-) {
-
+export const deleteFileHandler = asyncHandler(async (req: Request, res: Response) => {
     const { fileId } = req.params;
 
     await deleteFile(
@@ -78,4 +64,4 @@ export async function deleteFileHandler(
     );
 
     res.status(204).send();
-}
+});

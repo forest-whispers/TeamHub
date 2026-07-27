@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react"
 import { useParams } from "react-router-dom"
-import { useWorkspaceFiles } from "../hooks/useWorkspaceFiles"
+import { useWorkspaceFiles, useRenameFile, useDeleteFile } from "../hooks/useWorkspaceFiles"
 import { UploadFilesDialog } from "../components/UploadFilesDialog"
+import { RenameFileDialog } from "../components/RenameFileDialog"
 import { FilesGrid } from "../components/FilesGrid"
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent } from "@/shared/components/ui/card"
@@ -9,29 +10,79 @@ import { Input } from "@/shared/components/ui/input"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
 import { Search, Filter, Upload, FolderOpen, HelpCircle, AlertCircle } from "lucide-react"
+import { useDebounce } from "@/features/global-search/hooks/useGlobalSearch"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/shared/lib/getErrorMessage"
+import type { WorkspaceFile } from "../types"
 
 export default function WorkspaceFiles() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [uploadOpen, setUploadOpen] = useState(false)
+  
+  const [updatingFile, setUpdatingFile] = useState<WorkspaceFile | null>(null)
+  const [dialogError, setDialogError] = useState<string | null>(null)
+
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
+  // Map category filter to mimeType query parameter
+  const mappedMimeType = useMemo(() => {
+    if (typeFilter === "all") return undefined
+    if (typeFilter === "image") return "image/*"
+    if (typeFilter === "document") return "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    if (typeFilter === "spreadsheet") return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+    if (typeFilter === "archive") return "application/zip,application/x-rar-compressed"
+    if (typeFilter === "media") return "video/*,audio/*"
+    return undefined
+  }, [typeFilter])
 
   const {
-    data: files,
+    data,
     isLoading,
     error,
     refetch,
-  } = useWorkspaceFiles(workspaceId || "")
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useWorkspaceFiles(workspaceId || "", {
+    search: debouncedSearchQuery || undefined,
+    mimeType: mappedMimeType,
+  })
 
-  // Client-side search and filtering logic
-  const filteredFiles = useMemo(() => {
-    if (!files) return []
-    return files.filter((file) => {
-      const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesType = typeFilter === "all" || file.type === typeFilter
-      return matchesSearch && matchesType
+  const { mutate: renameFile, isPending: isRenaming } = useRenameFile(workspaceId || "")
+  const { mutate: deleteFile } = useDeleteFile(workspaceId || "")
+
+  const files = useMemo(() => data?.pages.flatMap((page) => page.files) || [], [data])
+
+  const handleRenameSubmit = (displayName: string) => {
+    if (!updatingFile) return
+    renameFile(
+      { fileId: updatingFile.id, displayName },
+      {
+        onSuccess: () => {
+          toast.success("File renamed successfully")
+          setUpdatingFile(null)
+          setDialogError(null)
+        },
+        onError: (err: any) => {
+          setDialogError(getErrorMessage(err))
+        },
+      }
+    )
+  }
+
+  const handleDeleteSubmit = (file: WorkspaceFile) => {
+    deleteFile(file.id, {
+      onSuccess: () => {
+        toast.success("File deleted successfully")
+      },
+      onError: (err: any) => {
+        toast.error(getErrorMessage(err))
+      },
     })
-  }, [files, searchQuery, typeFilter])
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 text-left select-none">
@@ -117,12 +168,12 @@ export default function WorkspaceFiles() {
       )}
 
       {/* Loaded Content grid */}
-      {!isLoading && !error && files && (
+      {!isLoading && !error && (
         <>
-          {filteredFiles.length === 0 ? (
+          {files.length === 0 ? (
             /* Empty State layouts */
             <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/60 rounded-xl bg-card/25 min-h-75">
-              {files.length === 0 ? (
+              {!searchQuery && typeFilter === "all" ? (
                 /* No files in workspace empty state */
                 <>
                   <FolderOpen className="size-12 text-muted-foreground/60 mb-3" />
@@ -163,13 +214,52 @@ export default function WorkspaceFiles() {
             </div>
           ) : (
             /* Files Grid list layout */
-            <FilesGrid files={filteredFiles} />
+            <div className="space-y-4">
+              <FilesGrid 
+                files={files} 
+                onRename={setUpdatingFile} 
+                onDelete={handleDeleteSubmit} 
+              />
+              {/* Load More Button */}
+              {hasNextPage && (
+                <div className="flex justify-center pt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="cursor-pointer"
+                  >
+                    {isFetchingNextPage ? "Loading more..." : "Load More"}
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </>
       )}
 
       {/* Upload Files overlay Dialog container */}
-      <UploadFilesDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+      <UploadFilesDialog 
+        open={uploadOpen} 
+        onOpenChange={setUploadOpen} 
+        workspaceId={workspaceId || ""}
+      />
+
+      {/* Rename dialog */}
+      <RenameFileDialog
+        open={updatingFile !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUpdatingFile(null)
+            setDialogError(null)
+          }
+        }}
+        currentName={updatingFile?.displayName || ""}
+        onUpdate={handleRenameSubmit}
+        isPending={isRenaming}
+        errorMsg={dialogError}
+      />
     </div>
   )
 }

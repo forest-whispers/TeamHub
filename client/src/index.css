@@ -482,3 +482,86 @@ select option {
   background-color: var(--card);
   color: var(--foreground);
 }
+
+/* Sonner Premium Customizations to match the design in the image */
+[data-sonner-toast] {
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px) !important;
+  padding: 16px !important;
+  border: 1px solid var(--border) !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+[data-sonner-toast] [data-description] {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  margin-top: 4px !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  background: #04120f !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+  color: #10b981 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-title] {
+  color: #10b981 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-description] {
+  color: #059669 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: #140606 !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-title] {
+  color: #ef4444 !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-description] {
+  color: #dc2626 !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--muted-foreground) !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--foreground) !important;
+}

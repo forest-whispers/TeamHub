@@ -1,12 +1,19 @@
-export interface WorkspaceFile {
+export interface WorkspaceFileUploadedBy {
   id: string
   name: string
-  size: string
-  type: "document" | "image" | "spreadsheet" | "archive" | "media"
-  uploadedBy: string
-  uploadedAt: string
+  avatar: string | null
 }
 
-export interface WorkspaceFilesService {
-  getWorkspaceFiles(workspaceId: string): Promise<WorkspaceFile[]>
+export interface WorkspaceFile {
+  id: string
+  originalName: string
+  displayName: string
+  storageKey: string
+  url: string
+  mimeType: string
+  extension: string | null
+  size: number
+  createdAt: string
+  updatedAt: string
+  uploadedBy: WorkspaceFileUploadedBy
 }

@@ -1,6 +1,6 @@
 import path from "path";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, WorkspaceRole } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 
 import { eventBus } from "../../infrastructure/events/event-bus.js";
@@ -17,7 +17,7 @@ export async function uploadFile(
     uploadedById: string,
     file: Express.Multer.File,
 ) {
-    ensureWorkspaceMember(uploadedById, workspaceId);
+    await ensureWorkspaceMember(uploadedById, workspaceId);
 
     const uploaded = await uploadFileToCloudinary(
         file,
@@ -80,7 +80,7 @@ export async function getFiles(
     requesterId: string,
     query: GetFilesQuery,
 ) {
-    ensureWorkspaceMember(requesterId, workspaceId);
+    await ensureWorkspaceMember(requesterId, workspaceId);
 
     const {
         cursor,
@@ -169,7 +169,7 @@ export async function renameFile(
     actorId: string,
     displayName: string,
 ) {
-    ensureWorkspaceMember(actorId, workspaceId);
+    await ensureWorkspaceMember(actorId, workspaceId);
 
     const file = await prisma.file.findUnique({
         where: {
@@ -231,7 +231,6 @@ export async function deleteFile(
     fileId: string,
     actorId: string,
 ) {
-    ensureWorkspaceOwner(actorId, workspaceId);
 
     const file = await prisma.file.findUnique({
 
@@ -257,16 +256,26 @@ export async function deleteFile(
         throw new NotFoundError("File not found.");
     }
 
+    const membership = file.workspace.members[0];
+
     const isOwner = file.uploadedById === actorId;
 
-    if (!isOwner) {
-        throw new ForbiddenError(
-            "You do not have permission to delete this file.",
-        );
+    const isAdmin = membership?.role === WorkspaceRole.OWNER || membership?.role === WorkspaceRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+        throw new ForbiddenError("You do not have permission to delete this file.",);
+    }
+
+    let resourceType: "image" | "video" | "raw" = "raw";
+    if (file.mimeType.startsWith("image/")) {
+        resourceType = "image";
+    } else if (file.mimeType.startsWith("video/") || file.mimeType.startsWith("audio/")) {
+        resourceType = "video";
     }
 
     await deleteFileFromCloudinary(
         file.storageKey,
+        resourceType,
     );
 
     await prisma.file.delete({

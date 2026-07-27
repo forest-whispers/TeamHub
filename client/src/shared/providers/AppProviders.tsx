@@ -12,7 +12,10 @@ export function AppProviders({ children }: AppProvidersProps) {
     <QueryClientProvider>
       <ThemeProvider defaultTheme="system" storageKey="teamhub-ui-theme">
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster
+          position="bottom-right"
+          closeButton
+        />
       </ThemeProvider>
     </QueryClientProvider>
   )

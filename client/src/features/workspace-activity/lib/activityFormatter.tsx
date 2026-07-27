@@ -27,7 +27,6 @@ export function formatActivity(
             return {
                 id: activity.id,
                 actor: activity.actor?.name ?? "Unknown",
-                // action: `renamed document ${metadata.oldTitle} to`,
                 action: "renamed a document to",
                 target:
                     typeof metadata.newTitle === "string"
@@ -48,6 +47,55 @@ export function formatActivity(
                         : "Document",
                 timestamp: activity.createdAt,
                 category: "document",
+            };
+
+        case "FILE_CREATED":
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: "uploaded file",
+                target:
+                    typeof metadata.displayName === "string"
+                        ? metadata.displayName
+                        : "File",
+                timestamp: activity.createdAt,
+                category: "workspace",
+            };
+
+        case "FILE_RENAMED":
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: "renamed file to",
+                target:
+                    typeof metadata.newDisplayName === "string"
+                        ? metadata.newDisplayName
+                        : "File",
+                timestamp: activity.createdAt,
+                category: "workspace",
+            };
+
+        case "FILE_DELETED":
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: "deleted file",
+                target:
+                    typeof metadata.displayName === "string"
+                        ? metadata.displayName
+                        : "File",
+                timestamp: activity.createdAt,
+                category: "workspace",
+            };
+
+        default:
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: "performed an action",
+                target: "Workspace",
+                timestamp: activity.createdAt,
+                category: "workspace",
             };
     }
 }

@@ -1,10 +1,14 @@
 export type ActivityType =
   | "DOCUMENT_CREATED"
   | "DOCUMENT_RENAMED"
-  | "DOCUMENT_DELETED";
+  | "DOCUMENT_DELETED"
+  | "FILE_CREATED"
+  | "FILE_RENAMED"
+  | "FILE_DELETED";
 
 export type ActivityEntityType =
-  | "DOCUMENT";
+  | "DOCUMENT"
+  | "FILE";
 
 export interface ActivityActor {
   id: string;
