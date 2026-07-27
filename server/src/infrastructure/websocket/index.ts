@@ -9,6 +9,7 @@ import { workspacePresenceSockets } from "../../modules/workspaces/presence/pres
 import { yjsService } from "../../modules/documents/collaboration/yjs.service.js";
 import { unregisterAwarenessClient } from "../../modules/documents/collaboration/awareness.service.js";
 import { presenceService } from "../../modules/workspaces/presence/presence.service.js";
+import { registerChatSockets } from "../../modules/chat/collaboration/chat.socket.js";
 
 export function initializeWebSocket(io: Server) {
     io.use(socketAuth);
@@ -16,6 +17,8 @@ export function initializeWebSocket(io: Server) {
     registerDocumentSockets(io)
 
     workspacePresenceSockets(io)
+
+    registerChatSockets(io);
 
     io.on("connection", (socket) => {
         const client = socket as AuthenticatedSocket;

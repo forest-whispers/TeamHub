@@ -38,6 +38,14 @@ model User {
   discussionsResolved DocumentDiscussion[]      @relation("DiscussionResolver")
   discussionReplies   DocumentDiscussionReply[]
 
+  messages ChatMessage[]
+
+  pinnedMessages ChatMessage[] @relation("PinnedMessages")
+
+  messageMentions MessageMention[]
+
+  messageReactions MessageReaction[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -70,6 +78,8 @@ model Workspace {
   documents Document[]
 
   activities Activity[]
+
+  chatMessages ChatMessage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -122,6 +132,8 @@ model Document {
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
+
+  chatMessages ChatMessage[]
 
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -236,4 +248,82 @@ model DocumentDiscussionReply {
   updatedAt DateTime @updatedAt
 
   @@index([discussionId])
+}
+
+model ChatMessage {
+  id String @id @default(cuid())
+
+  workspaceId String
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  documentId String
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  senderId String
+
+  sender User @relation(fields: [senderId], references: [id])
+
+  content String
+
+  isEdited Boolean @default(false)
+
+  replyToId String?
+
+  replyTo ChatMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
+
+  replies ChatMessage[] @relation("MessageReplies")
+
+  mentions MessageMention[]
+
+  isPinned Boolean @default(false)
+
+  pinnedById String?
+
+  pinnedBy User? @relation("PinnedMessages", fields: [pinnedById], references: [id])
+
+  pinnedAt DateTime?
+
+  reactions MessageReaction[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([replyToId])
+  @@index([isPinned])
+}
+
+model MessageMention {
+  id String @id @default(cuid())
+
+  messageId String
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model MessageReaction {
+  id String @id @default(cuid())
+
+  emoji String
+
+  messageId String
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId])
 }
