@@ -9,6 +9,7 @@ import messagesRouter from "../modules/chat/chat.routes.js";
 import fileRouter from "../modules/files/file.routes.js";
 import notificationRouter from "../modules/notifications/notification.routes.js";
 import searchRouter from "../modules/search/search.routes.js";
+import analyticsRouter from "../modules/analytics/analytics.routes.js";
 
 
 export const router = Router();
@@ -36,5 +37,7 @@ router.use("/workspaces/:workspaceId/documents/:documentId/chat", messagesRouter
 router.use("/workspaces/:workspaceId/activities", activitiesRouter);
 
 router.use("/workspaces/:workspaceId/files", fileRouter);
+
+router.use("/workspaces/:workspaceId/analytics", analyticsRouter);
 
 router.use("/workspaces", workspaceRouter);

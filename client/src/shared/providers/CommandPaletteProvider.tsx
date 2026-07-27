@@ -22,6 +22,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   const location = useLocation()
 
   const isDashboard = location.pathname.startsWith("/dashboard")
+  const isLandingPage = (location.pathname.toString()) === ""
 
   useEffect(() => {
     if (isDashboard) {
@@ -39,6 +40,23 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [isDashboard])
+
+  useEffect(() => {
+    if (isLandingPage) {
+      setIsOpen(false) // Close if open and navigating to landing page
+      return
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setIsOpen((open) => !open)
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [isLandingPage])
 
   return (
     <CommandPaletteContext.Provider value={{ isOpen, setIsOpen }}>

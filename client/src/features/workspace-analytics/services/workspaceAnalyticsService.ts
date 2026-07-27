@@ -1,4 +1,4 @@
-import { getMockWorkspaceAnalytics } from "../mock/mockWorkspaceAnalytics"
+import api from "@/shared/lib/api"
 import type { WorkspaceAnalyticsData } from "../types"
 
 export const workspaceAnalyticsService = {
@@ -6,9 +6,10 @@ export const workspaceAnalyticsService = {
     workspaceId: string,
     timeRange: string
   ): Promise<WorkspaceAnalyticsData> => {
-    // In production, this would call:
-    // const response = await axios.get<WorkspaceAnalyticsData>(`/api/workspaces/${workspaceId}/analytics`, { params: { timeRange } })
-    // return response.data
-    return getMockWorkspaceAnalytics(workspaceId, timeRange)
+    const response = await api.get<WorkspaceAnalyticsData>(
+      `/workspaces/${workspaceId}/analytics`,
+      { params: { timeRange } }
+    )
+    return response.data
   },
 }

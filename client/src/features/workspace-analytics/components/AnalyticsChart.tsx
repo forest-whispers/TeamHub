@@ -18,7 +18,7 @@ export function AnalyticsChart({ title, data, type, colorClass = "blue" }: Analy
 
   if (!data || data.length === 0) {
     return (
-      <Card className="border border-border bg-card/45 select-none h-[280px] flex items-center justify-center text-left">
+      <Card className="border border-border bg-card/45 select-none h-70 flex items-center justify-center text-left">
         <div className="text-center p-4">
           <span className="text-xs text-muted-foreground">No data available for this range</span>
         </div>
