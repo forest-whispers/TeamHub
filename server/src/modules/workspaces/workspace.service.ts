@@ -5,6 +5,7 @@ import { queryWorkspaceActivities } from "../activity/activity.service.js";
 import { ensureWorkspaceMember, ensureWorkspaceOwner } from "../../shared/authorization/workspace.js";
 import { AppError, BadRequestError, NotFoundError } from "../../shared/errors/index.js";
 import type { CreateWorkspaceDto, JoinWorkspaceDto, UpdateWorkspaceDto, WorkspaceResponse } from "./workspace.types.js";
+import { eventBus } from "../../infrastructure/events/event-bus.js";
 
 const generateWorkspaceInviteCode = (): string => crypto.randomUUID();
 
@@ -204,6 +205,14 @@ export const joinWorkspace = async ( userId: string, { inviteCode }: JoinWorkspa
             userId,
             role: "MEMBER",
         },
+    });
+
+    eventBus.emit("workspace.member.joined", {
+        workspaceId: workspace.id,
+        actorId: userId,
+
+        memberId: userId,
+        memberName: "WORKSPACE MEMBER",
     });
 
     return workspace;

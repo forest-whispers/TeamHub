@@ -14,6 +14,50 @@ function broadcastActivity( workspaceId: string, activity: unknown) {
 
 export function registerActivitySubscribers() {
 
+    eventBus.on("workspace.member.joined", async (event) => {
+        const activity = await createActivity({
+            workspaceId: event.workspaceId,
+            actorId: event.actorId,
+
+            type: ActivityType.WORKSPACE_MEMBER_JOINED,
+
+            entityType: ActivityEntityType.USER,
+            entityId: event.memberId,
+
+            metadata: {
+                memberName: event.memberName,
+            },
+        });
+
+        console.log("[ACTIVITY] workspace.member.joined", activity);
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+            activity,
+        });
+    });
+
+    eventBus.on("workspace.member.left", async (event) => {
+        const activity = await createActivity({
+            workspaceId: event.workspaceId,
+            actorId: event.actorId,
+
+            type: ActivityType.WORKSPACE_MEMBER_LEFT,
+
+            entityType: ActivityEntityType.USER,
+            entityId: event.memberId,
+
+            metadata: {
+                memberName: event.memberName,
+            },
+        });
+
+        console.log("[ACTIVITY] workspace.member.left", activity);
+
+        getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
+            activity,
+        });
+    });
+
     eventBus.on("document.created", async (event) => {
         const activity = await createActivity({
             workspaceId: event.workspaceId,
@@ -99,6 +143,8 @@ export function registerActivitySubscribers() {
             },
         });
 
+        console.log("[ACTIVITY] file.created", activity);
+
         getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
                 activity,
             });
@@ -121,6 +167,8 @@ export function registerActivitySubscribers() {
             },
         });
 
+        console.log("[ACTIVITY] file.renamed", activity);
+
         getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
                 activity,
             });
@@ -141,6 +189,8 @@ export function registerActivitySubscribers() {
                 displayName: event.displayName,
             },
         });
+
+        console.log("[ACTIVITY] file.deleted", activity);
 
         getIO().to(`workspace:${event.workspaceId}`).emit("activity:new", {
                 activity,

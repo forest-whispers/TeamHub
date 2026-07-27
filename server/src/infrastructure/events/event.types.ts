@@ -4,6 +4,22 @@ import { sendMessage, editMessage, pinMessage, unpinMessage } from "../../module
 
 import { renameFile, uploadFile } from "../../modules/files/file.service.js";
 
+export interface WorkspaceMemberJoinedEvent {
+    workspaceId: string;
+    actorId: string;
+
+    memberId: string;
+    memberName: string;
+}
+
+export interface WorkspaceMemberLeftEvent {
+    workspaceId: string;
+    actorId: string;
+
+    memberId: string;
+    memberName: string;
+}
+
 export interface DocumentCreatedEvent {
     workspaceId: string;
     documentId: string;
@@ -170,6 +186,9 @@ export interface FileDeletedEvent {
 }
 
 export interface DomainEventMap {
+    "workspace.member.joined": WorkspaceMemberJoinedEvent;
+    "workspace.member.left": WorkspaceMemberLeftEvent;
+    
     "document.created": DocumentCreatedEvent;
     "document.renamed": DocumentRenamedEvent;
     "document.deleted": DocumentDeletedEvent;

@@ -2,6 +2,7 @@ import { prisma } from "../../lib/prisma.js";
 import { BadRequestError } from "../../shared/errors/index.js";
 import type { UpdateMemberDto } from "./member.types.js";
 import { ensureWorkspaceMember, ensureWorkspaceOwner } from "../../shared/authorization/workspace.js";
+import { eventBus } from "../../infrastructure/events/event-bus.js";
 
 const getWorkspaceMember = async (workspaceId: string, userId: string) =>
     await prisma.workspaceMember.findUniqueOrThrow({
@@ -86,12 +87,27 @@ export const leaveWorkspace = async ( requesterId: string, workspaceId: string )
         throw new BadRequestError("Transfer ownership before leaving the workspace.");
     }
 
-    await prisma.workspaceMember.delete({
+    const leftMember = await prisma.workspaceMember.delete({
         where: {
             workspaceId_userId: {
                 workspaceId,
                 userId: requesterId,
             },
         },
+        select: {
+            user: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
+
+    eventBus.emit("workspace.member.left", {
+        workspaceId,
+        actorId: requesterId,
+
+        memberId: requesterId,
+        memberName: leftMember.user.name,
     });
 };

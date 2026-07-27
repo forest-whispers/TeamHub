@@ -10,6 +10,27 @@ export function formatActivity(
 
     switch (activity.type) {
 
+        case "WORKSPACE_MEMBER_JOINED":
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: "joined workspace",
+                target: "",
+                timestamp: activity.createdAt,
+                category: "workspace",
+            };
+
+        case "WORKSPACE_MEMBER_LEFT":
+            return {
+                id: activity.id,
+                actor: activity.actor?.name ?? "Unknown",
+                action: "left workspace",
+                target: "",
+                timestamp: activity.createdAt,
+                category: "workspace",
+                
+            };
+
         case "DOCUMENT_CREATED":
             return {
                 id: activity.id,
