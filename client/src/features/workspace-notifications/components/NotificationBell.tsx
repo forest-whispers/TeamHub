@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { Bell } from "lucide-react"
 import {
-  useWorkspaceNotifications,
-  useUnreadNotificationsCount,
+  useNotifications,
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
+  useNotificationRealtime,
 } from "../hooks/useNotifications"
 import { NotificationPanel } from "./NotificationPanel"
 import { toast } from "sonner"
@@ -16,27 +16,33 @@ interface NotificationBellProps {
 export function NotificationBell({ workspaceId }: NotificationBellProps) {
   const [panelOpen, setPanelOpen] = useState(false)
 
-  // State preservation hooks (lifted up to the Bell component which stays mounted in the shell)
+  // State preservation hooks
   const [filter, setFilter] = useState<"all" | "unread">("all")
   const [savedScrollTop, setSavedScrollTop] = useState(0)
 
-  // Lightweight unread count query
-  const {
-    data: unreadCount = 0,
-    refetch: refetchCount,
-  } = useUnreadNotificationsCount(workspaceId)
+  // Realtime updates
+  useNotificationRealtime(workspaceId)
 
-  // Full notifications list query
+  // Infinite query for notifications list
   const {
-    data: notifications = [],
+    data,
     isLoading: isListLoading,
     error: listError,
     refetch: refetchList,
-  } = useWorkspaceNotifications(workspaceId)
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useNotifications(panelOpen)
+
+  // Flatten the paginated list of notifications
+  const notifications = data?.pages.flatMap((page) => page.notifications) || []
+
+  // Compute unread count from the cached notifications
+  const unreadCount = notifications.filter((n) => !n.isRead).length
 
   // Mutations
-  const { mutate: markRead } = useMarkNotificationRead(workspaceId)
-  const { mutate: markAllRead } = useMarkAllNotificationsRead(workspaceId)
+  const { mutate: markRead } = useMarkNotificationRead()
+  const { mutate: markAllRead } = useMarkAllNotificationsRead()
 
   const handleMarkRead = (notificationId: string) => {
     markRead(notificationId, {
@@ -58,8 +64,13 @@ export function NotificationBell({ workspaceId }: NotificationBellProps) {
   }
 
   const handleRetry = () => {
-    refetchCount()
     refetchList()
+  }
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
   }
 
   return (
@@ -91,6 +102,7 @@ export function NotificationBell({ workspaceId }: NotificationBellProps) {
         onFilterChange={setFilter}
         savedScrollTop={savedScrollTop}
         onScrollChange={setSavedScrollTop}
+        onLoadMore={handleLoadMore}
       />
     </>
   )

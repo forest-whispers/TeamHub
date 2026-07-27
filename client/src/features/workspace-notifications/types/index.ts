@@ -1,28 +1,31 @@
 export interface Notification {
   id: string
   type:
-    | "document_updated"
-    | "document_shared"
-    | "member_joined"
-    | "member_invited"
-    | "mention"
-    | "comment"
-    | "workspace_activity"
-    | "system"
+    | "CHAT_MENTION"
+    | "DISCUSSION_MENTION"
+    | "DISCUSSION_REPLY"
+    | "DISCUSSION_RESOLVED"
+    | "WORKSPACE_ROLE_CHANGED"
+    | "WORKSPACE_REMOVED"
   title: string
   description: string
   createdAt: string
   isRead: boolean
   actor?: {
     name: string
-    avatarUrl?: string
+    avatarUrl?: string | null
   }
   metadata?: Record<string, any>
 }
 
+export interface NotificationsResponse {
+  notifications: Notification[]
+  nextCursor: string | null
+  hasMore: boolean
+}
+
 export interface NotificationsService {
-  getNotifications(workspaceId: string): Promise<Notification[]>
-  getUnreadCount(workspaceId: string): Promise<number>
-  markNotificationRead(notificationId: string): Promise<void>
-  markAllNotificationsRead(workspaceId: string): Promise<void>
+  getNotifications(cursor?: string, limit?: number): Promise<NotificationsResponse>
+  markNotificationRead(notificationId: string): Promise<Notification>
+  markAllNotificationsRead(): Promise<void>
 }

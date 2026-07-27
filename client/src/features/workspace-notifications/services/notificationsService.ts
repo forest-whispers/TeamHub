@@ -1,39 +1,20 @@
-import type { NotificationsService, Notification } from "../types"
-import {
-  getMockNotifications,
-  getMockUnreadCount,
-  markMockNotificationRead,
-  markMockAllNotificationsRead,
-} from "../mock/mockNotifications"
-
-const USE_MOCK = true
+import api from "@/shared/lib/api"
+import type { NotificationsService, Notification, NotificationsResponse } from "../types"
 
 export const notificationsService: NotificationsService = {
-  getNotifications: async (workspaceId: string): Promise<Notification[]> => {
-    if (USE_MOCK) {
-      return getMockNotifications(workspaceId)
-    }
-    throw new Error("Live notifications service not integrated.")
+  getNotifications: async (cursor?: string, limit = 20): Promise<NotificationsResponse> => {
+    const { data } = await api.get("/notifications", {
+      params: { cursor, limit }
+    })
+    return data.data
   },
 
-  getUnreadCount: async (workspaceId: string): Promise<number> => {
-    if (USE_MOCK) {
-      return getMockUnreadCount(workspaceId)
-    }
-    throw new Error("Live notifications service not integrated.")
+  markNotificationRead: async (notificationId: string): Promise<Notification> => {
+    const { data } = await api.patch(`/notifications/${notificationId}/read`)
+    return data.data
   },
 
-  markNotificationRead: async (notificationId: string): Promise<void> => {
-    if (USE_MOCK) {
-      return markMockNotificationRead(notificationId)
-    }
-    throw new Error("Live notifications service not integrated.")
-  },
-
-  markAllNotificationsRead: async (workspaceId: string): Promise<void> => {
-    if (USE_MOCK) {
-      return markMockAllNotificationsRead(workspaceId)
-    }
-    throw new Error("Live notifications service not integrated.")
+  markAllNotificationsRead: async (): Promise<void> => {
+    await api.patch("/notifications/read-all")
   },
 }

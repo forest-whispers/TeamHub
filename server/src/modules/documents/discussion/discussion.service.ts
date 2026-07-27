@@ -4,6 +4,22 @@ import { ensureWorkspaceMember } from "../../../shared/authorization/workspace.j
 import { ensureDocumentInWorkspace } from "../../../shared/authorization/document.js";
 import type { CreateDiscussionDto, ReplyDiscussionDto, } from "./discussion.types.ts";
 
+async function getMentionedUserIdsFromText(text: string, workspaceId: string): Promise<string[]> {
+    const members = await prisma.workspaceMember.findMany({
+        where: { workspaceId },
+        include: { user: { select: { id: true, name: true } } }
+    });
+    const mentionedUserIds: string[] = [];
+    const lowerText = text.toLowerCase();
+    for (const member of members) {
+        const namePart = member.user.name.toLowerCase();
+        if (lowerText.includes(`@${namePart}`) || lowerText.includes(`@${namePart.replace(/\s+/g, "")}`)) {
+            mentionedUserIds.push(member.user.id);
+        }
+    }
+    return mentionedUserIds;
+}
+
 export async function getDiscussions( requesterId: string, workspaceId: string, documentId: string ) {
     await ensureWorkspaceMember(requesterId, workspaceId);
 
@@ -88,10 +104,39 @@ export async function createDiscussion( requesterId: string, workspaceId: string
         socketId,
     });
 
+    // Emit discussion.mentioned for each user mentioned (excluding self)
+    const mentionedUserIds = await getMentionedUserIdsFromText(input.message, workspaceId);
+    for (const recipientId of mentionedUserIds) {
+        if (recipientId !== requesterId) {
+            await eventBus.emit("discussion.mentioned", {
+                workspaceId,
+                documentId,
+                discussionId: discussion.id,
+                actorId: requesterId,
+                recipientId,
+            });
+        }
+    }
+
     return discussion;
 }
 
 export async function replyDiscussion( requesterId: string, discussionId: string, input: ReplyDiscussionDto, socketId?: string ) {
+    const discussion = await prisma.documentDiscussion.findUniqueOrThrow({
+        where: { id: discussionId },
+        select: {
+            documentId: true,
+            createdById: true,
+            document: {
+                select: {
+                    workspaceId: true,
+                }
+            }
+        }
+    });
+    const workspaceId = discussion.document.workspaceId;
+    const documentId = discussion.documentId;
+
     const reply = await prisma.documentDiscussionReply.create({
         data: {
             discussionId,
@@ -116,6 +161,31 @@ export async function replyDiscussion( requesterId: string, discussionId: string
         socketId,
     });
 
+    // Emit discussion.replied to the discussion creator (excluding self)
+    if (discussion.createdById !== requesterId) {
+        await eventBus.emit("discussion.replied", {
+            workspaceId,
+            documentId,
+            discussionId,
+            actorId: requesterId,
+            recipientId: discussion.createdById,
+        });
+    }
+
+    // Emit discussion.mentioned for mentions inside the reply (excluding self)
+    const mentionedUserIds = await getMentionedUserIdsFromText(input.message, workspaceId);
+    for (const recipientId of mentionedUserIds) {
+        if (recipientId !== requesterId) {
+            await eventBus.emit("discussion.mentioned", {
+                workspaceId,
+                documentId,
+                discussionId,
+                actorId: requesterId,
+                recipientId,
+            });
+        }
+    }
+
     return reply;
 }
 
@@ -125,8 +195,13 @@ export async function resolveDiscussion( requesterId: string, discussionId: stri
             id: discussionId,
         },
         select: {
-           documentId: true, 
+            documentId: true, 
             createdById: true,
+            document: {
+                select: {
+                    workspaceId: true
+                }
+            }
         },
     });
 
@@ -150,6 +225,37 @@ export async function resolveDiscussion( requesterId: string, discussionId: stri
         discussion: resolvedDiscussion,
         socketId,
     });
+
+    // Emit discussion.resolved to participants (creator + unique repliers, excluding resolver/actor)
+    if (resolved) {
+        const workspaceId = discussion.document.workspaceId;
+
+        const repliers = await prisma.documentDiscussionReply.findMany({
+            where: { discussionId },
+            select: { createdById: true },
+            distinct: ["createdById"],
+        });
+
+        const recipients = new Set<string>();
+        if (discussion.createdById !== requesterId) {
+            recipients.add(discussion.createdById);
+        }
+        for (const r of repliers) {
+            if (r.createdById !== requesterId) {
+                recipients.add(r.createdById);
+            }
+        }
+
+        for (const recipientId of recipients) {
+            await eventBus.emit("discussion.resolved", {
+                workspaceId,
+                documentId: discussion.documentId,
+                discussionId,
+                actorId: requesterId,
+                recipientId,
+            });
+        }
+    }
 
     return resolvedDiscussion;
 }

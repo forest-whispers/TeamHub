@@ -194,6 +194,45 @@ export interface FileDeletedEvent {
     displayName: string;
 }
 
+export interface ChatMessageMentionedEvent {
+    workspaceId: string;
+    documentId: string;
+    messageId: string;
+    actorId: string;
+    recipientId: string;
+}
+
+export interface DiscussionMentionedEvent {
+    workspaceId: string;
+    documentId: string;
+    discussionId: string;
+    actorId: string;
+    recipientId: string;
+}
+
+export interface DiscussionRepliedEvent {
+    workspaceId: string;
+    documentId: string;
+    discussionId: string;
+    actorId: string;
+    recipientId: string;
+}
+
+export interface DiscussionResolvedEvent {
+    workspaceId: string;
+    documentId: string;
+    discussionId: string;
+    actorId: string;
+    recipientId: string;
+}
+
+export interface WorkspaceRemovedEvent {
+    workspaceId: string;
+    workspaceName: string;
+    actorId: string;
+    recipientId: string;
+}
+
 export interface DomainEventMap {
     "workspace.member.joined": WorkspaceMemberJoinedEvent;
     "workspace.member.left": WorkspaceMemberLeftEvent;
@@ -219,6 +258,12 @@ export interface DomainEventMap {
     "file.created": FileCreatedEvent;
     "file.renamed": FileRenamedEvent;
     "file.deleted": FileDeletedEvent;
+
+    "chat.message.mentioned": ChatMessageMentionedEvent;
+    "discussion.mentioned": DiscussionMentionedEvent;
+    "discussion.replied": DiscussionRepliedEvent;
+    "discussion.resolved": DiscussionResolvedEvent;
+    "workspace.removed": WorkspaceRemovedEvent;
 }
 
 export type DomainEventName = keyof DomainEventMap;

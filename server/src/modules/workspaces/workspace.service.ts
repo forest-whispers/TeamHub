@@ -168,9 +168,34 @@ export const updateWorkspace = async ( userId: string, workspaceId: string, data
 export const deleteWorkspace = async ( userId: string, workspaceId: string ) => {
     await ensureWorkspaceOwner(userId, workspaceId);
 
+    const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: {
+            name: true,
+            members: {
+                select: {
+                    userId: true,
+                }
+            }
+        }
+    });
+
+    if (!workspace) return;
+
     await prisma.workspace.delete({
         where: { id: workspaceId },
     });
+
+    for (const member of workspace.members) {
+        if (member.userId !== userId) {
+            await eventBus.emit("workspace.removed", {
+                workspaceId,
+                workspaceName: workspace.name,
+                actorId: userId,
+                recipientId: member.userId,
+            });
+        }
+    }
 };
 
 export const joinWorkspace = async ( userId: string, { inviteCode }: JoinWorkspaceDto ) => {

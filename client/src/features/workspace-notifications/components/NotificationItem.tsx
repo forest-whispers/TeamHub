@@ -1,6 +1,4 @@
 import {
-  FileText,
-  UserPlus,
   Users,
   MessageSquare,
   AtSign,
@@ -9,6 +7,7 @@ import {
 } from "lucide-react"
 import type { Notification } from "../types"
 import { Button } from "@/shared/components/ui/button"
+import { formatDistanceToNow } from "date-fns"
 
 interface NotificationItemProps {
   notification: Notification
@@ -24,21 +23,29 @@ export function NotificationItem({
   // Determine icon based on notification type
   const getIcon = () => {
     switch (notification.type) {
-      case "document_updated":
-      case "document_shared":
-        return <FileText className="size-4 text-indigo-500" />
-      case "member_invited":
-        return <UserPlus className="size-4 text-sky-500" />
-      case "member_joined":
-        return <Users className="size-4 text-emerald-500" />
-      case "mention":
+      case "CHAT_MENTION":
+      case "DISCUSSION_MENTION":
         return <AtSign className="size-4 text-violet-500" />
-      case "comment":
+      case "DISCUSSION_REPLY":
         return <MessageSquare className="size-4 text-amber-500" />
+      case "DISCUSSION_RESOLVED":
+        return <Check className="size-4 text-emerald-500" />
+      case "WORKSPACE_ROLE_CHANGED":
+        return <Users className="size-4 text-indigo-500" />
+      case "WORKSPACE_REMOVED":
+        return <Bell className="size-4 text-destructive" />
       default:
         return <Bell className="size-4 text-muted-foreground" />
     }
   }
+
+  const displayTime = (() => {
+    try {
+      return formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })
+    } catch {
+      return notification.createdAt
+    }
+  })()
 
   return (
     <div
@@ -46,7 +53,7 @@ export function NotificationItem({
       className={`group flex items-start gap-3 p-3.5 border-b border-border/40 transition-all select-none relative ${
         notification.isRead
           ? "bg-background hover:bg-muted/30"
-          : "bg-primary/[0.03] hover:bg-primary/[0.06] border-l-2 border-l-primary"
+          : "bg-primary/3 hover:bg-primary/6 border-l-2 border-l-primary"
       } ${onClick ? "cursor-pointer" : ""}`}
     >
       {/* Type Icon Container */}
@@ -71,7 +78,7 @@ export function NotificationItem({
           {notification.description}
         </p>
         <span className="text-[10px] text-muted-foreground/80 font-medium block pt-0.5">
-          {notification.createdAt}
+          {displayTime}
         </span>
       </div>
 

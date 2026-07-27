@@ -21,6 +21,7 @@ interface NotificationPanelProps {
   onFilterChange: (filter: "all" | "unread") => void
   savedScrollTop: number
   onScrollChange: (scrollTop: number) => void
+  onLoadMore?: () => void
 }
 
 export function NotificationPanel({
@@ -37,6 +38,7 @@ export function NotificationPanel({
   onFilterChange,
   savedScrollTop,
   onScrollChange,
+  onLoadMore,
 }: NotificationPanelProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
@@ -54,6 +56,12 @@ export function NotificationPanel({
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     onScrollChange(e.currentTarget.scrollTop)
+    
+    // Check if scrolled near the bottom
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    if (scrollHeight - scrollTop - clientHeight < 50) {
+      onLoadMore?.()
+    }
   }
 
   // Filter the list of notifications based on tab state
@@ -75,7 +83,7 @@ export function NotificationPanel({
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-sm text-foreground">Notifications</h3>
                 {unreadCount > 0 && (
-                  <span className="text-[10px] font-bold text-destructive bg-destructive/10 border border-destructive/20 rounded-full px-2 py-0.5 min-w-[20px] text-center leading-none">
+                  <span className="text-[10px] font-bold text-destructive bg-destructive/10 border border-destructive/20 rounded-full px-2 py-0.5 min-w-5 text-center leading-none">
                     {unreadCount}
                   </span>
                 )}

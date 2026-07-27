@@ -48,6 +48,10 @@ model User {
 
   uploadedFiles File[] @relation("UploadedFiles")
 
+  notifications Notification[] @relation("UserNotifications")
+
+  notificationsTriggered Notification[] @relation("ActorNotifications")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -84,6 +88,8 @@ model Workspace {
   chatMessages ChatMessage[]
 
   files File[]
+
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -370,4 +376,58 @@ model File {
 
   @@index([workspaceId, createdAt])
   @@index([uploadedById])
+}
+
+enum NotificationType {
+  CHAT_MENTION
+
+  DISCUSSION_MENTION
+
+  DISCUSSION_REPLY
+
+  DISCUSSION_RESOLVED
+
+  WORKSPACE_ROLE_CHANGED
+
+  WORKSPACE_REMOVED
+}
+
+enum NotificationEntityType {
+  CHAT_MESSAGE
+
+  DISCUSSION
+
+  WORKSPACE
+
+  USER
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  recipientId String
+  recipient   User   @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  actorId String?
+  actor   User?   @relation("ActorNotifications", fields: [actorId], references: [id])
+
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  type NotificationType
+
+  entityType NotificationEntityType
+
+  entityId String?
+
+  metadata Json?
+
+  read Boolean @default(false)
+
+  readAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([recipientId, createdAt])
+  @@index([recipientId, read])
 }

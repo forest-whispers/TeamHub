@@ -182,6 +182,18 @@ export async function sendMessage(requesterId: string, workspaceId: string, docu
             })),
             skipDuplicates: true,
         });
+
+        for (const recipientId of input.mentionedUserIds) {
+            if (recipientId !== requesterId) {
+                await eventBus.emit("chat.message.mentioned", {
+                    workspaceId,
+                    documentId,
+                    messageId: message!.id,
+                    actorId: requesterId,
+                    recipientId,
+                });
+            }
+        }
     }
 
     await eventBus.emit("chat.message.created", {
@@ -255,6 +267,12 @@ export async function editMessage(requesterId: string, workspaceId: string, docu
         }
     })
 
+    const existingMentions = await prisma?.messageMention.findMany({
+        where: { messageId },
+        select: { userId: true }
+    }) || [];
+    const existingUserIds = existingMentions.map(m => m.userId);
+
     await prisma?.messageMention.deleteMany({
         where: {
             messageId,
@@ -269,6 +287,18 @@ export async function editMessage(requesterId: string, workspaceId: string, docu
             })),
             skipDuplicates: true,
         });
+
+        for (const recipientId of input.mentionedUserIds) {
+            if (!existingUserIds.includes(recipientId) && recipientId !== requesterId) {
+                await eventBus.emit("chat.message.mentioned", {
+                    workspaceId,
+                    documentId,
+                    messageId,
+                    actorId: requesterId,
+                    recipientId,
+                });
+            }
+        }
     }
 
     await eventBus.emit("chat.message.updated", {
