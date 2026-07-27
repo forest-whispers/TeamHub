@@ -89,18 +89,22 @@ export default function AuthenticatedLayout() {
         </div>
 
         {/* Command Palette Trigger */}
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 border border-input rounded-md bg-background text-muted-foreground text-xs hover:bg-accent hover:text-accent-foreground w-40 sm:w-64 justify-between transition-colors cursor-pointer shrink"
-        >
-          <span className="flex items-center gap-2 truncate">
-            <Search className="size-3.5" />
-            <span className="truncate">Search...</span>
-          </span>
-          <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-            <span className="text-xs">Ctrl</span>K
-          </kbd>
-        </button>
+        {workspaceId ? (
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 border border-input rounded-md bg-background text-muted-foreground text-xs hover:bg-accent hover:text-accent-foreground w-40 sm:w-64 justify-between transition-colors cursor-pointer shrink"
+          >
+            <span className="flex items-center gap-2 truncate">
+              <Search className="size-3.5" />
+              <span className="truncate">Search...</span>
+            </span>
+            <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
+              <span className="text-xs">Ctrl</span>K
+            </kbd>
+          </button>
+        ) : (
+          <div className="shrink" />
+        )}
 
         {/* Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
