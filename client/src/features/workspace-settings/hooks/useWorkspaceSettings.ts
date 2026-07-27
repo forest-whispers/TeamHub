@@ -46,6 +46,8 @@ export function useUpdateWorkspaceSettings(workspaceId: string) {
         }
       })
       queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }

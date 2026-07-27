@@ -121,6 +121,11 @@ export function useWorkspaceActivityRealtime(
 
                 }
             );
+
+            if(activity.entityType === "USER")
+            {
+                queryClient.invalidateQueries({ queryKey: ["workspace"] })
+            }
         }
 
         socket.on(

@@ -43,6 +43,8 @@ export function useUploadFile(workspaceId: string) {
           }
         }
       )
+      // Refresh workspace home recent documents/files view
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }
@@ -66,6 +68,8 @@ export function useRenameFile(workspaceId: string) {
           }
         }
       )
+      // Refresh workspace home recent documents/files view
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }
@@ -88,6 +92,8 @@ export function useDeleteFile(workspaceId: string) {
           }
         }
       )
+      // Refresh workspace home recent documents/files view
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }

@@ -19,8 +19,12 @@ export function useJoinWorkspace() {
 
   return useMutation({
     mutationFn: (joinCode: string) => workspaceService.joinWorkspace(joinCode),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const workspaceId = data.id
       queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+      queryClient.invalidateQueries({ queryKey: ["workspace", workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }
@@ -30,8 +34,11 @@ export function useLeaveWorkspace() {
 
   return useMutation({
     mutationFn: (workspaceId: string) => workspaceService.leaveWorkspace(workspaceId),
-    onSuccess: () => {
+    onSuccess: (_, workspaceId) => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
+      queryClient.invalidateQueries({ queryKey: ["workspace", workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }

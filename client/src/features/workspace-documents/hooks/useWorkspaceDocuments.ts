@@ -17,7 +17,11 @@ export function useCreateDocument(workspaceId: string) {
     mutationFn: (data: { title: string; icon?: string }) =>
       documentsService.createDocument(workspaceId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspace-documents"] })
+      queryClient.invalidateQueries({ queryKey: ["workspace-documents", workspaceId] })
+      // Invalidate workspace home cache to refresh document list
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
+      // Invalidate chat channels as a new document channel is added
+      queryClient.invalidateQueries({ queryKey: ["workspace-chat-channels", workspaceId] })
     }
   })
 }
@@ -48,6 +52,8 @@ export function useUpdateDocument(workspaceId: string) {
           }
         }
       )
+      // Invalidate workspace home cache to update title/icon
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }
@@ -72,6 +78,17 @@ export function useDeleteDocument(workspaceId: string) {
       queryClient.removeQueries({
         queryKey: ["document-detail", workspaceId, documentId],
       })
+
+      // Invalidate workspace chat channels as the document's chat channel needs to be refreshed/removed
+      queryClient.invalidateQueries({ queryKey: ["workspace-chat-channels", workspaceId] })
+
+      // Clean up chat messages cache for this document
+      queryClient.removeQueries({
+        queryKey: ["workspace-chat-messages", workspaceId, documentId],
+      })
+
+      // Refresh workspace home recent documents/files view
+      queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
     },
   })
 }
