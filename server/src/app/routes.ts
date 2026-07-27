@@ -23,7 +23,7 @@ router.use("/workspaces/:workspaceId/members", memberRouter);
 
 router.use("/workspaces/:workspaceId/documents", documentRouter);
 
-router.use("/workspaces/:workspaceId/documents/:documentId/messages", documentRouter);
+router.use("/workspaces/:workspaceId/documents/:documentId/chat", messagesRouter);
 
 router.use("/workspaces/:workspaceId/activities", activitiesRouter);
 

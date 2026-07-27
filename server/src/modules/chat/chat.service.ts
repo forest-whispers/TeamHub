@@ -32,7 +32,6 @@ export async function getMessages( requesterId: string, workspaceId: string, doc
             id: true,
             content: true,
             isEdited: true,
-            isDeleted: true,
             createdAt: true,
             updatedAt: true,
 
@@ -50,7 +49,29 @@ export async function getMessages( requesterId: string, workspaceId: string, doc
                 }
             },
 
-            pinned: true,
+            isPinned: true,
+            pinnedById: true,
+            pinnedAt: true,
+            pinnedBy: {
+                select: {
+                    id: true,
+                    name: true,
+                    avatar: true,
+                }
+            },
+            reactions: {
+                select: {
+                    id: true,
+                    emoji: true,
+                    userId: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                        }
+                    }
+                }
+            },
 
             sender: {
                 select: {
@@ -350,7 +371,7 @@ export async function unpinMessage(requesterId: string, workspaceId: string, doc
         },
         select: {
             id: true,
-            pinned: true,
+            isPinned: true,
             pinnedAt: true,
             pinnedBy: {
                 select: {

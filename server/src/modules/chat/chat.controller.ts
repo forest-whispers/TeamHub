@@ -23,10 +23,8 @@ export const getMessagesController = asyncHandler(async (req: Request, res: Resp
             req.user!.id,
             req.params.workspaceId,
             req.params.documentId,
-            {
-                ...(cursor !== undefined && { cursor }),
-                ...(limit !== undefined && { limit }),
-            }
+            cursor,
+            limit
         )
     );
 });

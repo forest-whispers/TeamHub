@@ -11,6 +11,8 @@ import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePre
 import { useWorkspaceChannels, useWorkspaceMessages, useSendMessage } from "@/features/workspace-chat/hooks/useWorkspaceChat"
 import { MessageList } from "@/features/workspace-chat/components/MessageList"
 import { MessageComposer } from "@/features/workspace-chat/components/MessageComposer"
+import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
+import { Hash } from "lucide-react"
 import type { AuthUser } from "@/features/auth/types"
 import { DocumentTabsProvider } from "@/features/document-editor/context/DocumentTabsContext"
 import { NotificationBell } from "@/features/workspace-notifications/components/NotificationBell"
@@ -109,24 +111,38 @@ export default function WorkspaceLayout() {
   const userName = authStatus?.user?.name || "@developer"
 
   // Sidebar Chat Hooks
+  const [selectedSidebarChannelId, setSelectedSidebarChannelId] = useState<string | null>(null)
+
+  // Reset selected channel when workspaceId changes
+  useEffect(() => {
+    setSelectedSidebarChannelId(null)
+  }, [workspaceId])
+
   const { data: sidebarChannels } = useWorkspaceChannels(workspaceId || "")
-  const sidebarChannelId = sidebarChannels?.[0]?.id || "ch-general"
-  const { data: sidebarMessages } = useWorkspaceMessages(workspaceId || "", sidebarChannelId)
+
+  // Auto-select first channel on load when not on document detail page
+  useEffect(() => {
+    if (sidebarChannels && sidebarChannels.length > 0) {
+      const isValid = sidebarChannels.some((ch) => ch.id === selectedSidebarChannelId)
+      if (!isValid) {
+        setSelectedSidebarChannelId(sidebarChannels[0].id)
+      }
+    }
+  }, [sidebarChannels, selectedSidebarChannelId])
+
+  const sidebarChannelId = isDocumentDetailPage ? currentDocumentId : selectedSidebarChannelId
+  const currentDocument = sidebarChannels?.find((ch) => ch.id === sidebarChannelId)
+  const sidebarChannelName = currentDocument?.name || "Untitled Document"
+  const { data: sidebarMessages } = useWorkspaceMessages(workspaceId || "", sidebarChannelId || "")
   const sidebarSendMessageMutation = useSendMessage(workspaceId || "")
 
   const handleSidebarSendMessage = (content: string) => {
     if (!sidebarChannelId) return
-    const userInitials = (authStatus?.user?.name || "User")
-      .split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .substring(0, 2)
-      .toUpperCase()
     sidebarSendMessageMutation.mutate({
-      channelId: sidebarChannelId,
-      sender: authStatus?.user?.name || "User",
-      avatar: userInitials,
-      content,
+      documentId: sidebarChannelId,
+      payload: {
+        content,
+      },
     })
   }
 
@@ -383,7 +399,7 @@ export default function WorkspaceLayout() {
                 <Spinner className="size-6" />
               </div>
             }>
-              <Outlet />
+              <Outlet context={{ selectedChannelId: selectedSidebarChannelId, setSelectedChannelId: setSelectedSidebarChannelId }} />
             </Suspense>
           </div>
         </main>
@@ -556,19 +572,37 @@ export default function WorkspaceLayout() {
               ) : (
                 /* Chat Tab View */
                 <div className="flex-1 flex flex-col justify-between overflow-hidden">
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground p-3 pb-0 select-none">
-                    # {sidebarChannels?.[0]?.name || "general"}
-                  </div>
+                  {isDocumentDetailPage ? (
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground p-3 pb-0 select-none">
+                      # {sidebarChannelName}
+                    </div>
+                  ) : (
+                    sidebarChannels && sidebarChannels.length > 0 && (
+                      <div className="p-3 pb-0">
+                        <SelectDropdown
+                          value={selectedSidebarChannelId || ""}
+                          onChange={setSelectedSidebarChannelId}
+                          options={sidebarChannels.map((ch) => ({
+                            value: ch.id,
+                            label: `${ch.name}`,
+                          }))}
+                          icon={<Hash className="size-3.5" />}
+                          className="w-full"
+                        />
+                      </div>
+                    )
+                  )}
 
                   <MessageList
                     messages={sidebarMessages || []}
-                    currentUserName={authStatus?.user?.name || "User"}
+                    currentUserId={authStatus?.user?.id}
                   />
 
                   {/* Sidebar Chat Input Panel */}
                   <MessageComposer
                     onSend={handleSidebarSendMessage}
                     isSending={sidebarSendMessageMutation.isPending}
+                    replyingTo={null}
                   />
                 </div>
               )}

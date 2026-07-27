@@ -1,21 +1,30 @@
 import { useState, useMemo, useEffect } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useOutletContext } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
+import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
 import {
   useWorkspaceChannels,
   useWorkspaceMessages,
   useSendMessage,
+  useEditMessage,
+  useDeleteMessage,
+  usePinMessage,
+  useUnpinMessage,
+  useToggleReaction,
+  useLoadMoreMessages,
 } from "../hooks/useWorkspaceChat"
+import { useWorkspaceChatRealtime } from "../hooks/useWorkspaceChatRealtime"
 import { ChannelList } from "../components/ChannelList"
 import { MessageList } from "../components/MessageList"
 import { MessageComposer } from "../components/MessageComposer"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Input } from "@/shared/components/ui/input"
+import type { Message } from "../types"
 import {
   Search,
   Settings,
-  MessageSquare,
   Hash,
   AlertCircle,
   MessageSquareOff,
@@ -25,19 +34,27 @@ import {
 
 export default function WorkspaceChat() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
-  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+  const { selectedChannelId, setSelectedChannelId } = useOutletContext<{
+    selectedChannelId: string | null
+    setSelectedChannelId: (id: string | null) => void
+  }>()
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null)
 
   // Current user details
   const { data: authStatus } = useAuthStatus()
-  const currentUserName = authStatus?.user?.name || "Alex Developer"
-  const currentUserInitials = currentUserName
-    .split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase()
+  const currentUserId = authStatus?.user?.id
+
+  // Fetch active workspace to extract members for suggestions and role checks
+  const { data: activeWorkspace } = useWorkspace(workspaceId || "")
+
+  const currentMember = activeWorkspace?.members.find((m) => m.id === currentUserId)
+  const isAdmin =
+    currentMember?.role === "ADMIN" ||
+    currentMember?.role === "OWNER" ||
+    activeWorkspace?.ownerId === currentUserId
 
   // Queries & Mutations
   const {
@@ -55,17 +72,45 @@ export default function WorkspaceChat() {
   } = useWorkspaceMessages(workspaceId || "", selectedChannelId || "")
 
   const sendMessageMutation = useSendMessage(workspaceId || "")
+  const editMessageMutation = useEditMessage(workspaceId || "")
+  const deleteMessageMutation = useDeleteMessage(workspaceId || "")
+  const pinMessageMutation = usePinMessage(workspaceId || "")
+  const unpinMessageMutation = useUnpinMessage(workspaceId || "")
+  const toggleReactionMutation = useToggleReaction(workspaceId || "")
+  const loadMoreMutation = useLoadMoreMessages(workspaceId || "", selectedChannelId || "")
+
+  // Integrate Realtime events
+  const { typingUsers, setTyping } = useWorkspaceChatRealtime({
+    workspaceId: workspaceId || "",
+    documentId: selectedChannelId || "",
+  })
 
   // Auto-select first channel on load
   useEffect(() => {
-    if (channels && channels.length > 0 && !selectedChannelId) {
-      setSelectedChannelId(channels[0].id)
+    if (channels && channels.length > 0) {
+      const isValid = channels.some((ch) => ch.id === selectedChannelId)
+      if (!isValid) {
+        setSelectedChannelId(channels[0].id)
+      }
     }
   }, [channels, selectedChannelId])
+
+  // Clear reply state when document channel changes
+  useEffect(() => {
+    setReplyingTo(null)
+  }, [selectedChannelId])
 
   const selectedChannel = useMemo(() => {
     return channels?.find((ch) => ch.id === selectedChannelId) || null
   }, [channels, selectedChannelId])
+
+  // Pagination availability checks
+  const nextCursor = queryClient.getQueryData<string | null>([
+    "workspace-chat-messages-cursor",
+    workspaceId || "",
+    selectedChannelId || "",
+  ])
+  const hasMore = Boolean(nextCursor)
 
   // Client-side search filters messages
   const filteredMessages = useMemo(() => {
@@ -75,18 +120,80 @@ export default function WorkspaceChat() {
     return messages.filter(
       (msg) =>
         msg.content.toLowerCase().includes(query) ||
-        msg.sender.toLowerCase().includes(query)
+        msg.sender.name.toLowerCase().includes(query)
     )
   }, [messages, searchQuery])
 
   // Send message submission handler
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = (content: string, replyToId?: string, mentionedUserIds?: string[]) => {
     if (!selectedChannelId) return
     sendMessageMutation.mutate({
-      channelId: selectedChannelId,
-      sender: currentUserName,
-      avatar: currentUserInitials,
-      content,
+      documentId: selectedChannelId,
+      payload: {
+        content,
+        replyToId,
+        mentionedUserIds,
+      },
+    })
+    setReplyingTo(null)
+  }
+
+  // Edit message handler
+  const handleEditMessage = (messageId: string, content: string) => {
+    if (!selectedChannelId) return
+    // Check members list to build mentionedUserIds
+    const mentionedUserIds: string[] = []
+    activeWorkspace?.members.forEach((member) => {
+      const regex = new RegExp(`@${member.name}\\b`, "gi")
+      if (regex.test(content)) {
+        mentionedUserIds.push(member.id)
+      }
+    })
+
+    editMessageMutation.mutate({
+      documentId: selectedChannelId,
+      messageId,
+      payload: {
+        content,
+        mentionedUserIds,
+      },
+    })
+  }
+
+  // Delete message handler
+  const handleDeleteMessage = (messageId: string) => {
+    if (!selectedChannelId) return
+    deleteMessageMutation.mutate({
+      documentId: selectedChannelId,
+      messageId,
+    })
+  }
+
+  // Pin message handler
+  const handlePinMessage = (messageId: string) => {
+    if (!selectedChannelId) return
+    pinMessageMutation.mutate({
+      documentId: selectedChannelId,
+      messageId,
+    })
+  }
+
+  // Unpin message handler
+  const handleUnpinMessage = (messageId: string) => {
+    if (!selectedChannelId) return
+    unpinMessageMutation.mutate({
+      documentId: selectedChannelId,
+      messageId,
+    })
+  }
+
+  // Toggle reaction handler
+  const handleToggleReaction = (messageId: string, emoji: string) => {
+    if (!selectedChannelId) return
+    toggleReactionMutation.mutate({
+      documentId: selectedChannelId,
+      messageId,
+      emoji,
     })
   }
 
@@ -245,9 +352,14 @@ export default function WorkspaceChat() {
             /* Error display */
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
               <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg flex items-center justify-between gap-4 max-w-md w-full text-left">
-                <span className="text-sm text-destructive font-medium flex items-center gap-2">
-                  <AlertCircle className="size-4 shrink-0" />
-                  Failed to load conversation messages.
+                <span className="text-sm text-destructive font-medium flex flex-col gap-1">
+                  <span className="flex items-center gap-2">
+                    <AlertCircle className="size-4 shrink-0" />
+                    Failed to load conversation messages.
+                  </span>
+                  <span className="text-xs text-destructive/80 pl-6 font-mono">
+                    {((channelsError as any)?.message || (messagesError as any)?.message || "Unknown error")}
+                  </span>
                 </span>
                 <Button
                   size="xs"
@@ -276,48 +388,59 @@ export default function WorkspaceChat() {
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-xs italic">
               Select a channel to begin messaging
             </div>
-          ) : filteredMessages.length === 0 ? (
-            /* Empty state (either empty channel or search filter results) */
+          ) : filteredMessages.length === 0 && searchQuery.trim() ? (
+            /* Search zero results empty state */
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-              {messages && messages.length > 0 ? (
-                /* Search zero results empty state */
-                <>
-                  <Search className="size-12 text-muted-foreground/60 mb-3" />
-                  <h3 className="text-sm font-bold text-foreground">No matching messages</h3>
-                  <p className="text-xs text-muted-foreground max-w-xs mt-1 leading-relaxed">
-                    We couldn't find any messages matching your search query in this channel.
-                  </p>
-                  <Button
-                    onClick={() => setSearchQuery("")}
-                    size="xs"
-                    variant="outline"
-                    className="mt-4 cursor-pointer"
-                  >
-                    Clear Search
-                  </Button>
-                </>
-              ) : (
-                /* Empty channel empty state */
-                <>
-                  <MessageSquare className="size-12 text-muted-foreground/60 mb-3" />
-                  <h3 className="text-sm font-bold text-foreground">Welcome to #{selectedChannel?.name}!</h3>
-                  <p className="text-xs text-muted-foreground max-w-xs mt-1 leading-relaxed">
-                    This is the start of the #{selectedChannel?.name} channel. Send a message to start conversing with the team.
-                  </p>
-                </>
-              )}
+              <Search className="size-12 text-muted-foreground/60 mb-3" />
+              <h3 className="text-sm font-bold text-foreground">No matching messages</h3>
+              <p className="text-xs text-muted-foreground max-w-xs mt-1 leading-relaxed">
+                We couldn't find any messages matching your search query in this channel.
+              </p>
+              <Button
+                onClick={() => setSearchQuery("")}
+                size="xs"
+                variant="outline"
+                className="mt-4 cursor-pointer"
+              >
+                Clear Search
+              </Button>
             </div>
           ) : (
             /* Messages list */
-            <MessageList messages={filteredMessages} currentUserName={currentUserName} />
+            <MessageList
+              messages={filteredMessages}
+              currentUserId={currentUserId}
+              isAdmin={isAdmin}
+              hasMore={hasMore}
+              isLoadingMore={loadMoreMutation.isPending}
+              onLoadMore={() => loadMoreMutation.mutate()}
+              onReply={setReplyingTo}
+              onEdit={handleEditMessage}
+              onDelete={handleDeleteMessage}
+              onPin={handlePinMessage}
+              onUnpin={handleUnpinMessage}
+              onToggleReaction={handleToggleReaction}
+            />
           )}
         </div>
+
+          {/* Typing indicators */}
+          {selectedChannelId && typingUsers.length > 0 && (
+            <div className="px-4 py-1 text-[10px] text-muted-foreground italic select-none text-left bg-muted/20 animate-pulse shrink-0">
+              {typingUsers.map((u) => u.name).join(", ")}{" "}
+              {typingUsers.length === 1 ? "is typing..." : "are typing..."}
+            </div>
+          )}
 
         {/* Message Composer docked bottom */}
         {selectedChannelId && !channelsError && !messagesError && channels && channels.length > 0 && (
           <MessageComposer
             onSend={handleSendMessage}
             isSending={sendMessageMutation.isPending}
+            onTyping={setTyping}
+            replyingTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
+            members={activeWorkspace?.members.map((m) => ({ id: m.id, name: m.name })) || []}
           />
         )}
       </div>
