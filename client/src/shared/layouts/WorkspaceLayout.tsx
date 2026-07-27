@@ -92,6 +92,12 @@ export default function WorkspaceLayout() {
   }, [location.pathname, workspaceId])
 
   const [activeTab, setActiveTab] = useState<"members" | "discussions" | "chat">("members")
+
+  useEffect(() => {
+    if (!isDocumentDetailPage) {
+      setActiveTab("members")
+    }
+  }, [isDocumentDetailPage])
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false)
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
@@ -260,6 +266,16 @@ export default function WorkspaceLayout() {
     const parts = location.pathname.split("/")
     const lastPart = parts[parts.length - 1]
     if (!lastPart || lastPart === workspaceId) return "Home"
+
+    // If we are on chat page and channelId is active, lookup name in sidebarChannels
+    if (parts.includes("chat") && channelId) {
+      const activeCh = sidebarChannels?.find((ch) => ch.id === channelId)
+      if (activeCh) {
+        return `# ${activeCh.name}`
+      }
+      return "Chat"
+    }
+
     return lastPart.charAt(0).toUpperCase() + lastPart.slice(1)
   }
 
@@ -691,15 +707,24 @@ export default function WorkspaceLayout() {
                     onToggleReaction={handleSidebarToggleReaction}
                   />
 
-                  {/* Sidebar Chat Input Panel */}
-                  <MessageComposer
-                    onSend={handleSidebarSendMessage}
-                    isSending={sidebarSendMessageMutation.isPending}
-                    replyingTo={sidebarReplyingTo}
-                    onCancelReply={() => setSidebarReplyingTo(null)}
-                    members={activeWorkspace?.members.map((m) => ({ id: m.id, name: m.name })) || []}
-                    placeholder="Type a message..."
-                  />
+                   {/* Typing indicators */}
+                   {sidebarTypingUsers.length > 0 && (
+                     <div className="px-4 py-1 text-[10px] text-muted-foreground italic select-none text-left shrink-0">
+                       {sidebarTypingUsers.map((u) => u.name).join(", ")}{" "}
+                       {sidebarTypingUsers.length === 1 ? "is" : "are"} typing...
+                     </div>
+                   )}
+
+                   {/* Sidebar Chat Input Panel */}
+                   <MessageComposer
+                     onSend={handleSidebarSendMessage}
+                     isSending={sidebarSendMessageMutation.isPending}
+                     onTyping={sidebarSetTyping}
+                     replyingTo={sidebarReplyingTo}
+                     onCancelReply={() => setSidebarReplyingTo(null)}
+                     members={activeWorkspace?.members.map((m) => ({ id: m.id, name: m.name })) || []}
+                     placeholder="Type a message..."
+                   />
                 </div>
               )}
             </div>

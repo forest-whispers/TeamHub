@@ -163,8 +163,8 @@ export function MessageItem({
 
   const renderToolbar = () => (
     <div
-      className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-card border border-border shadow-md rounded-md p-1 z-10 absolute -top-3.5 ${
-        isSelf ? "right-4" : "left-12"
+      className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-card border border-border shadow-md rounded-md p-1 z-10 absolute top-1/2 -translate-y-1/2 ${
+        isSelf ? "right-[calc(100%+8px)]" : "left-[calc(100%+8px)]"
       }`}
     >
       {/* Emoji Trigger */}
@@ -337,8 +337,11 @@ export function MessageItem({
               </div>
             </div>
           ) : (
-            <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-xs text-xs leading-relaxed whitespace-pre-wrap text-left shadow-xs">
-              {renderMessageContent(message.content)}
+            <div className="relative">
+              <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-xs text-xs leading-relaxed whitespace-pre-wrap text-left shadow-xs">
+                {renderMessageContent(message.content)}
+              </div>
+              {!isEditing && renderToolbar()}
             </div>
           )}
 
@@ -354,8 +357,6 @@ export function MessageItem({
           {renderReactions()}
         </div>
 
-        {/* Hover action toolbar */}
-        {!isEditing && renderToolbar()}
       </div>
     )
   }
@@ -391,8 +392,11 @@ export function MessageItem({
         {renderReplyHeader()}
 
         {/* Message bubble */}
-        <div className="bg-muted/60 text-foreground border border-border/40 p-3 rounded-2xl rounded-tl-xs text-xs leading-relaxed whitespace-pre-wrap">
-          {renderMessageContent(message.content)}
+        <div className="relative">
+          <div className="bg-muted/60 text-foreground border border-border/40 p-3 rounded-2xl rounded-tl-xs text-xs leading-relaxed whitespace-pre-wrap">
+            {renderMessageContent(message.content)}
+          </div>
+          {renderToolbar()}
         </div>
 
         {/* Pinned badge */}
@@ -407,8 +411,6 @@ export function MessageItem({
         {renderReactions()}
       </div>
 
-      {/* Hover action toolbar */}
-      {renderToolbar()}
     </div>
   )
 }
