@@ -134,12 +134,42 @@ export async function getWorkspaceHome( requesterId: string, workspaceId: string
 
     const [
         activityResult,
+        continueWorkingDoc,
     ] = await Promise.all([
         queryWorkspaceActivities( workspaceId, { limit: 3, }, ),
+        prisma.document.findFirst({
+            where: {
+                workspaceId,
+            },
+            orderBy: {
+                updatedAt: "desc",
+            },
+            select: {
+                id: true,
+                title: true,
+                updatedAt: true,
+                createdBy: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
+        }),
     ]);
 
+    const recentDocuments = continueWorkingDoc
+        ? [
+              {
+                  id: continueWorkingDoc.id,
+                  name: continueWorkingDoc.title,
+                  lastEditedBy: continueWorkingDoc.createdBy?.name ?? "Unknown",
+                  lastEdited: continueWorkingDoc.updatedAt.toISOString(),
+              },
+          ]
+        : [];
+
     return {
-        recentDocuments: [],
+        recentDocuments,
 
         recentActivity:
             activityResult,

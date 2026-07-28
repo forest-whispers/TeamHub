@@ -22,6 +22,8 @@ export function useCreateDocument(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
       // Invalidate chat channels as a new document channel is added
       queryClient.invalidateQueries({ queryKey: ["workspace-chat-channels", workspaceId] })
+      // Invalidate dashboard cache
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     }
   })
 }
@@ -54,6 +56,8 @@ export function useUpdateDocument(workspaceId: string) {
       )
       // Invalidate workspace home cache to update title/icon
       queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
+      // Invalidate dashboard cache
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }
@@ -89,6 +93,8 @@ export function useDeleteDocument(workspaceId: string) {
 
       // Refresh workspace home recent documents/files view
       queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
+      // Invalidate dashboard cache
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }

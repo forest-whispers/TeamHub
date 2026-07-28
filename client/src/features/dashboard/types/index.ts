@@ -1,3 +1,5 @@
+import type { WorkspaceActivity } from "@/features/workspace-activity/types"
+
 export interface RecentDocument {
   id: string
   name: string
@@ -11,22 +13,24 @@ export interface Workspace {
   name: string
   description: string
   memberCount: number
-  documentCount?: number
+  documentCount: number
+  fileCount: number
   lastActivity?: string
+  adminEmail: string
 }
 
-export interface ActivityItem {
-  id: string
-  actor: string
-  action: string
-  target: string
-  timestamp: string
+export interface DashboardOverview {
+  totalWorkspaces: number
+  totalDocuments: number
+  totalFiles: number
+  totalMembers: number
 }
 
 export interface DashboardData {
   workspaces: Workspace[]
   continueWorking: RecentDocument | null
-  recentActivity: ActivityItem[]
+  recentActivity: WorkspaceActivity[]
+  overview: DashboardOverview
 }
 
 export interface DashboardService {

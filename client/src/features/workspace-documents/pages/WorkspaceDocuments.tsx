@@ -21,6 +21,7 @@ import {
   ArrowUpDown,
 } from "lucide-react"
 import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
+import { formatActivityTime } from "@/features/workspace-activity/lib/activityTime"
 
 type SortOption = "updatedAt" | "title" | "createdAt"
 
@@ -264,12 +265,12 @@ export default function WorkspaceDocuments() {
                   Edited by {doc.createdBy.name}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-[10px] text-muted-foreground border-t border-border/50 pt-3 flex justify-between items-center select-none uppercase font-semibold tracking-wider">
+              <CardContent className="text-[10px] text-muted-foreground border-t border-border/50 pt-3 flex justify-between items-center select-none font-semibold tracking-wider">
                 <span className="flex items-center gap-1">
-                  <Clock className="size-3" /> {doc.updatedAt}
+                  <Clock className="size-3" /> {formatActivityTime(doc.updatedAt)}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="size-3" /> {doc.createdAt || doc.updatedAt}
+                  <Calendar className="size-3" /> {new Date(doc.createdAt || doc.updatedAt).toLocaleDateString()}
                 </span>
               </CardContent>
             </Card>

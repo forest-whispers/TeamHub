@@ -45,6 +45,8 @@ export function useUploadFile(workspaceId: string) {
       )
       // Refresh workspace home recent documents/files view
       queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
+      // Invalidate dashboard cache
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }
@@ -94,6 +96,8 @@ export function useDeleteFile(workspaceId: string) {
       )
       // Refresh workspace home recent documents/files view
       queryClient.invalidateQueries({ queryKey: ["workspace-home", workspaceId] })
+      // Invalidate dashboard cache
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })
 }

@@ -10,6 +10,7 @@ import fileRouter from "../modules/files/file.routes.js";
 import notificationRouter from "../modules/notifications/notification.routes.js";
 import searchRouter from "../modules/search/search.routes.js";
 import analyticsRouter from "../modules/analytics/analytics.routes.js";
+import dashboardRouter from "../modules/dashboard/dashboard.routes.js";
 
 
 export const router = Router();
@@ -27,6 +28,8 @@ router.use("/users", userRouter);
 router.use("/notifications", notificationRouter);
 
 router.use("/search", searchRouter);
+
+router.use("/dashboard", dashboardRouter);
 
 router.use("/workspaces/:workspaceId/members", memberRouter);
 

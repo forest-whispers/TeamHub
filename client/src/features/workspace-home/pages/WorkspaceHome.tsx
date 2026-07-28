@@ -136,21 +136,21 @@ export default function WorkspaceHome() {
               {recentDocs.map((doc) => (
                 <Card
                   key={doc.id}
-                  onClick={() => navigate(`/workspace/${workspaceId}/documents`)}
+                  onClick={() => navigate(`/workspace/${workspaceId}/documents/${doc.id}`)}
                   className="border border-border/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200 ease-premium cursor-pointer group flex flex-col justify-between"
                 >
                   <CardHeader className="pb-3 text-left">
                     <CardTitle className="text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-1.5">
                       <FileText className="size-4 shrink-0 text-muted-foreground" />
-                      <span className="truncate">{doc.name}</span>
+                      <span>{doc.name}</span>
                     </CardTitle>
                     <CardDescription className="text-xs truncate">
                       Edited by {doc.lastEditedBy}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="text-[10px] text-muted-foreground border-t border-border/50 pt-2 flex justify-between items-center select-none uppercase font-semibold tracking-wider">
+                  <CardContent className="text-[10px] text-muted-foreground border-t border-border/50 pt-2 flex justify-between items-center select-none font-semibold tracking-wider">
                     <span className="flex items-center gap-1">
-                      <Clock className="size-3" /> {doc.lastEdited}
+                      <Clock className="size-3" /> {formatActivityTime(doc.lastEdited)}
                     </span>
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity text-primary flex items-center gap-0.5">
                       View <ArrowRight className="size-3" />
@@ -237,7 +237,7 @@ export default function WorkspaceHome() {
                         <span className="font-semibold text-muted-foreground mr-1">{formatted.actor}</span>
                         {formatted.action} <span className="font-semibold">{formatted.target}</span>
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      <p className="text-[10px] text-muted-foreground tracking-wider font-semibold">
                           {formatActivityTime(
                             formatted.timestamp
                           )}
