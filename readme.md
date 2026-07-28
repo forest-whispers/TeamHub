@@ -137,17 +137,17 @@ TeamHub explores a workspace-first model where collaboration, documentation, com
 
 ### 💬 Real-Time Workspace Chat
 
-- [ ] Workspace-scoped team conversations.
-- [ ] Real-time messaging with persistent history.
-- [ ] Message editing and deletion.
-- [ ] Unread message tracking.
-- [ ] Reconnection-aware synchronization.
+- [x] Workspace-scoped team conversations.
+- [x] Real-time messaging with persistent history.
+- [x] Message editing and deletion.
+- [x] Unread message tracking.
+- [x] Reconnection-aware synchronization.
 
 ### 💭 Contextual Comments & Discussions
 
 - [x] Document-attached comments and threaded discussions.
 - [x] Replies, resolutions, and author attribution.
-- [ ] Real-time comment synchronization.
+- [x] Real-time comment synchronization.
 
 ### 🕘 Document Version History
 
@@ -157,9 +157,9 @@ TeamHub explores a workspace-first model where collaboration, documentation, com
 
 ### 🔔 Real-Time Notifications
 
-- [ ] Persistent in-app notification center.
-- [ ] Real-time notification delivery and read states.
-- [ ] Workspace-scoped notification events.
+- [x] Persistent in-app notification center.
+- [x] Real-time notification delivery and read states.
+- [x] Workspace-scoped notification events.
 - [ ] Upstash Redis-backed notification infrastructure.
 
 ### 🔐 Workspace Isolation & Authorization
@@ -171,15 +171,15 @@ TeamHub explores a workspace-first model where collaboration, documentation, com
 
 ### 📁 Shared Workspace Files
 
-- [ ] Workspace-scoped file management.
-- [ ] Shared resources with secure member access.
-- [ ] File organization and metadata.
+- [x] Workspace-scoped file management.
+- [x] Shared resources with secure member access.
+- [x] File organization and metadata.
 
 ### 📊 Activity & Workspace Context
 
-- [ ] Persistent workspace activity feed.
-- [ ] Member, document, comment, and chat events.
-- [ ] Chronological history with actor attribution.
+- [x] Persistent workspace activity feed.
+- [x] Member, document, comment, and chat events.
+- [x] Chronological history with actor attribution.
 
 ### 🛡️ API Protection & Rate Limiting
 

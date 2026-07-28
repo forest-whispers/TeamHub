@@ -33,8 +33,8 @@ export const searchService: SearchService = {
           navigationTarget = `/workspace/${workspaceId}/documents/${res.entityId}`
           break
         case "FILE":
-          category = "Documents"
-          type = "document"
+          category = "Files"
+          type = "file"
           navigationTarget = `/workspace/${workspaceId}/files`
           break
         case "MEMBER":

@@ -1,5 +1,5 @@
 import { Command } from "cmdk"
-import { FileText, User, Folder, Settings, Terminal } from "lucide-react"
+import { FileText, File, User, Folder, Settings, Terminal } from "lucide-react"
 import type { SearchResult } from "../types"
 
 interface SearchResultItemProps {
@@ -12,6 +12,8 @@ export function SearchResultItem({ result, onSelect }: SearchResultItemProps) {
     switch (result.type) {
       case "document":
         return <FileText className="mr-2.5 h-4.5 w-4.5 text-blue-500 shrink-0" />
+      case "file":
+        return <File className="mr-2.5 h-4.5 w-4.5 text-teal-500 shrink-0" />
       case "member":
         return <User className="mr-2.5 h-4.5 w-4.5 text-emerald-500 shrink-0" />
       case "workspace":

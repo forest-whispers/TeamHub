@@ -105,7 +105,7 @@ export function GlobalCommandPalette({ isOpen, setIsOpen }: GlobalCommandPalette
 
   const showRecentList = !query.trim() && recentSearches.length > 0
   const showResults = query.trim().length > 0 && !isLoading && !isError
-  const categories: SearchResult["category"][] = ["Documents", "Members", "Workspaces", "Settings", "Commands"]
+  const categories: SearchResult["category"][] = ["Documents", "Files", "Members", "Workspaces", "Settings", "Commands"]
 
   return (
     <div

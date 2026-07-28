@@ -22,16 +22,21 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   const location = useLocation()
 
   const isDashboard = location.pathname.startsWith("/dashboard")
-  const isLandingPage = (location.pathname.toString()) === ""
+  const isLandingPage = location.pathname === "/" || location.pathname === ""
 
   useEffect(() => {
-    if (isDashboard) {
-      setIsOpen(false) // Close if open and navigating to dashboard
+    if (isDashboard || isLandingPage) {
+      setIsOpen(false) // Close if open and navigating to dashboard or landing page
+    }
+  }, [isDashboard, isLandingPage])
+
+  useEffect(() => {
+    if (isDashboard || isLandingPage) {
       return
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setIsOpen((open) => !open)
       }
@@ -39,24 +44,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isDashboard])
-
-  useEffect(() => {
-    if (isLandingPage) {
-      setIsOpen(false) // Close if open and navigating to landing page
-      return
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setIsOpen((open) => !open)
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isLandingPage])
+  }, [isDashboard, isLandingPage])
 
   return (
     <CommandPaletteContext.Provider value={{ isOpen, setIsOpen }}>
