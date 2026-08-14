@@ -1,12 +1,9 @@
 import { Server as HttpServer } from "http";
 import { Server } from "socket.io";
 
-import { env } from "../../config/env.js";
+import { allowedOrigins } from "../../app/app.js";
 
 let io: Server;
-
-const allowedOrigins = ['http://localhost:5173'];
-// const allowedOrigins = env.CLIENT_ORIGINS?.split(',') || ['http://localhost:5173'];
 
 export function createSocket(httpServer: HttpServer) {
     io = new Server(httpServer, {
