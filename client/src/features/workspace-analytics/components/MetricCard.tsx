@@ -39,20 +39,20 @@ export function MetricCard({ title, value, change, trend, icon }: MetricCardProp
 
   return (
     <Card className="border border-border bg-card/45 hover:bg-card hover:shadow-sm transition-all duration-200 text-left select-none">
-      <CardContent className="p-4 flex items-center justify-between gap-3">
+      <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-2 sm:gap-3">
         <div className="space-y-1.5 min-w-0">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
+          <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-wider block truncate">
             {title}
           </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground truncate">
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
               {value}
             </span>
             {getTrendBadge()}
           </div>
         </div>
         {icon && (
-          <div className="size-10 rounded-lg flex items-center justify-center bg-primary/5 border border-primary/10 text-primary shrink-0">
+          <div className="size-8 sm:size-10 rounded-lg flex items-center justify-center bg-primary/5 border border-primary/10 text-primary shrink-0">
             {icon}
           </div>
         )}

@@ -110,7 +110,7 @@ export default function WorkspaceDocuments() {
   })
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 text-left">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-4 sm:space-y-6 text-left">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 select-none">
         <div>
@@ -155,7 +155,7 @@ export default function WorkspaceDocuments() {
 
       {/* Loading Skeleton State */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="border border-border">
               <CardHeader className="pb-3 text-left">
@@ -207,7 +207,7 @@ export default function WorkspaceDocuments() {
 
       {/* Documents Grid List */}
       {!isLoading && !error && sortedDocs.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {sortedDocs.map((doc) => (
             <Card
               key={doc.id}
@@ -235,7 +235,7 @@ export default function WorkspaceDocuments() {
                     <span className="truncate">{doc.title}</span>
                   </CardTitle>
                 </div>
-                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity ml-0">
+                <div className="flex items-center gap-1 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus:opacity-100 md:group-focus-within:opacity-100 md:focus-within:opacity-100 transition-opacity ml-0">
                   <Button
                     variant="ghost"
                     size="xs"

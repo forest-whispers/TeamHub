@@ -48,10 +48,10 @@ export default function WorkspaceHome() {
   const [inviteOpen, setInviteOpen] = useState(false)
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-4 sm:space-y-6">
       {/* Workspace Overview Section */}
       {loadingWorkspace && (
-        <div className="bg-card border border-border rounded-xl p-6 mb-8 text-left select-none space-y-3">
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-4 sm:mb-8 text-left select-none space-y-3">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-40" />
@@ -59,7 +59,7 @@ export default function WorkspaceHome() {
       )}
 
       {errorWorkspace && (
-        <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg flex items-center justify-between gap-4 mb-8 text-left">
+        <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg flex items-center justify-between gap-4 mb-4 sm:mb-8 text-left">
           <span className="text-sm text-destructive font-medium flex items-center gap-2">
             <AlertCircle className="size-4 shrink-0" />
             Failed to load workspace summary.
@@ -71,12 +71,12 @@ export default function WorkspaceHome() {
       )}
 
       {!loadingWorkspace && !errorWorkspace && workspace && (
-        <div className="bg-card border border-border/40 rounded-xl p-6 mb-8 text-left select-none relative overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.03)]">
+        <div className="bg-card border border-border/40 rounded-xl p-4 sm:p-6 mb-4 sm:mb-8 text-left select-none relative overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.03)]">
           <div className="absolute right-0 top-0 bg-primary/5 size-40 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
-          <h1 className="text-2xl font-bold capitalize tracking-tight sm:text-3xl mb-2 text-foreground">
+          <h1 className="text-xl font-bold capitalize tracking-tight sm:text-2xl mb-1.5 text-foreground">
             {workspace.name}
           </h1>
-          <p className="text-muted-foreground text-sm max-w-2xl mb-4 leading-relaxed">
+          <p className="text-muted-foreground text-xs sm:text-sm max-w-2xl mb-3 sm:mb-4 leading-relaxed">
             {workspace.description}
           </p>
           <div className="flex gap-4 text-xs font-semibold text-muted-foreground select-none">
@@ -224,7 +224,7 @@ export default function WorkspaceHome() {
 
           {!loadingHome && !errorHome && activities && activities.length > 0 && (
             <Card className="border border-border/30 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-card/75">
-              <CardContent className="p-4 divide-y divide-border/60">
+              <CardContent className="p-4 divide-y divide-border/60 max-h-87.5 overflow-y-auto scrollbar-none">
                 {activities.map((item) => {
                   const formatted = formatActivity(item);
                   return (
@@ -301,7 +301,7 @@ export default function WorkspaceHome() {
                 <CardTitle className="text-sm font-bold tracking-tight uppercase text-muted-foreground">Members</CardTitle>
                 <CardDescription className="text-xs">Workspace collaborators</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3 pt-1 text-left border-t border-border/50">
+              <CardContent className="space-y-3 pt-1 text-left border-t border-border/50 max-h-75 overflow-y-auto scrollbar-none">
                 {members.map((member) => (
                   <div key={member.id} className="flex items-center gap-3 text-sm">
                     <div className="relative select-none shrink-0">

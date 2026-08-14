@@ -133,10 +133,10 @@ export function EditorHeader({
             size="xs"
             onClick={onOpenVersionHistory}
             className="cursor-pointer h-6 font-normal text-muted-foreground hover:text-foreground text-xs"
-            title="View document version history"
+            title="Version History"
           >
             <History className="size-3" />
-            Version History
+            <span className="hidden sm:inline ml-1">Version History</span>
           </Button>
         )}
         {onSave && (
@@ -146,22 +146,23 @@ export function EditorHeader({
             onClick={onSave}
             disabled={isSaving || !isDirty}
             className="cursor-pointer h-6 font-semibold text-muted-foreground hover:text-foreground text-xs"
+            title={isSaving ? "Saving..." : "Save (Ctrl+S)"}
           >
             {isSaving ? (
-              <Loader2 className="size-3 animate-spin mr-1.5 shrink-0" />
+              <Loader2 className="size-3 animate-spin shrink-0" />
             ) : (
-              <Save className="size-3 mr-1.5 shrink-0" />
+              <Save className="size-3 shrink-0" />
             )}
-            {isSaving ? "Saving..." : "Save"}
+            <span className="hidden sm:inline ml-1">{isSaving ? "Saving..." : "Save"}</span>
           </Button>
         )}
-        <Button variant="outline" size="xs" className="cursor-pointer h-6">
+        <Button variant="outline" size="xs" className="cursor-pointer h-6" title="Share Document">
           <Share2 className="size-3" />
-          Share
+          <span className="hidden sm:inline ml-1">Share</span>
         </Button>
-        <Button variant="outline" size="xs" className="cursor-pointer h-6">
+        <Button variant="outline" size="xs" className="cursor-pointer h-6" title="Export Document">
           <Download className="size-3" />
-          Export
+          <span className="hidden sm:inline ml-1">Export</span>
         </Button>
       </div>
     </div>

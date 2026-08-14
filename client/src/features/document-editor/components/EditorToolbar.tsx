@@ -88,7 +88,7 @@ export function EditorToolbar({ editor, onStartComposer }: EditorToolbarProps) {
   const currentLinkUrl = editor.getAttributes("link")?.href || ""
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 p-1 px-3 border-b border-border bg-muted/20 shrink-0 select-none text-left h-9">
+    <div className="flex flex-nowrap md:flex-wrap items-center gap-1.5 p-1 px-3 border-b border-border bg-muted/20 shrink-0 select-none text-left overflow-x-auto md:overflow-x-visible scrollbar-none h-9 md:h-auto min-h-9">
       {/* Group: Text Styles */}
       <div className="flex items-center gap-0.5">
         <button

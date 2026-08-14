@@ -564,4 +564,25 @@ select option {
 [data-sonner-toast] [data-close-button]:hover {
   background: rgba(255, 255, 255, 0.05) !important;
   color: var(--foreground) !important;
+}
+
+/* Custom Responsive Utilities */
+.scrollbar-none {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Make Tiptap/ProseMirror tables horizontally scrollable on mobile */
+@media (max-width: 768px) {
+  .ProseMirror table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
 }

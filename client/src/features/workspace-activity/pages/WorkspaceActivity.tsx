@@ -104,7 +104,7 @@ export default function WorkspaceActivity() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6 text-left select-none">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-4 sm:space-y-6 text-left select-none">
       {/* Header Container */}
       <div className="border-b border-border/40 pb-4">
         <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">

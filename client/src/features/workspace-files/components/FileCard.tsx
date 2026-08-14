@@ -118,8 +118,8 @@ export function FileCard({ file, onRename, onDelete }: FileCardProps) {
               {file.displayName}
             </div>
             
-            {/* Actions visible on hover */}
-            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity">
+            {/* Actions visible on hover (always visible on mobile touch screens) */}
+            <div className="flex items-center gap-1 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus:opacity-100 md:group-focus-within:opacity-100 md:focus-within:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="xs"

@@ -4,6 +4,7 @@ import { useAuthStatus } from "@/features/auth/hooks/useAuthStatus"
 import { useWorkspace } from "@/features/workspace/hooks/useWorkspace"
 import { useWorkspaceActivityRealtime } from "@/features/workspace-activity/hooks/useWorkspaceActivityRealtime"
 import { useLeaveWorkspace } from "@/features/workspace/hooks/useWorkspaceMutations"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useWorkspacePresence } from "@/features/workspace/hooks/useWorkspacePresence"
 import { useWorkspaceChannels, useWorkspaceMessages, useSendMessage, useEditMessage, useDeleteMessage, usePinMessage, useUnpinMessage, useToggleReaction } from "@/features/workspace-chat/hooks/useWorkspaceChat"
 import { MessageList } from "@/features/workspace-chat/components/MessageList"
@@ -43,6 +44,7 @@ export default function WorkspaceLayout() {
   const { data: activeWorkspace } = useWorkspace(workspaceId || "")
   useWorkspaceActivityRealtime( workspaceId || "" );
   const leaveWorkspaceMutation = useLeaveWorkspace()
+  const logoutMutation = useLogout()
 
   const {
     isMobileLeftOpen,
@@ -222,16 +224,16 @@ export default function WorkspaceLayout() {
     })
   }
 
-  // Navigation items
+  // Navigation items with priority level to map them dynamically to bottom nav or drawer
   const navItems = [
-    { name: "Home", path: "home", icon: Home },
-    { name: "Documents", path: "documents", icon: FileText },
-    { name: "Members", path: "members", icon: Users },
-    { name: "Chat", path: "chat", icon: MessageSquare },
-    { name: "Activity", path: "activity", icon: Activity },
-    { name: "Files", path: "files", icon: Folder },
-    { name: "Analytics", path: "analytics", icon: BarChart3 },
-    { name: "Settings", path: "settings", icon: Settings },
+    { name: "Home", path: "home", icon: Home, priority: "high" },
+    { name: "Documents", path: "documents", icon: FileText, priority: "high" },
+    { name: "Members", path: "members", icon: Users, priority: "low" },
+    { name: "Chat", path: "chat", icon: MessageSquare, priority: "high" },
+    { name: "Activity", path: "activity", icon: Activity, priority: "high" },
+    { name: "Files", path: "files", icon: Folder, priority: "high" },
+    { name: "Analytics", path: "analytics", icon: BarChart3, priority: "low" },
+    { name: "Settings", path: "settings", icon: Settings, priority: "low" },
   ]
 
   // Avatar initials helper
@@ -296,8 +298,13 @@ export default function WorkspaceLayout() {
             />
             {/* Slide-out Drawer */}
             <aside className="relative flex w-64 max-w-xs flex-col bg-card border-r border-border p-4 shadow-lg animate-in slide-in-from-left duration-200">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold tracking-tight">{workspaceName}</span>
+              <div className="flex items-center justify-between mb-5 border-b border-border pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="size-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs uppercase">
+                    {workspaceName.substring(0, 2)}
+                  </div>
+                  <span className="text-sm font-semibold tracking-tight text-foreground truncate max-w-35 capitalize">{workspaceName}</span>
+                </div>
                 <button
                   onClick={() => setIsMobileLeftOpen(false)}
                   className="p-1.5 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
@@ -306,33 +313,51 @@ export default function WorkspaceLayout() {
                 </button>
               </div>
               <nav className="flex-1 space-y-1">
-                {navItems.map((item) => (
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 mb-2 select-none">
+                  Workspace Actions
+                </div>
+                {navItems.filter(item => item.priority === "low").map((item) => (
                   <NavLink
                     key={item.path}
                     to={`/workspace/${workspaceId}/${item.path}`}
                     onClick={() => setIsMobileLeftOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ease-premium cursor-pointer select-none ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  }`
-                }
-              >
-                <item.icon className="size-4 shrink-0" />
-                <span>{item.name}</span>
-              </NavLink>
+                      `flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded-md transition-all duration-200 cursor-pointer select-none ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`
+                    }
+                  >
+                    <item.icon className="size-4 shrink-0" />
+                    <span>{item.name}</span>
+                  </NavLink>
                 ))}
               </nav>
+
+              {/* Drawer Footer Actions */}
+              <div className="mt-auto pt-4 border-t border-border flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setIsMobileLeftOpen(false)
+                    setLeaveConfirmOpen(true)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-md border border-border/80 bg-background text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 cursor-pointer transition-colors"
+                >
+                  Leave Workspace
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileLeftOpen(false)
+                    logoutMutation.mutate()
+                  }}
+                  disabled={logoutMutation.isPending}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/95 cursor-pointer transition-colors"
+                >
+                  {logoutMutation.isPending ? "Logging out..." : "Log Out"}
+                </button>
+              </div>
             </aside>
-              {/* Leave Workspace Button */}
-              <button
-                onClick={() => setLeaveConfirmOpen(true)}
-                className="text-xs bg-destructive text-muted hover:text-destructive px-2 py-1 rounded-md border border-border hover:bg-muted font-medium cursor-pointer transition-colors"
-                title="Leave Workspace"
-              >
-                Leave Workspace
-              </button>
           </div>
         )}
 
@@ -368,18 +393,21 @@ export default function WorkspaceLayout() {
               </NavLink>
             ))}
           </nav>
-            {/* Leave Workspace Button */}
+          
+          {/* Leave Workspace Button Section */}
+          <div className="p-3 border-t border-border shrink-0 select-none">
             <button
               onClick={() => setLeaveConfirmOpen(true)}
-              className="text-xs bg-destructive text-muted hover:text-destructive px-2 py-1 rounded-md border border-border hover:bg-muted font-medium cursor-pointer transition-colors"
+              className="w-full text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/5 hover:border-destructive/20 px-2 py-2 rounded-md border border-border font-semibold cursor-pointer transition-colors"
               title="Leave Workspace"
             >
               Leave Workspace
             </button>
+          </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-hidden bg-background relative flex flex-col h-full">
+        <main className="flex-1 overflow-hidden bg-background relative flex flex-col h-full pb-16 md:pb-0">
           {/* Breadcrumb Header */}
           {!isDocumentDetailPage && (
             <div className="h-11 border-b border-border px-6 flex items-center justify-between bg-card shrink-0 select-none">
@@ -666,6 +694,26 @@ export default function WorkspaceLayout() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-border bg-background/80 backdrop-blur-md flex items-center justify-around px-2 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.03)] select-none">
+        {navItems.filter(item => item.priority === "high").map((item) => (
+          <NavLink
+            key={item.path}
+            to={`/workspace/${workspaceId}/${item.path}`}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer ${
+                isActive
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`
+            }
+          >
+            <item.icon className="size-5 shrink-0" />
+            <span>{item.name}</span>
+          </NavLink>
+        ))}
+      </nav>
     </DocumentTabsProvider>
   )
 }

@@ -16,20 +16,20 @@ export function EditorTabs() {
           <div
             key={tab.id}
             onClick={() => navigate(`/workspace/${tab.workspaceId}/documents/${tab.id}`)}
-            className={`flex items-center gap-2 px-4 py-2 border-r border-border text-xs font-semibold cursor-pointer transition-all relative h-full shrink-0 ${
+            className={`flex items-center gap-1.5 px-2 py-1.5 sm:px-4 sm:py-2 border-r border-border text-[11px] sm:text-xs font-semibold cursor-pointer transition-all relative h-full shrink-0 ${
               isActive
                 ? "bg-background text-foreground border-t-2 border-t-primary"
                 : "text-muted-foreground bg-muted/20 hover:bg-muted/50 hover:text-foreground"
             }`}
           >
             {tab.icon ? (
-              <span className="text-base leading-none">
+              <span className="text-sm sm:text-base leading-none">
                 {tab.icon}
               </span>
             ) : (
-              <FileText className="size-4 text-muted-foreground" />
+              <FileText className="size-3.5 sm:size-4 text-muted-foreground" />
             )}
-            <span className="truncate max-w-30">{tab.title}</span>
+            <span className="truncate max-w-20 sm:max-w-30">{tab.title}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -38,7 +38,7 @@ export function EditorTabs() {
               className="p-0.5 rounded-sm hover:bg-muted hover:text-foreground text-muted-foreground/80 cursor-pointer transition-colors"
               title="Close Tab"
             >
-              <X className="size-3" />
+              <X className="size-2.5 sm:size-3" />
             </button>
           </div>
         )
