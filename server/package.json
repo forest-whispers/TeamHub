@@ -9,11 +9,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/app/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/app/server.js"
   },
   "dependencies": {
     "@hocuspocus/transformer": "^4.3.0",
+    "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
     "cookie": "^2.0.1",
@@ -39,6 +40,11 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/socket.io": "^3.0.1"
+    "@types/socket.io": "^3.0.1",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^26.0.1",
+    "prisma": "^6.19.3",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.3"
   }
 }

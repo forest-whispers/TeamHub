@@ -1,21 +1,16 @@
 {
-    "name": "project",
+    "name": "teamhub",
     "version": "1.0.0",
     "scripts": {
-        "install-backend": "npm install --prefix server",
-        "install-frontend": "npm install --prefix client",
-        "install-all": "npm run install-backend && npm run install-frontend",
-        "dev": "npx tsx watch server/src/app/server.ts",
-        "build": "npm run build --prefix server",
+        "install-server": "npm install --prefix server",
+        "install-client": "npm install --prefix client",
+        "install-all": "npm run install-server && npm run install-client",
+        "dev": "npm run dev --prefix server",
+        "build": "npm install --prefix server && npm run build --prefix server",
         "start": "node server/dist/app/server.js"
     },
     "devDependencies": {
         "@types/node": "^26.0.1",
         "typescript": "^6.0.3"
-    },
-    "dependencies": {
-        "@prisma/client": "^6.19.3",
-        "dotenv": "^17.4.2",
-        "prisma": "^6.19.3"
     }
 }
