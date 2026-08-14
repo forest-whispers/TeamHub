@@ -8,14 +8,8 @@ let io: Server;
 export function createSocket(httpServer: HttpServer) {
     io = new Server(httpServer, {
         cors: {
-            origin: function (origin, callback) {
-                if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-                    callback(null, true);
-                } else {
-                    callback(new Error('Not allowed by CORS'));
-                }
-            },
-            credentials: true,
+        origin: allowedOrigins,
+        credentials: true,
         },
     });
 
