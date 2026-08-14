@@ -1,9 +1,9 @@
-import "../config/env.ts";
+import "../config/env.js";
 
 import http from "http";
 
 import app from "./app.js";
-import { env } from "../config/env.ts";
+import { env } from "../config/env.js";
 
 import { registerEventSubscribers } from "../infrastructure/events/register-event-subscribers.js";
 import { createSocket } from "../infrastructure/websocket/socket.js";

@@ -1,12 +1,12 @@
 {
-    "name": "teamhub",
+    "name": "project",
     "version": "1.0.0",
     "scripts": {
-        "install-server": "npm install --prefix server",
-        "install-client": "npm install --prefix client",
-        "install-all": "npm run install-server && npm run install-client",
-        "dev": "npm run dev --prefix server",
-        "build": "npm install --prefix server && npm run build --prefix server",
+        "install-backend": "npm install --prefix server",
+        "install-frontend": "npm install --prefix client",
+        "install-all": "npm run install-backend && npm run install-frontend",
+        "dev": "npx tsx watch server/src/app/server.ts",
+        "build": "npm install --prefix server --include=dev && npm run build --prefix server",
         "start": "node server/dist/app/server.js"
     },
     "devDependencies": {
