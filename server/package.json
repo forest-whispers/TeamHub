@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/app/server.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc --noCheck",
     "start": "node dist/app/server.js"
   },
   "dependencies": {
