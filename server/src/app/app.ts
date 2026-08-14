@@ -18,17 +18,11 @@ app.use(cors({
             return callback(null, true);
         }
 
-        const isAllowedExact = allowedOrigins.includes(origin);
-
-        const isAllowedVercel = origin.endsWith('.vercel.app') &&
-            !origin.endsWith('vercel.app'); // Prevents fake-vercel.app
-
-
-        if (isAllowedExact || isAllowedVercel) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
         }
+
+        return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
 })
