@@ -9,7 +9,7 @@ import { NotFoundError } from "../shared/errors/index.js";
 
 const app = express();
 
-export const allowedOrigins = ['http://localhost:5173', 'https://team-hub-gold.vercel.app'];
+export const allowedOrigins = ['http://localhost:5173', 'https://team-hub-gold.vercel.app', 'https://team-hub-git-main-forest-whispers-projects.vercel.app', 'https://team-7ao39bvu9-forest-whispers-projects.vercel.app'];
 // const allowedOrigins = env.CLIENT_ORIGINS?.split(',') || ['http://localhost:5173'];
 
 app.use(cors({
