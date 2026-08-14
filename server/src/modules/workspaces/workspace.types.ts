@@ -1,4 +1,3 @@
-import type { WorkspaceActivity } from "../activity/activity.types.js";
 import { getWorkspaceActivities } from "../activity/activity.service.js";
 
 export interface CreateWorkspaceDto {
@@ -24,7 +23,5 @@ export interface WorkspaceResponse {
 
 export interface WorkspaceHomeData {
     recentDocuments: [];
-
-    // recentActivity: WorkspaceActivity[];
     recentActivity: Awaited< ReturnType<typeof getWorkspaceActivities> >["activities"];
 }

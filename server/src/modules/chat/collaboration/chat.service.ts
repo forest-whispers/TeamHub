@@ -1,7 +1,6 @@
 import type { AuthenticatedSocket } from "../../../infrastructure/websocket/types.js";
 import { Server } from "socket.io";
 import type { TypingPayload } from "./chat.types.js";
-import { ensureWorkspaceMember } from "../../../shared/authorization/workspace.js";
 
 export async function joinChatRoom(
     socket: AuthenticatedSocket,

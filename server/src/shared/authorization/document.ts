@@ -6,4 +6,4 @@ export const ensureDocumentInWorkspace = (workspaceId: string, documentId: strin
             id: documentId,
             workspaceId,
         },
-    });
+});

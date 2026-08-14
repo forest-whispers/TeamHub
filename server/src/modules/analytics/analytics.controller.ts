@@ -4,7 +4,6 @@ import { getWorkspaceAnalytics } from "./analytics.service.js";
 import { ensureWorkspaceMember } from "../../shared/authorization/workspace.js";
 
 export const getAnalyticsController = asyncHandler(async (req: Request, res: Response) => {
-    // Workspace authorization check
     await ensureWorkspaceMember(req.user!.id, req.params!.workspaceId);
 
     const analytics = await getWorkspaceAnalytics(req.params!.workspaceId);

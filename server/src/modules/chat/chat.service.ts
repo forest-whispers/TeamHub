@@ -1,3 +1,5 @@
+import { prisma } from "../../lib/prisma.js";
+
 import { eventBus } from "../../infrastructure/events/event-bus.js";
 import { ensureDocumentInWorkspace } from "../../shared/authorization/document.js";
 import { ensureWorkspaceAdmin, ensureWorkspaceMember } from "../../shared/authorization/workspace.js";

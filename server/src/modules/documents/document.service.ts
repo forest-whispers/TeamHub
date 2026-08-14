@@ -81,13 +81,6 @@ export const getDocument = async (requesterId: string, workspaceId: string, docu
     });
 
     return doc
-
-    // const documentJson = doc.content as any;
-    // const innerContent = documentJson?.content || [];
-
-    // return {
-    //     ...doc, content: innerContent
-    // }
 };
 
 export const updateDocument = async ( requesterId: string, workspaceId: string, documentId: string, data: UpdateDocumentDto) => {

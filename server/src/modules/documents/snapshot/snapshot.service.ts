@@ -45,7 +45,7 @@ class SnapshotService {
         });
     }
 
-    async getSnapshot( requesterId, workspaceId, documentId, snapshotId ) {
+    async getSnapshot( requesterId: string, workspaceId: string, documentId: string, snapshotId: string ) {
         await ensureWorkspaceMember(requesterId, workspaceId);
 
         await ensureDocumentInWorkspace(workspaceId, documentId);
