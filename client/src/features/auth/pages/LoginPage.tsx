@@ -11,6 +11,34 @@ import { Label } from "@/shared/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Loader2 } from "lucide-react"
 
+const DEMO_ACCOUNTS = [
+  {
+    label: "Admin User (Owner) – admin@teamhub.dev",
+    email: "admin@teamhub.dev",
+    password: "admin@123",
+  },
+  {
+    label: "Alice Johnson (Admin) – alice@teamhub.dev",
+    email: "alice@teamhub.dev",
+    password: "admin@123",
+  },
+  {
+    label: "Bob Smith (Member) – bob@teamhub.dev",
+    email: "bob@teamhub.dev",
+    password: "admin@123",
+  },
+  {
+    label: "Charlie Davis (Member) – charlie@teamhub.dev",
+    email: "charlie@teamhub.dev",
+    password: "admin@123",
+  },
+  {
+    label: "David Wilson (Member) – david@teamhub.dev",
+    email: "david@teamhub.dev",
+    password: "admin@123",
+  },
+] as const
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const { mutate: login, isPending, error } = useLogin()
@@ -18,6 +46,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -39,6 +68,17 @@ export default function LoginPage() {
     })
   }
 
+  const handleSelectDemoAccount = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedEmail = e.target.value
+    const account = DEMO_ACCOUNTS.find((acc) => acc.email === selectedEmail)
+    if (!account) return
+
+    setValue("email", account.email, { shouldValidate: true, shouldDirty: true })
+    setValue("password", account.password, { shouldValidate: true, shouldDirty: true })
+    e.target.value = ""
+    handleSubmit(onSubmit)()
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       <Card className="w-full max-w-sm border border-border shadow-md">
@@ -55,6 +95,26 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
+            {/* Demo Account Selector */}
+            <div className="space-y-1.5">
+              <Label htmlFor="demo-account">Demo account</Label>
+              <select
+                id="demo-account"
+                defaultValue=""
+                disabled={isPending}
+                onChange={handleSelectDemoAccount}
+                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 text-foreground cursor-pointer dark:bg-input/30"
+              >
+                <option value="" disabled className="text-muted-foreground bg-background">
+                  Select a demo account...
+                </option>
+                {DEMO_ACCOUNTS.map((acc) => (
+                  <option key={acc.email} value={acc.email} className="text-foreground bg-background">
+                    {acc.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {/* Server side error display */}
             {error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
