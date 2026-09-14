@@ -10,7 +10,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/app/server.ts",
     "build": "prisma generate && tsc --noCheck",
-    "start": "node dist/app/server.js"
+    "start": "node dist/app/server.js",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@hocuspocus/transformer": "^4.3.0",
@@ -45,7 +49,7 @@
     "@types/node": "^26.2.0",
     "@types/socket.io": "^3.0.1",
     "prisma": "^6.19.3",
-    "tsx": "^4.19.0",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.3"
   }
 }
