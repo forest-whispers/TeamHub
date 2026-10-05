@@ -9,7 +9,8 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { SelectDropdown } from "@/shared/components/ui/SelectDropdown"
+import { Loader2, User } from "lucide-react"
 
 const DEMO_ACCOUNTS = [
   {
@@ -47,6 +48,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -55,6 +57,11 @@ export default function LoginPage() {
       password: "",
     },
   })
+
+  const emailValue = watch("email")
+  const selectedDemoAccount = DEMO_ACCOUNTS.some((acc) => acc.email === emailValue)
+    ? emailValue
+    : ""
 
   const onSubmit = (data: LoginFormData) => {
     login(data, {
@@ -68,14 +75,12 @@ export default function LoginPage() {
     })
   }
 
-  const handleSelectDemoAccount = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedEmail = e.target.value
+  const handleSelectDemoAccount = (selectedEmail: string) => {
     const account = DEMO_ACCOUNTS.find((acc) => acc.email === selectedEmail)
     if (!account) return
 
     setValue("email", account.email, { shouldValidate: true, shouldDirty: true })
     setValue("password", account.password, { shouldValidate: true, shouldDirty: true })
-    e.target.value = ""
     handleSubmit(onSubmit)()
   }
 
@@ -98,22 +103,19 @@ export default function LoginPage() {
             {/* Demo Account Selector */}
             <div className="space-y-1.5">
               <Label htmlFor="demo-account">Demo account</Label>
-              <select
+              <SelectDropdown
                 id="demo-account"
-                defaultValue=""
-                disabled={isPending}
+                value={selectedDemoAccount}
                 onChange={handleSelectDemoAccount}
-                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 text-foreground cursor-pointer dark:bg-input/30"
-              >
-                <option value="" disabled className="text-muted-foreground bg-background">
-                  Select a demo account...
-                </option>
-                {DEMO_ACCOUNTS.map((acc) => (
-                  <option key={acc.email} value={acc.email} className="text-foreground bg-background">
-                    {acc.label}
-                  </option>
-                ))}
-              </select>
+                options={DEMO_ACCOUNTS.map((acc) => ({
+                  value: acc.email,
+                  label: acc.label,
+                }))}
+                placeholder="Select a demo account..."
+                icon={<User className="size-3.5" />}
+                className="w-full"
+                disabled={isPending}
+              />
             </div>
             {/* Server side error display */}
             {error && (

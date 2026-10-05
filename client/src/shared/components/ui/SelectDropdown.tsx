@@ -7,6 +7,7 @@ interface Option {
 }
 
 interface SelectDropdownProps {
+  id?: string
   value: string
   onChange: (val: string) => void
   options: Option[]
@@ -14,9 +15,11 @@ interface SelectDropdownProps {
   className?: string
   align?: "left" | "right"
   disabled?: boolean
+  placeholder?: string
 }
 
 export function SelectDropdown({
+  id,
   value,
   onChange,
   options,
@@ -24,11 +27,12 @@ export function SelectDropdown({
   className = "w-full sm:w-48",
   align = "left",
   disabled = false,
+  placeholder,
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const selectedOption = options.find((opt) => opt.value === value) || options[0]
+  const selectedOption = options.find((opt) => opt.value === value) || (placeholder ? undefined : options[0])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,23 +40,43 @@ export function SelectDropdown({
         setIsOpen(false)
       }
     }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false)
+      }
+    }
     document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
   }, [])
 
   return (
     <div ref={dropdownRef} className={`relative select-none text-left ${className}`}>
       {/* Trigger Button */}
       <button
+        id={id}
         type="button"
         disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background pl-9 pr-3 py-1.5 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring cursor-pointer hover:bg-muted/40 disabled:hover:bg-background disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`flex h-9 w-full items-center justify-between rounded-md border border-input bg-background ${
+          icon ? "pl-9" : "pl-3"
+        } pr-3 py-1.5 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring cursor-pointer hover:bg-muted/40 disabled:hover:bg-background disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200`}
       >
-        <span className="absolute left-3 top-2.5 size-3.5 flex items-center justify-center text-muted-foreground">
-          {icon}
+        {icon && (
+          <span className="absolute left-3 top-2.5 size-3.5 flex items-center justify-center text-muted-foreground pointer-events-none">
+            {icon}
+          </span>
+        )}
+        <span
+          className={`truncate pr-1 ${
+            selectedOption ? "font-medium text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <span className="truncate pr-1 font-medium">{selectedOption?.label}</span>
         <ChevronDown
           className="size-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200"
           style={{ transform: isOpen ? "rotate(180deg)" : "none" }}

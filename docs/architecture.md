@@ -17,28 +17,32 @@ This separation is intentional. A workspace member being online, a collaborator 
 ┌──────────────────────────────────────────────────────────────────────┐
 │                           React Client                               │
 │                                                                      │
-│   React Router     TanStack Query     Socket.IO Client     Y.Doc     │
-│        │                  │                   │               │       │
-└────────┼──────────────────┼───────────────────┼───────────────┼───────┘
-         │                  │                   │               │
-         │                  │ REST / HTTP       │ WebSocket     │
-         │                  ▼                   ▼               │
-         │       ┌──────────────────────────────────────────┐   │
-         │       │       Express + TypeScript Server        │   │
-         │       │                                          │   │
-         │       │   HTTP Modules       Socket Handlers     │   │
-         │       │        │                    │             │   │
-         │       │        ▼                    ▼             │   │
-         │       │    Services         Real-Time Services   │   │
-         │       └────────┬────────────────────┬─────────────┘   │
-         │                │                    │                 │
-         │                ▼                    ▼                 │
-         │        PostgreSQL + Prisma     Active Y.Doc ◄─────────┘
-         │                                     │
-         │                                     ├── Awareness
-         │                                     └── Active connections
-         │
-         └── Client-side routing and workspace composition
+│  React Router   TanStack Query   Socket.IO Client   Y.Doc + Tiptap  │
+│       │                │                │                  │         │
+└───────┼────────────────┼────────────────┼──────────────────┼─────────┘
+        │                │                │                  │
+        │                │ REST / HTTP    │ WebSocket        │
+        │                ▼                ▼                  │
+        │       ┌──────────────────────────────────────────┐ │
+        │       │         Express + TypeScript Server      │ │
+        │       │                                          │ │
+        │       │   HTTP Modules      Socket Handlers      │ │
+        │       │        │                   │              │ │
+        │       │        ▼                   ▼              │ │
+        │       │    Services        Real-Time Services    │ │
+        │       └────────┬──────────────────┬───────────────┘ │
+        │                │                  │                 │
+        │                ▼                  ▼                 │
+        │       PostgreSQL + Prisma   Active Y.Doc Sessions ◄┘
+        │                │                  │
+        │                │                  ├── Awareness
+        │                │                  └── Active connections
+        │                │
+        │                ▼
+        │        Persistent document
+        │             state
+        │
+        └── Client-side routing and workspace composition
 ```
 
 ---
@@ -151,18 +155,27 @@ A user may be present in a workspace without actively editing a document. Theref
          └───────────────────────┬────────────────────────┘
                                  ▼
                               SERVER
-                                 │
-              ┌──────────────────┼──────────────────┐
-              │                  │                  │
-              ▼                  ▼                  ▼
-       Application Data    Presence Service    Active Documents
-              │                  │                  │
-              ▼                  ▼                  ▼
-       Prisma/PostgreSQL    In-Memory Maps     Y.Doc + Awareness
-                                                    │
-                                                    ▼
-                                            Document Persistence
+                                │
+
+          ┌─────────────────────┼─────────────────────┐
+          │                     │                     │
+          ▼                     ▼                     ▼
+   Application Data      Presence Service      Active Documents
+          │                     │                     │
+          ▼                     ▼                     ▼
+   Prisma/PostgreSQL      In-Memory Maps       Y.Doc + Awareness
+          │                                           |
+          │                                           |
+          ▼                                           ▼
+     Durable State                            Document Persistence
+
+          └──────────────────────────────┐
+                                         ▼
+                                  Upstash Redis
+                                         │
+                     Rate limiting / distributed infrastructure
 ```
+Upstash Redis is infrastructure rather than the source of truth for collaborative document state or workspace presence in the current architecture. The current real-time session model remains process-local. Redis-backed infrastructure provides supporting capabilities such as rate limiting and leaves room for future distributed coordination.
 
 Each part owns a specific responsibility:
 
@@ -171,6 +184,7 @@ Each part owns a specific responsibility:
 | React | UI composition and local interface state |
 | React Router | Application and workspace navigation |
 | TanStack Query | API-backed server state, caching, and invalidation |
+| Axios | HTTP transport used by frontend API services |
 | Socket.IO | Bidirectional real-time event transport |
 | Yjs | Collaborative document state and CRDT merging |
 | Yjs Awareness | Ephemeral document collaborator metadata |
@@ -248,7 +262,7 @@ The `shared` directory contains infrastructure and UI primitives that are genuin
 - Global providers.
 - Router configuration.
 
-The presence of a feature directory does not imply that the corresponding product feature is fully implemented. The structure provides module boundaries for current and future development.
+The feature tree reflects the current repository structure. Some modules may represent partially implemented or planned product capabilities; their presence should not be interpreted as proof that the corresponding V1 feature is complete.
 
 ---
 
@@ -264,7 +278,7 @@ Different forms of state are owned by the mechanism best suited to their lifecyc
 | Authentication/session state | Authentication query and backend session |
 | Collaborative document content | Y.Doc |
 | Remote document collaborators | Yjs Awareness |
-| Workspace online presence | `useWorkspacePresence` |
+| Workspace online presence | In-memory Socket.IO presence state exposed through `useWorkspacePresence` |
 | Navigation state | React Router |
 | Component-specific UI state | React state |
 | Shared editor context | Feature-specific React context where required |
@@ -365,45 +379,42 @@ server/
     ├── app/
     ├── config/
     ├── events/
-    ├── infrastructure/
-    │   └── websocket/
-    ├── lib/
     ├── middleware/
-    │
-    ├── modules/
+    ├── utils/
+    ├── websocket/
+    ├── features/
     │   ├── ai/
     │   ├── auth/
     │   ├── chat/
+    │   │   └── realtime/
+    │   │   └── events/
     │   ├── documents/
     │   │   └── collaboration/
     │   ├── events/
     │   ├── files/
     │   ├── members/
     │   ├── notifications/
+    │   │   └── realtime/
     │   ├── search/
     │   ├── users/
     │   ├── versions/
     │   └── workspaces/
     │       └── presence/
-    │
-    └── shared/
-        ├── authorization/
-        ├── errors/
-        ├── types/
-        └── utils/
 ```
+
+The backend separates application composition, configuration, HTTP middleware, product features, real-time infrastructure, and shared utilities.
 
 The architecture distinguishes between:
 
 - **Application setup** — server initialization and application composition.
 - **Configuration** — environment and service configuration.
-- **Infrastructure** — cross-cutting runtime infrastructure such as WebSockets.
-- **Middleware** — HTTP and authentication middleware.
-- **Modules** — product-domain logic.
-- **Shared authorization** — reusable backend authorization boundaries.
-- **Shared errors, types, and utilities** — common server concerns.
+- **Features** — product-domain logic such as workspaces, documents, chat, files, notifications, and versions.
+- **Events** — application-level event definitions and coordination.
+- **WebSocket infrastructure** — Socket.IO connection handling and real-time transport.
+- **Middleware** — HTTP, authentication, validation, and request-level concerns.
+- **Utilities** — reusable backend helpers and supporting infrastructure.
 
-As with the frontend, a module directory does not necessarily indicate a fully implemented V1 feature.
+Feature directories represent module boundaries rather than guarantees that every corresponding product capability is fully implemented.
 
 ---
 
@@ -413,22 +424,29 @@ Conventional HTTP operations generally follow this direction:
 
 ```text
 HTTP Request
-      │
-      ▼
-    Route
-      │
-      ▼
+     │
+     ▼
+Middleware
+     │
+     ├── Authentication
+     ├── Validation
+     └── Request context
+     │
+     ▼
+   Route
+     │
+     ▼
  Controller
-      │
-      ▼
-   Service
-      │
-      ├── Authorization
-      ├── Business Logic
-      └── Persistence
-               │
-               ▼
-         Prisma / PostgreSQL
+     │
+     ▼
+  Service
+     │
+     ├── Authorization
+     ├── Business Logic
+     └── Persistence
+             │
+             ▼
+       Prisma / PostgreSQL
 ```
 
 The controller handles HTTP-specific concerns, while services own application behavior and persistence coordination.
@@ -453,6 +471,27 @@ Socket Event
 This allows REST and WebSocket interfaces to coexist without mixing HTTP response handling into collaborative synchronization logic.
 
 ---
+
+### Rate Limiting
+
+Rate limiting is treated as infrastructure rather than product-domain logic.
+
+Where configured, request-sensitive endpoints can use Upstash Rate Limit to enforce limits without coupling rate-limit state to individual application modules.
+
+```text
+HTTP Request
+     │
+     ▼
+Rate Limit Check
+     │
+     ├── Rejected ──→ Rate Limit Response
+     │
+     ▼
+Authentication / Validation
+     │
+     ▼
+Application Handler
+```
 
 # Workspace Isolation and Authorization
 
@@ -900,11 +939,11 @@ Broadcast update to document room
 Client B applies remote awareness update
 ```
 
-When a new collaborator joins, the current awareness state is included in the initial document synchronization response.
+When a new collaborator joins, the server provides the currently known awareness state for the active document as part of the initial synchronization process.
 
-This allows the new client to immediately discover existing collaborators.
+The joining client applies that state to its local Awareness instance and then publishes its own awareness state. Existing collaborators receive the new participant's awareness update through the document room.
 
-After applying initial awareness, the joining client publishes its own local state so that existing collaborators can discover it.
+This separates initial state transfer from subsequent incremental awareness updates.
 
 ---
 
@@ -1034,6 +1073,8 @@ This centralized cleanup ensures that one physical socket disconnect can clean a
 
 Collaborative documents use an active in-memory lifecycle.
 
+The persisted representation and the active Y.Doc are intentionally treated as different representations of the same document. PostgreSQL stores the application's durable document representation, while the active Y.Doc provides the CRDT state required for concurrent editing during a live session.
+
 ```text
                   First collaborator joins
                             │
@@ -1056,7 +1097,10 @@ Collaborative documents use an active in-memory lifecycle.
                   Last collaborator leaves
                             │
                             ▼
-                 Convert Y.Doc to JSON
+              Serialize current collaborative document
+                            │
+                            ▼
+              Persist editor document representation
                             │
                             ▼
                     Persist document
@@ -1090,7 +1134,7 @@ active            │
            Remove active document
 ```
 
-Before destroying the active Y.Doc, the current collaborative content is converted into persistent document data and saved.
+Before destroying the active Y.Doc, the current collaborative document state is serialized into the application's persistent document representation and saved to PostgreSQL.
 
 The current architecture therefore optimizes for active collaborative sessions while retaining durable document state between sessions.
 
@@ -1169,12 +1213,13 @@ Only then is the collaborative operation processed.
 | Socket.IO for real-time transport | Provides event-based communication, rooms, acknowledgements, and connection lifecycle handling |
 | Yjs for collaborative editing | Provides CRDT-based concurrent editing and conflict-free update merging |
 | Separate workspace presence and document awareness | The systems have different scopes, state models, identities, and lifecycles |
-| Socket IDs for active connection tracking | One database user may have multiple simultaneous tabs, devices, or connections |
+| Socket IDs for active connection tracking | Represents individual live connections without collapsing multiple tabs, devices, or sessions belonging to the same user |
 | Yjs client IDs for awareness state | The awareness protocol identifies states by its own client IDs |
 | Active Y.Doc instances in memory | Avoids reconstructing collaborative state for every incremental update during an active session |
 | One global Socket.IO connection | Multiple real-time modules can share one physical connection through logical rooms |
 | Explicit leave events plus global disconnect cleanup | Normal SPA navigation does not disconnect the global socket, while refreshes and network loss require connection-level cleanup |
 | Backend authorization for socket events | Real-time events must enforce the same trust boundaries as REST APIs |
+| Upstash Redis for supporting infrastructure | Provides externally managed infrastructure for capabilities such as rate limiting without making Redis the source of truth for current collaborative document state |
 
 ---
 
@@ -1200,9 +1245,11 @@ This is appropriate for the current project stage, but these assumptions become 
 - Process crashes during active editing.
 - Higher document concurrency.
 
-Those concerns are intentionally not solved prematurely in the current architecture.
+These constraints are deliberate boundaries of the current architecture rather than hidden guarantees of horizontal scalability.
 
-They are addressed separately in [`SCALING.md`](./SCALING.md), which documents scalability boundaries and the evolution path for a completed V1 system.
+The system can evolve toward distributed real-time infrastructure, but doing so requires explicit decisions around Socket.IO adapters, cross-instance presence, collaborative document ownership, persistence durability, and failure recovery.
+
+Those concerns are documented separately in [`SCALING.md`](./SCALING.md), which describes the current scalability boundaries and the planned evolution path.
 
 ---
 
@@ -1226,6 +1273,6 @@ TeamHub's current architecture is built around clear ownership of different stat
 
 The central architectural idea is not simply that TeamHub uses WebSockets or collaborative editing. It is that each kind of state is handled according to its actual lifecycle and consistency requirements.
 
-Persistent relational data remains in PostgreSQL. API-backed frontend state is managed by TanStack Query. Concurrent document content is owned by Yjs. Ephemeral collaborator metadata is handled through awareness. Workspace-level online state is tracked independently through presence. Socket.IO connects these real-time systems without becoming the owner of their domain semantics.
+Persistent relational data remains in PostgreSQL. API-backed frontend state is managed by TanStack Query. Concurrent document content is owned by Yjs. Ephemeral collaborator metadata is handled through awareness. Workspace-level online state is tracked independently through presence. Socket.IO connects these real-time systems without becoming the owner of their domain semantics. Upstash Redis provides supporting infrastructure such as rate limiting without becoming the source of truth for the current collaborative state.
 
 This separation provides the foundation for TeamHub's current collaboration model while keeping future concerns such as distributed coordination and horizontal scaling explicit rather than hidden behind premature abstraction.
