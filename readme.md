@@ -51,22 +51,22 @@ Instead of distributing engineering knowledge across disconnected chat apps, doc
 ### Landing Page
 
 <p align="center">
-  <img src="./assets/landing-page.gif" alt="TeamHub landing page" />
+  <img src="./assets/(th)landingPage.png" alt="TeamHub landing page" />
 </p>
 
 ### Workspace Experience
 
 <table>
   <tr>
+    <th>Dashboard</th>
     <th>Workspace Home</th>
-    <th>Collaborative Documents</th>
   </tr>
   <tr>
     <td>
-      <img src="./assets/workspace-home.png" alt="TeamHub workspace home" />
+      <img src="./assets/(th)dashboard.png" alt="TeamHub Dashboard" />
     </td>
     <td>
-      <img src="./assets/documents.png" alt="TeamHub collaborative documents" />
+      <img src="./assets/(th)home.png" alt="TeamHub workspace home" />
     </td>
   </tr>
 </table>
@@ -75,15 +75,32 @@ Instead of distributing engineering knowledge across disconnected chat apps, doc
 
 <table>
   <tr>
-    <th>Workspace Members</th>
+    <th>Collaborative Documents</th>
     <th>Real-Time Chat</th>
   </tr>
   <tr>
     <td>
-      <img src="./assets/members.png" alt="TeamHub workspace members" />
+      <img src="./assets/(th)documents.png" alt="TeamHub collaborative documents" />
     </td>
     <td>
-      <img src="./assets/chat.png" alt="TeamHub real-time workspace chat" />
+      <img src="./assets/(th)chat.png" alt="TeamHub real-time workspace chat" />
+    </td>
+  </tr>
+</table>
+
+### Activities and Analytics
+
+<table>
+  <tr>
+    <th>Workspace Activities</th>
+    <th>Workspace Analytics</th>
+  </tr>
+  <tr>
+    <td>
+      <img src="./assets/(th)activities.png" alt="TeamHub activities" />
+    </td>
+    <td>
+      <img src="./assets/(th)analytics.png" alt="TeamHub analytics" />
     </td>
   </tr>
 </table>
@@ -353,11 +370,13 @@ teamhub/
 │
 ├── server/
 │   └── src/
-│       ├── modules/
-│       ├── middleware/
+│       ├── app/
+│       ├── config/
 │       ├── events/
-│       ├── infrastructure/
-│       ├── shared/
+│       ├── features/
+│       ├── middleware/
+│       ├── utils/
+│       ├── websocket/
 │       └── ...
 │
 ├── docs/
