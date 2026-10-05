@@ -1,16 +1,16 @@
 import { Router } from "express";
-import authRouter from '../modules/auth/auth.routes.js';
-import userRouter from "../modules/users/user.routes.js";
-import workspaceRouter from "../modules/workspaces/workspace.routes.js";
-import memberRouter from "../modules/members/member.routes.js";
-import documentRouter from "../modules/documents/document.routes.js";
-import activitiesRouter from "../modules/activity/activity.routes.js";
-import messagesRouter from "../modules/chat/chat.routes.js";
-import fileRouter from "../modules/files/file.routes.js";
-import notificationRouter from "../modules/notifications/notification.routes.js";
-import searchRouter from "../modules/search/search.routes.js";
-import analyticsRouter from "../modules/analytics/analytics.routes.js";
-import dashboardRouter from "../modules/dashboard/dashboard.routes.js";
+import authRouter from '../features/auth/routes.js';
+import userRouter from "../features/users/routes.js";
+import workspaceRouter from "../features/workspaces/routes.js";
+import memberRouter from "../features/members/routes.js";
+import documentRouter from "../features/documents/routes.js";
+import activitiesRouter from "../features/activity/routes.js";
+import messagesRouter from "../features/chat/routes.js";
+import fileRouter from "../features/files/routes.js";
+import notificationRouter from "../features/notifications/routes.js";
+import searchRouter from "../features/search/routes.js";
+import analyticsRouter from "../features/analytics/routes.js";
+import dashboardRouter from "../features/dashboard/routes.js";
 
 
 export const router = Router();

@@ -9,7 +9,7 @@ import {
 } from "@prisma/client";
 import * as Y from "yjs";
 import { TiptapTransformer } from "@hocuspocus/transformer";
-import { hashPassword } from "../src/lib/bcrypt.js";
+import { hashPassword } from "../src/features/auth/lib/bcrypt.js";
 
 const prisma = new PrismaClient();
 

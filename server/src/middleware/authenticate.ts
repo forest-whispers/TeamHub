@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma.js";
-import { verifyAccessToken } from "../lib/jwt.js";
-import type { AuthUser } from "../modules/auth/auth.types.js";
+import { prisma } from "../config/prisma.js";
+import { verifyAccessToken } from "../features/auth/lib/jwt.js";
+import type { AuthUser } from "../features/auth/types.js";
 import { constants } from "../config/constants.js";
-import { UnauthorizedError } from "../shared/errors/index.js";
+import { UnauthorizedError } from "../utils/errors/index.js";
 
 export const authenticate = async ( req: Request, _res: Response, next: NextFunction ) => {
     const accessToken = req.cookies[constants.ACCESS_COOKIE_NAME];

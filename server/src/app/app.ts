@@ -5,7 +5,7 @@ import morgan from "morgan";
 
 import { env } from "../config/env.js";
 import { router } from "./routes.js";
-import { NotFoundError } from "../shared/errors/index.js";
+import { NotFoundError } from "../utils/errors/index.js";
 
 const app = express();
 

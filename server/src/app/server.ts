@@ -5,9 +5,9 @@ import http from "http";
 import app from "./app.js";
 import { env } from "../config/env.js";
 
-import { registerEventSubscribers } from "../infrastructure/events/register-event-subscribers.js";
-import { createSocket } from "../infrastructure/websocket/socket.js";
-import { initializeWebSocket } from "../infrastructure/websocket/index.js";
+import { registerEventSubscribers } from "../events/register-event-subscribers.js";
+import { createSocket } from "../websocket/socket.js";
+import { initializeWebSocket } from "../websocket/index.js";
 
 const server = http.createServer(app);
 const io = createSocket(server);
